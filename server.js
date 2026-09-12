@@ -1,14 +1,7 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import fetch from 'node-fetch';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,12 +10,12 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve index.html from root if not in public/
+// Serve index.html
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Endpoint: Scrape live site HTML directly from URL
+// Endpoint: Scrape live site HTML directly using Node native fetch
 app.post('/api/fetch-url', async (req, res) => {
   try {
     const { url } = req.body;
@@ -33,8 +26,7 @@ app.post('/api/fetch-url', async (req, res) => {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 SignalSEO/2.0'
       },
-      redirect: 'follow',
-      timeout: 15000
+      redirect: 'follow'
     });
 
     const html = await response.text();
@@ -42,14 +34,14 @@ app.post('/api/fetch-url', async (req, res) => {
       success: true,
       status: response.status,
       finalUrl: response.url,
-      html: html.slice(0, 300000) // 300kb cap for safety
+      html: html.slice(0, 300000)
     });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Could not fetch URL: ' + error.message });
   }
 });
 
-// Endpoint: Groq AI proxy
+// Endpoint: Groq AI proxy using Node native fetch
 app.post('/api/ai', async (req, res) => {
   try {
     const { prompt } = req.body;
@@ -97,5 +89,5 @@ app.post('/api/ai', async (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Signal SEO Tool engine listening on http://0.0.0.0:${PORT}`);
+  console.log(`Signal SEO Tool engine listening on port ${PORT}`);
 });
