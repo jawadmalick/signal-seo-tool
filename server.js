@@ -8,9 +8,11 @@ const PORT = process.env.PORT || 3000;
 const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
 
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
 
-// CORS headers for clean internal fetch operations
+// Serve static assets directly from root directory
+app.use(express.static(__dirname));
+
+// CORS headers
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -19,7 +21,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Live Website Fetcher with User-Agent spoofing to bypass crawler protection
+// Live Website Fetcher
 app.post('/api/fetch-url', (req, res) => {
   const { url } = req.body;
   if (!url) return res.status(400).json({ success: false, error: 'URL required' });
@@ -38,7 +40,6 @@ app.post('/api/fetch-url', (req, res) => {
       },
       timeout: 12000
     }, (response) => {
-      // Follow one redirect level if required (301, 302)
       if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
         let redirectUrl = response.headers.location;
         if (!/^https?:\/\//i.test(redirectUrl)) {
@@ -71,7 +72,7 @@ app.post('/api/fetch-url', (req, res) => {
 app.post('/api/ai', async (req, res) => {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ success: false, error: 'Prompt is required' });
-  if (!GROQ_API_KEY) return res.status(500).json({ success: false, error: 'GROQ_API_KEY is not set on Railway' });
+  if (!GROQ_API_KEY) return res.status(500).json({ success: false, error: 'GROQ_API_KEY is not configured on Railway' });
 
   const payload = JSON.stringify({
     model: 'openai/gpt-oss-20b',
@@ -113,9 +114,9 @@ app.post('/api/ai', async (req, res) => {
   groqReq.end();
 });
 
-// Fallback routing for SPA
+// Serve index.html directly from project root
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => console.log(`Signal Engine running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Signal Engine active on port ${PORT}`));
