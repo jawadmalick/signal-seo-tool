@@ -1,122 +1,174 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const https = require('https');
-const http = require('http');
+const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
 
+// Middleware
+app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serve static assets from root directory
+// Serve static assets from project root
 app.use(express.static(__dirname));
 
-// CORS headers
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  if (req.method === 'OPTIONS') return res.sendStatus(200);
-  next();
+// ==========================================
+// SEO & BOT CRAWLER ROUTES
+// ==========================================
+
+// Explicit robots.txt route
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain');
+  res.sendFile(path.join(__dirname, 'robots.txt'), (err) => {
+    if (err) {
+      res.send("User-agent: *\nAllow: /\nSitemap: https://signal-seo-tool.up.railway.app/sitemap.xml");
+    }
+  });
 });
 
-// Live Website Fetcher
-app.post('/api/fetch-url', (req, res) => {
-  const { url } = req.body;
-  if (!url) return res.status(400).json({ success: false, error: 'URL required' });
+// Explicit sitemap.xml route
+app.get('/sitemap.xml', (req, res) => {
+  res.type('application/xml');
+  res.sendFile(path.join(__dirname, 'sitemap.xml'), (err) => {
+    if (err) {
+      res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://signal-seo-tool.up.railway.app/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`);
+    }
+  });
+});
 
-  let targetUrl = url.trim();
-  if (!/^https?:\/\//i.test(targetUrl)) targetUrl = 'https://' + targetUrl;
+// ==========================================
+// API ROUTES
+// ==========================================
 
+// Groq AI Integration Endpoint
+app.post('/api/groq', async (req, res) => {
   try {
-    const parsed = new URL(targetUrl);
-    const client = parsed.protocol === 'https:' ? https : http;
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: 'GROQ_API_KEY is not configured on the server.' });
+    }
 
-    const request = client.get(targetUrl, {
+    const { messages, model, temperature, max_tokens } = req.body;
+
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 SignalSEO/2.6',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
       },
-      timeout: 12000
-    }, (response) => {
-      if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-        let redirectUrl = response.headers.location;
-        if (!/^https?:\/\//i.test(redirectUrl)) {
-          redirectUrl = new URL(redirectUrl, targetUrl).href;
-        }
-        const redirectClient = redirectUrl.startsWith('https:') ? https : http;
-        return redirectClient.get(redirectUrl, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-          timeout: 10000
-        }, (res2) => {
-          let body = '';
-          res2.on('data', chunk => { body += chunk; });
-          res2.on('end', () => res.json({ success: true, html: body }));
-        }).on('error', e => res.json({ success: false, error: e.message }));
-      }
-
-      let data = '';
-      response.on('data', chunk => { data += chunk; });
-      response.on('end', () => res.json({ success: true, html: data }));
+      body: JSON.stringify({
+        model: model || 'llama-3.3-70b-versatile',
+        messages: messages || [],
+        temperature: temperature !== undefined ? temperature : 0.4,
+        max_tokens: max_tokens || 2048
+      })
     });
 
-    request.on('error', (e) => res.json({ success: false, error: 'Could not fetch site: ' + e.message }));
-    request.on('timeout', () => { request.destroy(); res.json({ success: false, error: 'Fetch timed out' }); });
-  } catch (err) {
-    res.json({ success: false, error: 'Invalid URL format' });
+    const data = await response.json();
+    if (!response.ok) {
+      return res.status(response.status).json({ error: data.error?.message || 'Groq API error' });
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error('Groq Proxy Error:', error);
+    res.status(500).json({ error: 'Internal server error processing AI request.' });
   }
 });
 
-// Groq AI Request Relay
-app.post('/api/ai', async (req, res) => {
-  const { prompt } = req.body;
-  if (!prompt) return res.status(400).json({ success: false, error: 'Prompt is required' });
-  if (!GROQ_API_KEY) return res.status(500).json({ success: false, error: 'GROQ_API_KEY is not configured on Railway' });
-
-  const payload = JSON.stringify({
-    model: 'openai/gpt-oss-20b',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.2,
-    max_tokens: 2500
-  });
-
-  const options = {
-    hostname: 'api.groq.com',
-    path: '/openai/v1/chat/completions',
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${GROQ_API_KEY}`,
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(payload)
+// Live Web Scraper / Technical Audit Endpoint
+app.post('/api/audit', async (req, res) => {
+  try {
+    let { url } = req.body;
+    if (!url) {
+      return res.status(400).json({ error: 'URL is required.' });
     }
-  };
 
-  const groqReq = https.request(options, (groqRes) => {
-    let body = '';
-    groqRes.on('data', chunk => { body += chunk; });
-    groqRes.on('end', () => {
-      try {
-        const parsed = JSON.parse(body);
-        if (groqRes.statusCode !== 200) {
-          return res.status(groqRes.statusCode).json({ success: false, error: (parsed.error && parsed.error.message) || 'Groq API error' });
-        }
-        const text = parsed.choices && parsed.choices[0] && parsed.choices[0].message ? parsed.choices[0].message.content : '';
-        res.json({ success: true, response: text });
-      } catch (err) {
-        res.status(500).json({ success: false, error: 'Failed to parse Groq response' });
-      }
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+
+    const startTime = Date.now();
+    const fetchResponse = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 SignalSEO/2.6'
+      },
+      redirect: 'follow'
     });
-  });
 
-  groqReq.on('error', (e) => res.status(500).json({ success: false, error: e.message }));
-  groqReq.write(payload);
-  groqReq.end();
+    const loadTimeMs = Date.now() - startTime;
+    const html = await fetchResponse.text();
+    const statusCode = fetchResponse.status;
+
+    // Extract core on-page elements
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const title = titleMatch ? titleMatch[1].trim() : '';
+
+    const metaDescMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["'][^>]*>/i) ||
+                          html.match(/<meta[^>]*content=["']([^"']*)["'][^>]*name=["']description["'][^>]*>/i);
+    const metaDescription = metaDescMatch ? metaDescMatch[1].trim() : '';
+
+    const canonicalMatch = html.match(/<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']*)["'][^>]*>/i);
+    const canonical = canonicalMatch ? canonicalMatch[1].trim() : '';
+
+    const h1Matches = [...html.matchAll(/<h1[^>]*>([^<]+)<\/h1>/gi)].map(m => m[1].trim());
+    const h2Matches = [...html.matchAll(/<h2[^>]*>([^<]+)<\/h2>/gi)].map(m => m[1].trim());
+
+    const hasSchema = /<script[^>]*type=["']application\/ld\+json["'][^>]*>/i.test(html);
+    const hasOpenGraph = /<meta[^>]*property=["']og:/i.test(html);
+    const hasTwitterCard = /<meta[^>]*name=["']twitter:/i.test(html);
+
+    // Clean text for word count analysis
+    const cleanText = html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ')
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const wordCount = cleanText.split(/\s+/).filter(Boolean).length;
+
+    res.json({
+      url,
+      statusCode,
+      loadTimeMs,
+      title,
+      metaDescription,
+      canonical,
+      h1: h1Matches,
+      h2Count: h2Matches.length,
+      wordCount,
+      hasSchema,
+      hasOpenGraph,
+      hasTwitterCard,
+      rawHtmlPreview: html.substring(0, 3000)
+    });
+  } catch (error) {
+    console.error('Audit Fetch Error:', error);
+    res.status(500).json({ error: `Failed to crawl target site: ${error.message}` });
+  }
 });
 
-// Express 5 compatible catch-all (prevents PathError crash)
-app.use((req, res) => {
+// Serve frontend application
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => console.log(`Signal Engine active on port ${PORT}`));
+// Global Fallback
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Start Server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Signal Engine active on port ${PORT}`);
+});
