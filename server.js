@@ -1,82 +1,101 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
-const path = require("path");
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import fetch from 'node-fetch';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Security headers (CSP disabled so inline scripts in index.html work)
-app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
-app.use(express.json({ limit: "2mb" }));
-app.use(express.static(path.join(__dirname)));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Limit each IP to 30 requests per 15 minutes to protect your API limits
-const aiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 30,
-  message: {
-    success: false,
-    error: "Rate limit reached. Please wait a few minutes before trying again."
+// Serve index.html from root if not in public/
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Endpoint: Scrape live site HTML directly from URL
+app.post('/api/fetch-url', async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: 'URL is required' });
+
+    const targetUrl = /^https?:\/\//i.test(url) ? url : 'https://' + url;
+    const response = await fetch(targetUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 SignalSEO/2.0'
+      },
+      redirect: 'follow',
+      timeout: 15000
+    });
+
+    const html = await response.text();
+    res.json({
+      success: true,
+      status: response.status,
+      finalUrl: response.url,
+      html: html.slice(0, 300000) // 300kb cap for safety
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Could not fetch URL: ' + error.message });
   }
 });
 
-app.get("/api/test", (req, res) => {
-  res.json({ success: true, message: "Signal SEO backend is running!" });
-});
-
-app.post("/api/ai", aiLimiter, async (req, res) => {
+// Endpoint: Groq AI proxy
+app.post('/api/ai', async (req, res) => {
   try {
     const { prompt } = req.body;
-    if (!prompt) {
-      return res.status(400).json({ success: false, error: "Prompt is required" });
-    }
-
     const apiKey = process.env.AI_API_KEY;
+
     if (!apiKey) {
-      return res.status(500).json({
-        success: false,
-        error: "AI_API_KEY is missing. Check your .env file."
-      });
+      return res.status(500).json({ error: 'AI_API_KEY is not set in Railway environment variables.' });
     }
 
-    // Connects to Groq using the developer-tier supported model
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: "openai/gpt-oss-20b",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.2
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an elite SEO, AEO, and GEO technical auditor and strategist. Return strictly formatted, deeply detailed JSON or requested markdown without preamble.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.3,
+        max_tokens: 3500
       })
     });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`AI Provider error (${response.status}): ${errText}`);
+    const data = await response.json();
+    if (data.error) {
+      return res.status(500).json({ error: data.error.message });
     }
 
-    const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "";
-
-    res.json({ success: true, response: reply });
+    res.json({
+      success: true,
+      response: data.choices[0].message.content
+    });
   } catch (error) {
-    console.error("AI Error:", error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ error: 'Failed to process AI request: ' + error.message });
   }
 });
 
-// Express 5 fallback route to serve index.html
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Signal SEO Tool engine listening on http://0.0.0.0:${PORT}`);
 });
