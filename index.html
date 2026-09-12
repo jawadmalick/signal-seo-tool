@@ -3,36 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Signal — Complete SEO, AEO & GEO Field Kit</title>
+<title>Signal — Enterprise SEO & AI Search Command Deck</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root {
-    --bg-deep: #030712;
-    --bg-surface: #0B0F19;
-    --panel: #111827;
-    --panel-subtle: #1F2937;
-    --panel-input: #050811;
+    /* Command Deck Dual-Tone Architecture */
+    --deck-rail: #080C16;
+    --deck-topbar: #0B101D;
+    --bg-deep: #0D1322;
+    --panel: #131B2E;
+    --panel-subtle: #19243C;
+    --panel-input: #0A0F1A;
     
-    --border: rgba(34, 211, 238, 0.15);
-    --border-hover: rgba(34, 211, 238, 0.45);
+    /* Precision Data Borders */
+    --border: rgba(99, 140, 210, 0.16);
+    --border-strong: rgba(99, 140, 210, 0.32);
+    --border-hover: #2563EB;
     
-    --primary: #06B6D4;
-    --primary-light: #67E8F9;
-    --accent: #38BDF8;
-    --accent-glow: rgba(6, 182, 212, 0.28);
+    /* Ahrefs-Grade Cobalt Primary */
+    --primary: #1D63FF;
+    --primary-light: #60A5FA;
+    --accent: #00D4B2;
+    --accent-glow: rgba(29, 99, 255, 0.25);
     
-    --paper: #F9FAFB;
-    --muted: #9CA3AF;
-    --subtle: #4B5563;
+    /* Typography */
+    --paper: #F8FAFC;
+    --muted: #94A3B8;
+    --subtle: #475569;
     
+    /* High-Visibility SEO Signals */
     --green: #10B981;
     --green-bg: rgba(16, 185, 129, 0.12);
+    --green-border: rgba(16, 185, 129, 0.35);
     --amber: #F59E0B;
     --amber-bg: rgba(245, 158, 11, 0.12);
-    --coral: #F43F5E;
-    --coral-bg: rgba(244, 63, 94, 0.12);
+    --amber-border: rgba(245, 158, 11, 0.35);
+    --coral: #EF4444;
+    --coral-bg: rgba(239, 68, 68, 0.12);
+    --coral-border: rgba(239, 68, 68, 0.35);
     
     --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
@@ -40,18 +50,17 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
-  
+
   body {
     background-color: var(--bg-deep);
     background-image: 
-      linear-gradient(to right, rgba(34, 211, 238, 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(34, 211, 238, 0.03) 1px, transparent 1px),
-      radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.12), transparent 50%);
-    background-size: 32px 32px, 32px 32px, 100% 100%;
+      linear-gradient(to right, rgba(99, 140, 210, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(99, 140, 210, 0.04) 1px, transparent 1px);
+    background-size: 28px 28px;
     color: var(--paper);
     font-family: var(--font-display);
     min-height: 100vh;
-    line-height: 1.6;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -59,114 +68,152 @@
   a:hover { text-decoration: underline; }
 
   /* App Layout */
-  .app-shell { display: flex; min-height: 100vh; }
-  
-  .sidebar {
-    width: 270px;
+  .deck-shell { display: flex; min-height: 100vh; }
+
+  /* Left Rail */
+  .deck-rail {
+    width: 250px;
     flex: none;
-    background: var(--bg-surface);
+    background: var(--deck-rail);
     border-right: 1px solid var(--border);
-    padding: 28px 18px 22px;
     display: flex;
     flex-direction: column;
     position: sticky;
     top: 0;
     height: 100vh;
     overflow-y: auto;
+    z-index: 50;
   }
 
-  .sidebar-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; padding: 0 6px; }
-  .sidebar-logo {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    color: #030712;
+  .rail-brand {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .rail-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), #00D4B2);
+    color: #FFFFFF;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 800;
-    font-size: 18px;
-    box-shadow: 0 4px 14px rgba(6, 182, 212, 0.35);
+    font-size: 15px;
+    box-shadow: 0 0 16px rgba(29, 99, 255, 0.45);
   }
-  .sidebar-title { font-weight: 800; font-size: 19px; letter-spacing: -0.02em; line-height: 1.1; color: var(--paper); }
-  .sidebar-title span { font-size: 11px; font-weight: 600; color: var(--primary-light); letter-spacing: 0.05em; }
-  .sidebar-tagline { font-family: var(--font-mono); font-size: 9.5px; color: var(--subtle); text-transform: uppercase; letter-spacing: 0.08em; padding: 0 6px; margin: 4px 0 24px; }
-  
-  .sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-  .sidebar-nav .nav-btn {
+  .rail-title { font-size: 16px; font-weight: 800; letter-spacing: 0.04em; color: #FFFFFF; }
+  .rail-edition { font-family: var(--font-mono); font-size: 9px; color: var(--accent); letter-spacing: 0.1em; }
+
+  .rail-section-lbl {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--subtle);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 16px 20px 8px;
+    font-weight: 700;
+  }
+
+  .rail-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 10px; flex: 1; }
+  .rail-btn {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 11px;
     width: 100%;
     text-align: left;
     background: transparent;
     border: 1px solid transparent;
     color: var(--muted);
-    padding: 10px 14px;
-    border-radius: 8px;
+    padding: 9px 12px;
+    border-radius: 6px;
     font-family: var(--font-display);
-    font-weight: 500;
-    font-size: 13.5px;
+    font-weight: 600;
+    font-size: 13px;
     cursor: pointer;
-    transition: all 0.18s ease;
+    transition: all 0.14s ease;
   }
-  .sidebar-nav .nav-btn svg { flex: none; width: 17px; height: 17px; opacity: 0.7; }
-  .sidebar-nav .nav-btn:hover { background: rgba(255, 255, 255, 0.04); color: var(--paper); }
-  .sidebar-nav .nav-btn:hover svg { opacity: 1; }
-  .sidebar-nav .nav-btn.active {
-    background: linear-gradient(135deg, var(--primary), #0891B2);
-    color: #030712;
-    font-weight: 700;
-    box-shadow: 0 4px 16px rgba(6, 182, 212, 0.35);
+  .rail-btn svg { flex: none; width: 16px; height: 16px; opacity: 0.7; }
+  .rail-btn:hover { background: rgba(255, 255, 255, 0.04); color: var(--paper); }
+  .rail-btn:hover svg { opacity: 1; }
+  .rail-btn.active {
+    background: rgba(29, 99, 255, 0.12);
+    color: #FFFFFF;
+    border-color: rgba(29, 99, 255, 0.4);
+    box-shadow: inset 2px 0 0 0 var(--primary);
   }
-  .sidebar-nav .nav-btn.active svg { opacity: 1; stroke: #030712; }
-  .sidebar-nav .nav-index { font-family: var(--font-mono); font-size: 10px; opacity: 0.65; margin-left: auto; }
-  
-  .sidebar-foot {
-    margin-top: 18px;
-    padding-top: 14px;
+  .rail-btn.active svg { opacity: 1; stroke: var(--primary-light); }
+  .rail-btn .idx { font-family: var(--font-mono); font-size: 10px; opacity: 0.45; margin-left: auto; }
+
+  .rail-foot {
+    padding: 16px;
     border-top: 1px solid var(--border);
     font-family: var(--font-mono);
     font-size: 10px;
     color: var(--subtle);
-    line-height: 1.5;
-    padding-left: 6px;
-    padding-right: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
+  .status-ping { display: flex; align-items: center; gap: 6px; color: var(--green); }
+  .ping-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
 
-  /* Main Area */
-  .main { flex: 1; min-width: 0; }
-  .page-header { max-width: 1120px; margin: 0 auto; padding: 34px 36px 0; }
-  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; color: var(--accent); text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
-  .page-title { font-weight: 800; font-size: 28px; margin: 0 0 20px; letter-spacing: -0.02em; color: var(--paper); }
-  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 36px 80px; }
+  /* Deck Main & Header Bar */
+  .deck-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
-  /* Panels & Cards */
+  .deck-topbar {
+    height: 52px;
+    background: var(--deck-topbar);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+  .topbar-telemetry { display: flex; align-items: center; gap: 20px; font-family: var(--font-mono); font-size: 11px; }
+  .tele-item { display: flex; align-items: center; gap: 7px; color: var(--muted); }
+  .tele-label { color: var(--subtle); text-transform: uppercase; letter-spacing: 0.06em; }
+  .tele-val { color: var(--paper); font-weight: 600; }
+  .tele-val.highlight { color: var(--accent); }
+
+  .deck-content { max-width: 1200px; margin: 0 auto; width: 100%; padding: 28px 32px 80px; }
+
+  .deck-header { margin-bottom: 24px; }
+  .deck-eyebrow { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.12em; color: var(--primary-light); text-transform: uppercase; margin-bottom: 4px; font-weight: 700; }
+  .deck-title { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: #FFFFFF; }
+
+  /* Panels & Analytics Cards */
   .panel { display: none; }
-  .panel.active { display: block; animation: fade 0.22s ease-out; }
-  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .panel.active { display: block; animation: deckFade 0.18s ease-out; }
+  @keyframes deckFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
   .card {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px 26px;
+    border-radius: 8px;
+    padding: 22px 24px;
     margin-bottom: 20px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
   }
-  .card-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--paper); }
-  .card-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .card-title { font-size: 16px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.01em; }
+  .card-sub { font-size: 12.5px; color: var(--muted); line-height: 1.6; margin-bottom: 18px; }
 
-  /* Inputs & Forms */
+  /* Form Elements */
   label {
     display: block;
     font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.05em;
-    color: var(--primary-light);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    color: var(--muted);
     text-transform: uppercase;
-    margin-bottom: 7px;
+    margin-bottom: 6px;
     font-weight: 600;
   }
   input[type=text], input[type=number], input[type=date], textarea, select {
@@ -174,45 +221,41 @@
     background: var(--panel-input);
     border: 1px solid var(--border);
     color: var(--paper);
-    font-family: var(--font-display);
-    font-size: 14px;
-    padding: 12px 14px;
-    border-radius: 8px;
-    margin-bottom: 16px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 14px;
     outline: none;
-    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    transition: border-color 0.14s ease, box-shadow 0.14s ease;
   }
   input:focus, textarea:focus, select:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--accent-glow);
+    box-shadow: 0 0 0 2px var(--accent-glow);
   }
-  textarea { min-height: 120px; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; }
+  textarea { min-height: 110px; line-height: 1.55; }
   input::placeholder, textarea::placeholder { color: var(--subtle); }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
   /* Buttons */
   .btn {
     font-family: var(--font-mono);
     font-weight: 700;
-    font-size: 12.5px;
-    letter-spacing: 0.04em;
+    font-size: 11.5px;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    color: #030712;
-    border: none;
-    padding: 12px 22px;
-    border-radius: 8px;
+    background: var(--primary);
+    color: #FFFFFF;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 10px 18px;
+    border-radius: 6px;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(6, 182, 212, 0.28);
-    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    box-shadow: 0 2px 8px rgba(29, 99, 255, 0.35);
+    transition: all 0.14s ease;
   }
-  .btn:hover {
-    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.45);
-    transform: translateY(-1px);
-    filter: brightness(1.1);
-  }
+  .btn:hover { background: #2563EB; box-shadow: 0 4px 14px rgba(29, 99, 255, 0.5); transform: translateY(-1px); }
   .btn:active { transform: translateY(0); }
-  .btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
+  .btn:disabled { opacity: 0.45; cursor: wait; transform: none; }
   .btn.ghost {
     background: transparent;
     border: 1px solid var(--border);
@@ -221,331 +264,351 @@
   }
   .btn.ghost:hover {
     border-color: var(--primary);
-    background: rgba(6, 182, 212, 0.08);
-    box-shadow: 0 0 0 3px var(--accent-glow);
+    background: rgba(29, 99, 255, 0.08);
+    box-shadow: 0 0 0 2px var(--accent-glow);
   }
-  .btn.small { padding: 7px 14px; font-size: 11px; border-radius: 6px; }
+  .btn.small { padding: 6px 12px; font-size: 10.5px; border-radius: 4px; }
 
-  /* Dashboard */
-  .dash-hero {
-    background: linear-gradient(135deg, rgba(6, 182, 212, 0.12), rgba(56, 189, 248, 0.04)), var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 34px 32px;
-    margin-bottom: 24px;
-  }
-  .dash-hero-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
-  .dash-hero-title { font-weight: 800; font-size: 28px; line-height: 1.25; margin-bottom: 12px; color: #FFFFFF; }
-  .dash-hero-sub { font-size: 13.5px; color: var(--muted); line-height: 1.7; max-width: 780px; }
-
-  .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 22px; }
-  .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
-  .stat-num { font-size: 26px; font-weight: 800; color: #fff; }
-  .stat-lbl { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
-
-  .dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
-  .dash-card {
+  /* Analytics Grid & Metric Tiles */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 22px; }
+  .stat-tile {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 22px;
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+  .stat-tile-top { display: flex; justify-content: space-between; align-items: baseline; }
+  .stat-val { font-size: 24px; font-weight: 800; color: #FFFFFF; font-family: var(--font-mono); }
+  .stat-tag { font-family: var(--font-mono); font-size: 9.5px; padding: 2px 6px; border-radius: 3px; font-weight: 700; text-transform: uppercase; }
+  .stat-lbl { font-family: var(--font-mono); font-size: 9.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+
+  /* Dashboard Module Cards */
+  .dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .dash-tile {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
     cursor: pointer;
-    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    transition: all 0.16s ease;
     display: flex;
     flex-direction: column;
   }
-  .dash-card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 10px 24px rgba(0,0,0,0.4); }
-  .dash-card-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 10px;
-    background: rgba(6, 182, 212, 0.12);
+  .dash-tile:hover {
+    border-color: var(--primary);
+    background: var(--panel-subtle);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  }
+  .dash-tile-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    background: rgba(29, 99, 255, 0.12);
+    border: 1px solid rgba(29, 99, 255, 0.3);
     color: var(--primary-light);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
   }
-  .dash-card-icon svg { width: 22px; height: 22px; }
-  .dash-card-title { font-weight: 700; font-size: 17px; margin-bottom: 6px; }
-  .dash-card-desc { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 18px; flex: 1; }
-  .dash-card-cta { font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; color: var(--primary-light); text-transform: uppercase; }
+  .dash-tile-icon svg { width: 18px; height: 18px; }
+  .dash-tile-title { font-weight: 700; font-size: 15px; color: #FFFFFF; margin-bottom: 6px; }
+  .dash-tile-desc { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 16px; flex: 1; }
+  .dash-tile-link { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--primary-light); text-transform: uppercase; }
 
-  /* Summary Scorecards */
-  .report-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 20px 0 14px; }
+  /* Report Category Summary Cards */
+  .report-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 18px 0; }
   .report-summary-card {
     background: var(--panel-subtle);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 12px;
+    border-radius: 6px;
+    padding: 14px 12px;
     text-align: center;
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.16s ease;
   }
-  .report-summary-card:hover { border-color: var(--primary); transform: translateY(-2px); }
-  .report-summary-num { font-weight: 800; font-size: 22px; }
-  .report-summary-lbl { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
-  .report-summary-issues { font-family: var(--font-mono); font-size: 9.5px; color: var(--primary-light); margin-top: 6px; text-transform: uppercase; }
+  .report-summary-num { font-weight: 800; font-size: 20px; font-family: var(--font-mono); }
+  .report-summary-lbl { font-family: var(--font-mono); font-size: 9.5px; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
+  .report-summary-issues { font-family: var(--font-mono); font-size: 9px; color: var(--primary-light); margin-top: 4px; text-transform: uppercase; }
 
-  /* Gauges & Checks */
-  .gauge-wrap { display: flex; align-items: center; gap: 24px; margin-bottom: 12px; }
-  .gauge-score-label { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
-  .gauge-score-num { font-size: 38px; font-weight: 800; }
-  
-  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-subtle); margin-top: 10px; }
-  .checks-table { width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left; }
+  /* Health Gauge */
+  .gauge-wrap { display: flex; align-items: center; gap: 20px; margin-bottom: 12px; }
+  .gauge-score-label { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .gauge-score-num { font-size: 34px; font-weight: 800; font-family: var(--font-mono); }
+
+  /* Data Tables */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-input); margin-top: 10px; }
+  .checks-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
   .checks-table th {
     font-family: var(--font-mono);
-    font-size: 10.5px;
+    font-size: 10px;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     color: var(--muted);
-    padding: 12px 14px;
+    padding: 10px 14px;
     border-bottom: 1px solid var(--border);
-    background: rgba(255,255,255,0.02);
+    background: rgba(255, 255, 255, 0.02);
   }
-  .checks-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
-  .checks-table tr:hover td { background: rgba(255,255,255,0.03); }
-  .ck-label { font-weight: 600; color: #fff; }
-  .ck-detail { color: var(--muted); line-height: 1.5; }
+  .checks-table td { padding: 11px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.035); vertical-align: middle; }
+  .checks-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
+  .ck-label { font-weight: 600; color: #FFFFFF; font-family: var(--font-display); }
+  .ck-detail { color: var(--muted); line-height: 1.45; }
   .ck-action { text-align: right; }
 
-  .check-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 10px; vertical-align: middle; }
-  .dot-good { background: var(--green); box-shadow: 0 0 8px var(--green); }
-  .dot-warning { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
-  .dot-critical { background: var(--coral); box-shadow: 0 0 8px var(--coral); }
-  
-  .badge { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 6px; }
-  .badge-good { background: var(--green-bg); color: var(--green); }
-  .badge-warning { background: var(--amber-bg); color: var(--amber); }
-  .badge-critical { background: var(--coral-bg); color: var(--coral); }
+  .check-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; }
+  .dot-good { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot-warning { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .dot-critical { background: var(--coral); box-shadow: 0 0 6px var(--coral); }
+
+  .badge { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 3px; font-weight: 700; border: 1px solid transparent; }
+  .badge-good { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+  .badge-warning { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); }
+  .badge-critical { background: var(--coral-bg); color: var(--coral); border-color: var(--coral-border); }
 
   .fix-btn {
     font-family: var(--font-mono);
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
-    background: rgba(6, 182, 212, 0.14);
-    border: 1px solid var(--border);
+    background: rgba(29, 99, 255, 0.12);
+    border: 1px solid rgba(29, 99, 255, 0.35);
     color: var(--primary-light);
-    padding: 6px 12px;
-    border-radius: 12px;
+    padding: 5px 10px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.14s ease;
   }
-  .fix-btn:hover { background: var(--primary); color: #030712; border-color: transparent; }
-  .fix-row td { background: rgba(6, 182, 212, 0.04) !important; padding: 14px 18px !important; }
-  .fix-cell { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--paper); }
+  .fix-btn:hover { background: var(--primary); color: #FFFFFF; }
+  .fix-row td { background: rgba(29, 99, 255, 0.04) !important; padding: 12px 16px !important; }
+  .fix-cell { display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; color: var(--paper); }
 
-  /* Free SEO Tools Pills */
-  .util-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  /* Micro-Tool Navigation Pills */
+  .util-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
   .util-pill {
     font-family: var(--font-mono);
-    font-size: 11.5px;
-    background: var(--panel-subtle);
+    font-size: 11px;
+    background: var(--panel-input);
     border: 1px solid var(--border);
     color: var(--muted);
-    padding: 8px 14px;
-    border-radius: 20px;
+    padding: 6px 12px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 0.16s ease;
+    transition: all 0.14s ease;
   }
-  .util-pill:hover { color: #fff; border-color: var(--primary); }
+  .util-pill:hover { color: #FFFFFF; border-color: var(--primary); }
   .util-pill.active {
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    color: #030712;
+    background: var(--primary);
+    color: #FFFFFF;
     font-weight: 700;
-    border-color: transparent;
+    border-color: var(--primary);
   }
   .util-panel { display: none; }
-  .util-panel.active { display: block; animation: fade 0.2s ease; }
+  .util-panel.active { display: block; animation: deckFade 0.18s ease; }
 
   .code-output {
     background: var(--panel-input);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    margin-top: 14px;
+    border-radius: 6px;
+    padding: 14px;
+    margin-top: 12px;
     font-family: var(--font-mono);
-    font-size: 12.5px;
+    font-size: 12px;
     color: var(--primary-light);
     white-space: pre-wrap;
     word-break: break-word;
-    max-height: 340px;
+    max-height: 320px;
     overflow-y: auto;
   }
 
   .serp-preview {
     background: #FFFFFF;
-    border-radius: 8px;
-    padding: 16px 18px;
+    border-radius: 6px;
+    padding: 14px 16px;
     margin-top: 8px;
     max-width: 580px;
     font-family: arial, sans-serif;
   }
-  .serp-preview .serp-url { color: #202124; font-size: 13px; margin-bottom: 2px; }
-  .serp-preview .serp-title { color: #1a0dab; font-size: 18px; line-height: 1.3; margin-bottom: 4px; }
-  .serp-preview .serp-desc { color: #4d5156; font-size: 13.5px; line-height: 1.5; }
+  .serp-preview .serp-url { color: #202124; font-size: 12px; margin-bottom: 2px; }
+  .serp-preview .serp-title { color: #1a0dab; font-size: 17px; line-height: 1.3; margin-bottom: 4px; }
+  .serp-preview .serp-desc { color: #4d5156; font-size: 13px; line-height: 1.45; }
 
-  .chat-bubble { max-width: 84%; padding: 12px 16px; border-radius: 10px; font-size: 14px; line-height: 1.6; }
-  .chat-bubble.user { align-self: flex-end; background: var(--primary); color: #030712; font-weight: 600; border-bottom-right-radius: 2px; }
-  .chat-bubble.assistant { align-self: flex-start; background: var(--panel-subtle); border: 1px solid var(--border); color: var(--paper); border-bottom-left-radius: 2px; }
+  .chat-bubble { max-width: 82%; padding: 10px 14px; border-radius: 6px; font-size: 13px; line-height: 1.55; }
+  .chat-bubble.user { align-self: flex-end; background: var(--primary); color: #FFFFFF; font-weight: 600; }
+  .chat-bubble.assistant { align-self: flex-start; background: var(--panel-subtle); border: 1px solid var(--border); color: var(--paper); }
 
-  .loading { font-family: var(--font-mono); font-size: 12.5px; color: var(--accent); }
-  .empty { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); padding: 24px 0; text-align: center; border: 1px dashed var(--border); border-radius: 8px; }
+  .loading { font-family: var(--font-mono); font-size: 11.5px; color: var(--accent); }
+  .empty { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); padding: 20px 0; text-align: center; border: 1px dashed var(--border); border-radius: 6px; }
 
-  @media(max-width: 900px) {
-    .app-shell { flex-direction: column; }
-    .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; align-items: center; padding: 14px; gap: 12px; }
-    .sidebar-brand { margin-bottom: 0; }
-    .sidebar-tagline, .sidebar-foot, .sidebar-nav .nav-index { display: none; }
-    .sidebar-nav { flex-direction: row; overflow-x: auto; gap: 6px; }
-    .sidebar-nav .nav-btn { flex: none; white-space: nowrap; padding: 8px 12px; }
-    .page-header { padding: 20px 20px 0; }
-    .wrap { padding: 0 20px 60px; }
+  @media(max-width: 960px) {
+    .deck-shell { flex-direction: column; }
+    .deck-rail { width: 100%; height: auto; position: relative; flex-direction: row; align-items: center; padding: 10px; gap: 8px; }
+    .rail-brand { border-bottom: none; padding: 0 8px; }
+    .rail-section-lbl, .rail-foot, .rail-btn .idx { display: none; }
+    .rail-nav { flex-direction: row; overflow-x: auto; gap: 4px; padding: 0; }
+    .rail-btn { flex: none; white-space: nowrap; padding: 6px 10px; }
+    .deck-topbar { padding: 0 16px; font-size: 10px; }
+    .deck-content { padding: 20px 16px 60px; }
     .row { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
-<div class="app-shell">
+<div class="deck-shell">
 
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <div class="sidebar-logo">S</div>
-      <div class="sidebar-title">SIGNAL<br><span>SEO Field Kit</span></div>
+  <!-- ================= LEFT RAIL ================= -->
+  <aside class="deck-rail">
+    <div class="rail-brand">
+      <div class="rail-badge">S</div>
+      <div>
+        <div class="rail-title">SIGNAL</div>
+        <div class="rail-edition">COMMAND DECK // v2.6</div>
+      </div>
     </div>
-    <div class="sidebar-tagline">Autonomous SEO Instrument</div>
 
-    <nav class="sidebar-nav">
-      <button class="nav-btn active" data-tab="dashboard">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.3"/><rect x="13" y="4" width="7" height="7" rx="1.3"/><rect x="4" y="13" width="7" height="7" rx="1.3"/><rect x="13" y="13" width="7" height="7" rx="1.3"/></svg>
-        <span>Dashboard</span><span class="nav-index">00</span>
+    <div class="rail-section-lbl">Core Instruments</div>
+    <nav class="rail-nav">
+      <button class="rail-btn active" data-tab="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1.3"/><rect x="13" y="4" width="7" height="7" rx="1.3"/><rect x="4" y="13" width="7" height="7" rx="1.3"/><rect x="13" y="13" width="7" height="7" rx="1.3"/></svg>
+        <span>Deck Overview</span><span class="idx">00</span>
       </button>
-      <button class="nav-btn" data-tab="audit">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3.5h6a1 1 0 011 1V6H8V4.5a1 1 0 011-1z"/><path d="M8.5 12.5l2 2 4-4.5"/></svg>
-        <span>Site Audit</span><span class="nav-index">01</span>
+      <button class="rail-btn" data-tab="audit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M8.5 12.5l2 2 4-4.5"/></svg>
+        <span>Site Audit 360°</span><span class="idx">01</span>
       </button>
-      <button class="nav-btn" data-tab="keywords">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>
-        <span>Keyword Research</span><span class="nav-index">02</span>
+      <button class="rail-btn" data-tab="keywords">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>
+        <span>Keyword Explorer</span><span class="idx">02</span>
       </button>
-      <button class="nav-btn" data-tab="aeo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4V5z"/><path d="M9.6 9.3a2.4 2.4 0 114.1 1.7c-1 .6-1.6 1.1-1.6 2.3"/><circle cx="12" cy="15.6" r="0.5" fill="currentColor" stroke="none"/></svg>
-        <span>AEO</span><span class="nav-index">03</span>
+      <button class="rail-btn" data-tab="aeo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H8l-4 4V5z"/><circle cx="12" cy="14" r="1" fill="currentColor"/></svg>
+        <span>AEO Answer Engine</span><span class="idx">03</span>
       </button>
-      <button class="nav-btn" data-tab="geo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.6 2.6 2.6 14.4 0 17M12 3.5c-2.6 2.6-2.6 14.4 0 17"/></svg>
-        <span>GEO</span><span class="nav-index">04</span>
+      <button class="rail-btn" data-tab="geo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.6 2.6 2.6 14.4 0 17"/></svg>
+        <span>GEO AI Citation</span><span class="idx">04</span>
       </button>
-      <button class="nav-btn" data-tab="competitors">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4l6 2.5L5 9"/><path d="M19 21v-9.5M19 11.5l-6-2.5 6-2.5"/></svg>
-        <span>Competitors</span><span class="nav-index">05</span>
+      <button class="rail-btn" data-tab="competitors">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V4M5 4l6 2.5L5 9"/><path d="M19 21v-9.5M19 11.5l-6-2.5 6-2.5"/></svg>
+        <span>Market Competitors</span><span class="idx">05</span>
       </button>
-      <button class="nav-btn" data-tab="ranklog">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M6 15l4-5 3 3 6-8"/><path d="M15.5 5h3.5v3.5"/></svg>
-        <span>Rank Log</span><span class="nav-index">06</span>
+      <button class="rail-btn" data-tab="ranklog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19h16"/><path d="M6 15l4-5 3 3 6-8"/></svg>
+        <span>Rank Tracker</span><span class="idx">06</span>
       </button>
-      <button class="nav-btn" data-tab="blog">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3h8l4 4v14h-12z"/><path d="M14.5 3v4.5H19"/><path d="M9 13h6M9 16.5h6"/></svg>
-        <span>Blog Writer</span><span class="nav-index">07</span>
+      <button class="rail-btn" data-tab="blog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 3h8l4 4v14h-12z"/><path d="M9 13h6M9 16.5h6"/></svg>
+        <span>AI Blog Writer</span><span class="idx">07</span>
       </button>
-      <button class="nav-btn" data-tab="strategist">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11a7 7 0 0114 0v3.5a2 2 0 01-2 2h-.5v-6H18v0a6 6 0 00-12 0v0H5v6h-.5a2 2 0 01-2-2V11z"/><path d="M9 18v.5A2.5 2.5 0 0011.5 21H13"/></svg>
-        <span>Strategist</span><span class="nav-index">08</span>
+      <button class="rail-btn" data-tab="strategist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 11a7 7 0 0114 0v3.5"/><path d="M9 18v.5A2.5 2.5 0 0011.5 21H13"/></svg>
+        <span>AI Strategist</span><span class="idx">08</span>
       </button>
-      <button class="nav-btn" data-tab="utilities">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5a4.5 4.5 0 00-5.6 5.6L3 15v4a2 2 0 002 2h4l5.9-5.9a4.5 4.5 0 005.6-5.6l-3 3-2.7-.8-.8-2.7z"/></svg>
-        <span>Free SEO Tools</span><span class="nav-index">09</span>
+      <button class="rail-btn" data-tab="utilities">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 3.5a4.5 4.5 0 00-5.6 5.6L3 15v4a2 2 0 002 2h4l5.9-5.9"/></svg>
+        <span>Free SEO Tools</span><span class="idx">09</span>
       </button>
     </nav>
 
-    <div class="sidebar-foot">
-      Signal executes real-time scans, directional search models, and Groq-accelerated AI analysis.
+    <div class="rail-foot">
+      <span>ENGINE // STABLE</span>
+      <div class="status-ping"><span class="ping-dot"></span> LIVE</div>
     </div>
   </aside>
 
-  <main class="main">
-    <div class="page-header">
-      <div class="page-eyebrow" id="pageEyebrow">00 · DASHBOARD</div>
-      <h2 class="page-title" id="pageTitle">Dashboard Overview</h2>
+  <!-- ================= DECK WORKSPACE ================= -->
+  <div class="deck-main">
+    <div class="deck-topbar">
+      <div class="topbar-telemetry">
+        <div class="tele-item"><span class="tele-label">SYSTEM:</span><span class="tele-val highlight">ONLINE</span></div>
+        <div class="tele-item"><span class="tele-label">MODEL:</span><span class="tele-val">openai/gpt-oss-20b</span></div>
+      </div>
+      <div class="topbar-telemetry">
+        <div class="tele-item"><span class="tele-label">LATENCY:</span><span class="tele-val highlight">&lt; 280ms</span></div>
+      </div>
     </div>
 
-    <div class="wrap">
+    <main class="deck-content">
+      <div class="deck-header">
+        <div class="deck-eyebrow" id="pageEyebrow">00 · DECK OVERVIEW</div>
+        <h1 class="deck-title" id="pageTitle">Dashboard Overview</h1>
+      </div>
 
-      <!-- ===================== DASHBOARD ===================== -->
+      <!-- 00. DASHBOARD -->
       <div class="panel active" id="panel-dashboard">
-        <div class="dash-hero">
-          <div class="dash-hero-eyebrow">// Complete Growth &amp; Audit Console</div>
-          <h1 class="dash-hero-title">High-performance search intelligence in one field kit.</h1>
-          <p class="dash-hero-sub">Complete on-page, off-page, and technical SEO audits, keyword discovery, AEO (Answer Engine) optimization, GEO (Generative AI) citation audits, competitor intelligence, and automated content.</p>
-        </div>
+        <div class="stat-grid" id="dashStats"></div>
 
-        <div class="stat-strip" id="dashStats"></div>
-
-        <div class="dash-grid">
-          <div class="dash-card" data-goto="audit">
-            <div class="dash-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M8.5 12.5l2 2 4-4.5"/></svg></div>
-            <div class="dash-card-title">Site Audit</div>
-            <div class="dash-card-desc">Deep live scan of On-Page, Technical, Performance, Mobile, and Off-Page signals. Instant PDF export.</div>
-            <div class="dash-card-cta">Run Audit →</div>
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Active Field Kit Modules</div>
+            <span class="badge badge-good">10 Engines Active</span>
           </div>
-          <div class="dash-card" data-goto="keywords">
-            <div class="dash-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg></div>
-            <div class="dash-card-title">Keyword Research</div>
-            <div class="dash-card-desc">Niche discovery, intent clustering, demand tiering, and estimated KD difficulty metrics.</div>
-            <div class="dash-card-cta">Discover Keywords →</div>
-          </div>
-          <div class="dash-card" data-goto="aeo">
-            <div class="dash-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H8l-4 4V5z"/></svg></div>
-            <div class="dash-card-title">AEO Optimizer</div>
-            <div class="dash-card-desc">Featured snippets, People Also Ask (PAA), and voice search schema readiness.</div>
-            <div class="dash-card-cta">Inspect AEO →</div>
-          </div>
-          <div class="dash-card" data-goto="geo">
-            <div class="dash-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/></svg></div>
-            <div class="dash-card-title">GEO Calibration</div>
-            <div class="dash-card-desc">Optimize for generative engines (ChatGPT, Perplexity, Gemini, Claude) and citation signals.</div>
-            <div class="dash-card-cta">Inspect GEO →</div>
-          </div>
-          <div class="dash-card" data-goto="competitors">
-            <div class="dash-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V4M5 4l6 2.5L5 9"/></svg></div>
-            <div class="dash-card-title">Competitors</div>
-            <div class="dash-card-desc">Auto-detect market rivals, compare authority, and reveal exploitable keyword gaps.</div>
-            <div class="dash-card-cta">Analyze Gaps →</div>
-          </div>
-          <div class="dash-card" data-goto="ranklog">
-            <div class="dash-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19h16"/><path d="M6 15l4-5 3 3 6-8"/></svg></div>
-            <div class="dash-card-title">Rank Log</div>
-            <div class="dash-card-desc">Track SERP fluctuations over time with keyword position estimations.</div>
-            <div class="dash-card-cta">View Ranks →</div>
-          </div>
-          <div class="dash-card" data-goto="blog">
-            <div class="dash-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 3h8l4 4v14h-12z"/></svg></div>
-            <div class="dash-card-title">Blog Writer</div>
-            <div class="dash-card-desc">Original, high-retention long-form content generated with natural keyword densities.</div>
-            <div class="dash-card-cta">Write Article →</div>
-          </div>
-          <div class="dash-card" data-goto="strategist">
-            <div class="dash-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 11a7 7 0 0114 0v3.5"/></svg></div>
-            <div class="dash-card-title">AI Strategist</div>
-            <div class="dash-card-desc">Interactive strategic consultation grounded directly on your saved project state.</div>
-            <div class="dash-card-cta">Consult AI →</div>
-          </div>
-          <div class="dash-card" data-goto="utilities">
-            <div class="dash-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 3.5a4.5 4.5 0 00-5.6 5.6L3 15v4a2 2 0 002 2h4l5.9-5.9"/></svg></div>
-            <div class="dash-card-title">Free SEO Tools</div>
-            <div class="dash-card-desc">12 instant in-browser micro-utilities: schema, meta checkers, robots, slugs, and tags.</div>
-            <div class="dash-card-cta">Open Utilities →</div>
+          <div class="card-sub">Launch targeted audits, simulate generative rankings, or build ranking assets directly from the command matrix.</div>
+          
+          <div class="dash-grid">
+            <div class="dash-tile" data-goto="audit">
+              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M8.5 12.5l2 2 4-4.5"/></svg></div>
+              <div class="dash-tile-title">Site Audit 360°</div>
+              <div class="dash-tile-desc">Deep scan of On-Page, Technical, Performance, Mobile, and Off-Page signals with PDF generation.</div>
+              <div class="dash-tile-link">Execute Audit →</div>
+            </div>
+            <div class="dash-tile" data-goto="keywords">
+              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg></div>
+              <div class="dash-tile-title">Keyword Explorer</div>
+              <div class="dash-tile-desc">Niche discovery, intent clustering, demand tiering, and estimated KD difficulty metrics.</div>
+              <div class="dash-tile-link">Explore Terms →</div>
+            </div>
+            <div class="dash-tile" data-goto="aeo">
+              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H8l-4 4V5z"/><circle cx="12" cy="14" r="1" fill="currentColor"/></svg></div>
+              <div class="dash-tile-title">AEO Optimization</div>
+              <div class="dash-tile-desc">Featured snippets, People Also Ask (PAA), and voice search schema readiness.</div>
+              <div class="dash-tile-link">Inspect Snippets →</div>
+            </div>
+            <div class="dash-tile" data-goto="geo">
+              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/></svg></div>
+              <div class="dash-tile-title">GEO AI Visibility</div>
+              <div class="dash-tile-desc">Calibrate content citations across ChatGPT Search, Perplexity, Gemini, and Claude.</div>
+              <div class="dash-tile-link">Inspect GEO →</div>
+            </div>
+            <div class="dash-tile" data-goto="competitors">
+              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V4M5 4l6 2.5L5 9"/></svg></div>
+              <div class="dash-tile-title">Competitors</div>
+              <div class="dash-tile-desc">Auto-detect market rivals, compare authority, and reveal exploitable keyword gaps.</div>
+              <div class="dash-tile-link">Analyze Gaps →</div>
+            </div>
+            <div class="dash-tile" data-goto="ranklog">
+              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19h16"/><path d="M6 15l4-5 3 3 6-8"/></svg></div>
+              <div class="dash-tile-title">Rank Tracker</div>
+              <div class="dash-tile-desc">Track SERP fluctuations over time with keyword position estimations.</div>
+              <div class="dash-tile-link">View Rankings →</div>
+            </div>
+            <div class="dash-tile" data-goto="blog">
+              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 3h8l4 4v14h-12z"/></svg></div>
+              <div class="dash-tile-title">Blog Writer</div>
+              <div class="dash-tile-desc">Generate structured articles engineered around natural keyword frequencies and H2/H3 layouts.</div>
+              <div class="dash-tile-link">Draft Article →</div>
+            </div>
+            <div class="dash-tile" data-goto="strategist">
+              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 11a7 7 0 0114 0v3.5"/></svg></div>
+              <div class="dash-tile-title">AI Strategist</div>
+              <div class="dash-tile-desc">Interactive strategic consultation grounded directly on your saved project state.</div>
+              <div class="dash-tile-link">Consult AI →</div>
+            </div>
+            <div class="dash-tile" data-goto="utilities">
+              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 3.5a4.5 4.5 0 00-5.6 5.6L3 15v4a2 2 0 002 2h4l5.9-5.9"/></svg></div>
+              <div class="dash-tile-title">Free SEO Tools</div>
+              <div class="dash-tile-desc">12 instant in-browser micro-utilities: schema, meta checkers, robots, slugs, and tags.</div>
+              <div class="dash-tile-link">Open Utilities →</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- ===================== AUDIT ===================== -->
+      <!-- 01. SITE AUDIT -->
       <div class="panel" id="panel-audit">
         <div class="card">
-          <div class="card-title">Complete 360° Site Audit</div>
+          <div class="card-head">
+            <div class="card-title">Live 360° Site Audit Engine</div>
+            <span class="badge badge-good">Real-Time DOM Scan</span>
+          </div>
           <div class="card-sub">Audits technical tags, on-page content, security, headings, image alt attributes, and off-page footprint. Simply enter the URL — Signal automatically fetches and analyzes live site code.</div>
           <div class="row">
             <div>
@@ -564,9 +627,12 @@
         </div>
 
         <div class="card" id="auditResultCard" style="display:none;">
-          <div class="card-title">Audit Results</div>
+          <div class="card-head">
+            <div class="card-title">Audit Diagnostic Telemetry</div>
+            <button class="btn ghost small" id="downloadAuditPdfBtn">Export Full PDF</button>
+          </div>
           <div class="gauge-wrap">
-            <svg width="120" height="120" viewBox="0 0 120 120" id="gaugeSvg"></svg>
+            <svg width="110" height="110" viewBox="0 0 120 120" id="gaugeSvg"></svg>
             <div>
               <div class="gauge-score-label">Overall Health Score</div>
               <div class="gauge-score-num" id="gaugeNum">—</div>
@@ -574,9 +640,6 @@
           </div>
           <div id="auditSummaryGrid" class="report-summary-grid"></div>
           <div id="checksList"></div>
-          <div style="margin-top:20px;">
-            <button class="btn ghost small" id="downloadAuditPdfBtn">Export Comprehensive PDF Report</button>
-          </div>
         </div>
 
         <div class="card">
@@ -585,10 +648,13 @@
         </div>
       </div>
 
-      <!-- ===================== KEYWORDS ===================== -->
+      <!-- 02. KEYWORDS -->
       <div class="panel" id="panel-keywords">
         <div class="card">
-          <div class="card-title">Keyword Discovery &amp; Intent Analysis</div>
+          <div class="card-head">
+            <div class="card-title">Niche Keyword Discovery</div>
+            <span class="badge badge-good">Intent Clustered</span>
+          </div>
           <div class="card-sub">Generate relevant keywords tailored to your exact industry niche with difficulty scores and intent categorization.</div>
           <div class="row">
             <div>
@@ -610,16 +676,22 @@
         </div>
 
         <div class="card">
-          <div class="card-title">Saved Keywords <span id="kwListCount" class="badge badge-good">0</span></div>
+          <div class="card-head">
+            <div class="card-title">Saved Keywords Target Matrix</div>
+            <span id="kwListCount" class="badge badge-good">0</span>
+          </div>
           <div class="card-sub">Keywords stored here are instantly accessible across the Blog Writer and Rank Tracker.</div>
           <div id="myKeywordList"><div class="empty">No saved terms yet.</div></div>
         </div>
       </div>
 
-      <!-- ===================== AEO ===================== -->
+      <!-- 03. AEO -->
       <div class="panel" id="panel-aeo">
         <div class="card">
-          <div class="card-title">Answer Engine Optimization (AEO) Audit</div>
+          <div class="card-head">
+            <div class="card-title">Answer Engine Optimization (AEO)</div>
+            <span class="badge badge-good">Snippet &amp; Voice Search</span>
+          </div>
           <div class="card-sub">Evaluate readiness for featured snippets, voice search answers (Google Assistant/Siri), and People Also Ask (PAA) boxes.</div>
           <div class="row">
             <div>
@@ -638,7 +710,7 @@
         <div class="card" id="aeoResultCard" style="display:none;">
           <div class="card-title">AEO Evaluation Report</div>
           <div class="gauge-wrap">
-            <svg width="120" height="120" viewBox="0 0 120 120" id="aeoGaugeSvg"></svg>
+            <svg width="110" height="110" viewBox="0 0 120 120" id="aeoGaugeSvg"></svg>
             <div>
               <div class="gauge-score-label">Answer Engine Index</div>
               <div class="gauge-score-num" id="aeoGaugeNum">—</div>
@@ -648,15 +720,18 @@
         </div>
 
         <div class="card">
-          <div class="card-title">Historical Trends</div>
+          <div class="card-title">AEO Scan Logs</div>
           <div id="aeoHistoryList"><div class="empty">No AEO logs recorded.</div></div>
         </div>
       </div>
 
-      <!-- ===================== GEO ===================== -->
+      <!-- 04. GEO -->
       <div class="panel" id="panel-geo">
         <div class="card">
-          <div class="card-title">Generative Engine Optimization (GEO) Audit</div>
+          <div class="card-head">
+            <div class="card-title">Generative Engine Optimization (GEO)</div>
+            <span class="badge badge-good">AI Search Citation</span>
+          </div>
           <div class="card-sub">Analyze how likely generative AI search engines (ChatGPT Search, Perplexity, Google AI Overviews, Claude) are to cite and recommend your site.</div>
           <div class="row">
             <div>
@@ -675,7 +750,7 @@
         <div class="card" id="geoResultCard" style="display:none;">
           <div class="card-title">GEO AI Visibility Report</div>
           <div class="gauge-wrap">
-            <svg width="120" height="120" viewBox="0 0 120 120" id="geoGaugeSvg"></svg>
+            <svg width="110" height="110" viewBox="0 0 120 120" id="geoGaugeSvg"></svg>
             <div>
               <div class="gauge-score-label">Citation Propensity</div>
               <div class="gauge-score-num" id="geoGaugeNum">—</div>
@@ -685,15 +760,18 @@
         </div>
 
         <div class="card">
-          <div class="card-title">GEO History</div>
+          <div class="card-title">GEO Log Archive</div>
           <div id="geoHistoryList"><div class="empty">No GEO scans recorded.</div></div>
         </div>
       </div>
 
-      <!-- ===================== COMPETITORS ===================== -->
+      <!-- 05. COMPETITORS -->
       <div class="panel" id="panel-competitors">
         <div class="card">
-          <div class="card-title">Competitive Gap Intelligence</div>
+          <div class="card-head">
+            <div class="card-title">Market Rivals &amp; Gap Intelligence</div>
+            <span class="badge badge-good">Authority Benchmarking</span>
+          </div>
           <div class="card-sub">Automatically detect key market rivals, benchmark authority indicators, and inspect actionable gap closures.</div>
           <div class="row">
             <div>
@@ -717,11 +795,13 @@
         </div>
       </div>
 
-      <!-- ===================== RANK LOG ===================== -->
+      <!-- 06. RANK TRACKER -->
       <div class="panel" id="panel-ranklog">
         <div class="card">
-          <div class="stat-strip" id="rankStats"></div>
-          <div class="card-title">SERP Position Estimator</div>
+          <div class="card-head">
+            <div class="card-title">SERP Position Estimator</div>
+            <span class="badge badge-good">Directional Search</span>
+          </div>
           <div class="card-sub">Check live search rankings across your targeted keywords. Directional results based on real-time search queries.</div>
           <div class="row">
             <div>
@@ -738,16 +818,16 @@
         </div>
 
         <div class="card">
-          <div class="card-title">Tracked Rankings</div>
+          <div class="card-title">Ranked Keyword Matrix</div>
           <div id="rankLogTable"><div class="empty">No rankings active.</div></div>
         </div>
 
         <div class="card">
           <details>
-            <summary style="cursor:pointer;font-family:var(--font-mono);font-size:11.5px;color:var(--primary-light);text-transform:uppercase;">
+            <summary style="cursor:pointer;font-family:var(--font-mono);font-size:11px;color:var(--primary-light);text-transform:uppercase;font-weight:700;">
               + Log Verified Position Manually
             </summary>
-            <div style="margin-top:16px;">
+            <div style="margin-top:14px;">
               <div class="row">
                 <div>
                   <label>Keyword</label>
@@ -776,10 +856,13 @@
         </div>
       </div>
 
-      <!-- ===================== BLOG WRITER ===================== -->
+      <!-- 07. BLOG WRITER -->
       <div class="panel" id="panel-blog">
         <div class="card">
-          <div class="card-title">AI Long-Form Blog Generator</div>
+          <div class="card-head">
+            <div class="card-title">AI Long-Form SEO Blog Generator</div>
+            <span class="badge badge-good">Semantic Structure</span>
+          </div>
           <div class="card-sub">Generate original, structured articles engineered around natural keyword frequencies and H2/H3 semantic layouts.</div>
           <label>Article Topic / Title</label>
           <input type="text" id="blogTopic" placeholder="e.g. Why NFC Business Cards are Replacing Paper in 2026">
@@ -819,42 +902,42 @@
 
         <div class="card" id="blogResultCard" style="display:none;">
           <div class="card-title">Generated Article</div>
-          <div id="densityFlags" style="margin-bottom:14px;"></div>
           <div class="code-output" id="blogOutput" style="max-height:500px;font-family:var(--font-display);color:var(--paper);line-height:1.7;"></div>
           <div style="display:flex;gap:10px;margin-top:16px;">
             <button class="btn ghost small" id="copyBlogBtn">Copy Content</button>
             <button class="btn ghost small" id="downloadBlogBtn">Export Markdown (.md)</button>
           </div>
         </div>
-
-        <div class="card">
-          <div class="card-title">Draft History</div>
-          <div id="blogHistoryList"><div class="empty">No generated articles on file.</div></div>
-        </div>
       </div>
 
-      <!-- ===================== STRATEGIST ===================== -->
+      <!-- 08. STRATEGIST -->
       <div class="panel" id="panel-strategist">
         <div class="card">
-          <div class="card-title">Signal AI Strategist</div>
+          <div class="card-head">
+            <div class="card-title">Signal AI Senior Strategist</div>
+            <span class="badge badge-good">Project Grounded</span>
+          </div>
           <div class="card-sub">Inquire about web ranking, App Store Optimization (ASO), or crawl optimization. Grounded in your tool state.</div>
           <div id="chatMessages" style="display:flex;flex-direction:column;gap:12px;max-height:460px;overflow-y:auto;margin-bottom:16px;padding-right:4px;"></div>
-          <div class="row" style="grid-template-columns:1fr auto;align-items:end;gap:12px;">
+          <div class="row" style="grid-template-columns:1fr auto;align-items:end;gap:10px;">
             <div style="margin-bottom:0;">
-              <label>Consultation Query</label>
-              <textarea id="chatInput" style="min-height:55px;margin-bottom:0;" placeholder="e.g. What on-page changes will increase my ranking for digital business cards?"></textarea>
+              <label>Strategic Prompt</label>
+              <textarea id="chatInput" style="min-height:50px;margin-bottom:0;" placeholder="e.g. What on-page changes will increase my ranking for digital business cards?"></textarea>
             </div>
-            <button class="btn" id="sendChatBtn" style="margin-bottom:0;height:45px;">Ask</button>
+            <button class="btn" id="sendChatBtn" style="margin-bottom:0;height:42px;">Ask Advisor</button>
           </div>
           <div id="chatLoading" style="display:none;margin-top:12px;" class="loading">Formulating strategic response...</div>
         </div>
       </div>
 
-      <!-- ===================== FREE SEO TOOLS ===================== -->
+      <!-- 09. FREE SEO TOOLS -->
       <div class="panel" id="panel-utilities">
         <div class="card">
-          <div class="card-title">Browser SEO Utilities</div>
-          <div class="card-sub">Instant zero-latency utilities running locally in your browser.</div>
+          <div class="card-head">
+            <div class="card-title">Browser SEO Diagnostic Utilities</div>
+            <span class="badge badge-good">Zero Latency</span>
+          </div>
+          <div class="card-sub">Instant in-browser micro-utilities running completely client-side without external dependencies.</div>
           <div class="util-pills" id="utilPills">
             <button class="util-pill active" data-util="scorechecker">Score Checker</button>
             <button class="util-pill" data-util="title">Title Preview</button>
@@ -949,7 +1032,7 @@
             <textarea id="robotsDisallow" placeholder="/admin/&#10;/cart/" oninput="generateRobots()"></textarea>
             <button class="btn" onclick="generateRobots()">Generate File</button>
             <pre class="code-output" id="robotsOutput"></pre>
-            <div style="display:flex;gap:10px;margin-top:10px;" id="robotsToolbar">
+            <div style="display:flex;gap:10px;margin-top:10px;">
               <button class="btn ghost small" onclick="copyText('robotsOutput', this)">Copy</button>
               <button class="btn ghost small" onclick="downloadText('robotsOutput','robots.txt')">Download</button>
             </div>
@@ -964,7 +1047,7 @@
             <button class="btn" onclick="checkSitemapUrl()">Inspect Remote Sitemap</button>
             <div id="sitemapFetchStatus" style="margin-top:10px;"></div>
             <details style="margin-top:16px;" id="sitemapPasteDetails">
-              <summary style="cursor:pointer;font-family:var(--font-mono);font-size:11.5px;color:var(--primary-light);text-transform:uppercase;">
+              <summary style="cursor:pointer;font-family:var(--font-mono);font-size:11px;color:var(--primary-light);text-transform:uppercase;font-weight:700;">
                 Or Paste XML Content Directly
               </summary>
               <div style="margin-top:12px;">
@@ -990,7 +1073,7 @@
             <div id="schemaFields"></div>
             <button class="btn" onclick="generateSchema()" style="margin-top:12px;">Generate JSON-LD</button>
             <pre class="code-output" id="schemaOutput"></pre>
-            <div style="display:flex;gap:10px;margin-top:10px;" id="schemaToolbar">
+            <div style="display:flex;gap:10px;margin-top:10px;">
               <button class="btn ghost small" onclick="copyText('schemaOutput', this)">Copy</button>
               <button class="btn ghost small" onclick="downloadText('schemaOutput','schema.json')">Download</button>
             </div>
@@ -1003,7 +1086,7 @@
             <label>Canonical URL</label>
             <input type="text" id="canonicalUrl" placeholder="https://example.com/page" oninput="generateCanonical()">
             <pre class="code-output" id="canonicalOutput"></pre>
-            <div style="margin-top:10px;" id="canonicalToolbar">
+            <div style="margin-top:10px;">
               <button class="btn ghost small" onclick="copyText('canonicalOutput', this)">Copy</button>
             </div>
           </div>
@@ -1031,7 +1114,7 @@
             </div>
             <div class="serp-preview" id="ogPreviewCard" style="margin-top:12px;"></div>
             <pre class="code-output" id="ogOutput"></pre>
-            <div style="margin-top:10px;" id="ogToolbar">
+            <div style="margin-top:10px;">
               <button class="btn ghost small" onclick="copyText('ogOutput', this)">Copy</button>
             </div>
           </div>
@@ -1043,15 +1126,15 @@
             <label>Source String</label>
             <input type="text" id="slugInput" placeholder="e.g. 10 Tips for High Performance Digital Cards" oninput="generateSlug()">
             <pre class="code-output" id="slugOutput"></pre>
-            <div style="margin-top:10px;" id="slugToolbar">
+            <div style="margin-top:10px;">
               <button class="btn ghost small" onclick="copyText('slugOutput', this)">Copy</button>
             </div>
           </div>
         </div>
 
       </div>
-    </div>
-  </main>
+    </main>
+  </div>
 </div>
 
 <script>
@@ -1078,21 +1161,21 @@ function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;'); }
 function countWords(t){ return (t.trim().match(/\S+/g)||[]).length; }
 
 const TAB_META = {
-  dashboard:   {num:'00', title:'Dashboard Overview'},
-  audit:       {num:'01', title:'Site Audit'},
-  keywords:    {num:'02', title:'Keyword Research'},
-  aeo:         {num:'03', title:'AEO Optimization'},
-  geo:         {num:'04', title:'GEO Optimization'},
-  competitors: {num:'05', title:'Competitor Gaps'},
-  ranklog:     {num:'06', title:'Rank Log Tracker'},
-  blog:        {num:'07', title:'AI Blog Writer'},
-  strategist:  {num:'08', title:'Strategic Advisor'},
-  utilities:   {num:'09', title:'SEO Utilities'}
+  dashboard:   {num:'00', title:'Command Deck Overview'},
+  audit:       {num:'01', title:'Site Audit 360°'},
+  keywords:    {num:'02', title:'Keyword Explorer'},
+  aeo:         {num:'03', title:'AEO Answer Engine Calibration'},
+  geo:         {num:'04', title:'GEO AI Citation Visibility'},
+  competitors: {num:'05', title:'Competitor Market Gaps'},
+  ranklog:     {num:'06', title:'SERP Rank Tracker'},
+  blog:        {num:'07', title:'AI SEO Blog Generator'},
+  strategist:  {num:'08', title:'Senior Search Strategist'},
+  utilities:   {num:'09', title:'Free SEO Utilities'}
 };
 
 function switchTab(tab){
   if(!document.getElementById('panel-'+tab)) return;
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.rail-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+tab).classList.add('active');
   const meta = TAB_META[tab];
@@ -1100,22 +1183,37 @@ function switchTab(tab){
     document.getElementById('pageEyebrow').textContent = meta.num + ' · ' + meta.title.toUpperCase();
     document.getElementById('pageTitle').textContent = meta.title;
   }
-  document.querySelector('.main').scrollTo({top:0, behavior:'auto'});
+  document.querySelector('.deck-main').scrollTo({top:0, behavior:'auto'});
   window.scrollTo(0,0);
 }
 
-document.querySelectorAll('.nav-btn').forEach(btn=>{ btn.addEventListener('click', ()=> switchTab(btn.dataset.tab)); });
-document.querySelectorAll('.dash-card').forEach(card=>{ card.addEventListener('click', ()=> switchTab(card.dataset.goto)); });
+document.querySelectorAll('.rail-btn').forEach(btn=>{ btn.addEventListener('click', ()=> switchTab(btn.dataset.tab)); });
+document.querySelectorAll('.dash-tile').forEach(card=>{ card.addEventListener('click', ()=> switchTab(card.dataset.goto)); });
 
 function renderDashStats(){
   const el = document.getElementById('dashStats');
   if(!el) return;
   const avgAuditScore = state.audits.length ? Math.round(state.audits.reduce((s,a)=>s+a.score,0)/state.audits.length) : null;
   el.innerHTML = `
-    <div class="stat"><div class="stat-num">${state.audits.length}</div><div class="stat-lbl">Audits Executed</div></div>
-    <div class="stat"><div class="stat-num" style="${avgAuditScore!==null?'color:'+gaugeColor(avgAuditScore)+';':''}">${avgAuditScore!==null?avgAuditScore:'—'}</div><div class="stat-lbl">Mean Audit Score</div></div>
-    <div class="stat"><div class="stat-num">${state.keywords.length}</div><div class="stat-lbl">Target Keywords</div></div>
-    <div class="stat"><div class="stat-num">${state.rankLog.length}</div><div class="stat-lbl">Rank Entries</div></div>
+    <div class="stat-tile">
+      <div class="stat-tile-top"><div class="stat-val">${state.audits.length}</div><span class="stat-tag badge-good">LOGGED</span></div>
+      <div class="stat-lbl">Audits Executed</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile-top">
+        <div class="stat-val" style="${avgAuditScore!==null?'color:'+gaugeColor(avgAuditScore)+';':''}">${avgAuditScore!==null?avgAuditScore:'—'}</div>
+        <span class="stat-tag ${avgAuditScore>=80?'badge-good':avgAuditScore>=50?'badge-warning':'badge-critical'}">MEAN</span>
+      </div>
+      <div class="stat-lbl">Mean Audit Score</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile-top"><div class="stat-val">${state.keywords.length}</div><span class="stat-tag badge-good">EXPLORED</span></div>
+      <div class="stat-lbl">Target Keywords</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile-top"><div class="stat-val">${state.rankLog.length}</div><span class="stat-tag badge-good">TRACKED</span></div>
+      <div class="stat-lbl">Rank Log Entries</div>
+    </div>
   `;
 }
 
@@ -1128,748 +1226,4 @@ function getDomain(url){
 
 function extractJson(text){
   if(!text) return null;
-  const cleaned = text.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'');
-  try{ return JSON.parse(cleaned); }catch(e){}
-  const firstCurly = cleaned.indexOf('{');
-  const firstBrack = cleaned.indexOf('[');
-  let start = -1, openChar, closeChar;
-  if(firstCurly===-1 && firstBrack===-1) return null;
-  if(firstBrack===-1 || (firstCurly!==-1 && firstCurly<firstBrack)){ start=firstCurly; openChar='{'; closeChar='}'; }
-  else { start=firstBrack; openChar='['; closeChar=']'; }
-  let depth=0, inString=false, escape=false;
-  for(let i=start;i<cleaned.length;i++){
-    const ch = cleaned[i];
-    if(inString){
-      if(escape){ escape=false; }
-      else if(ch==='\\'){ escape=true; }
-      else if(ch==='"'){ inString=false; }
-      continue;
-    }
-    if(ch==='"'){ inString=true; continue; }
-    if(ch===openChar) depth++;
-    else if(ch===closeChar){
-      depth--;
-      if(depth===0){
-        try{ return JSON.parse(cleaned.slice(start,i+1)); }catch(e){ return null; }
-      }
-    }
-  }
-  return null;
-}
-
-async function callClaudeSearch(systemPrompt, userPrompt){
-  const combinedPrompt = `${systemPrompt}\n\nUSER REQUEST:\n${userPrompt}`;
-  const response = await fetch('/api/ai', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt: combinedPrompt })
-  });
-  let data = null;
-  try { data = await response.json(); } catch(e) {}
-  if(!response.ok) throw new Error((data && data.error) || `AI request failed (HTTP ${response.status})`);
-  if(!data || !data.success || !data.response) throw new Error((data && data.error) || 'AI returned an empty response');
-  return data.response.trim();
-}
-
-async function callClaudeSearchJSON(systemPrompt, userPrompt){
-  let lastText = '';
-  for(let attempt=0; attempt<2; attempt++){
-    const prompt = attempt===0 ? userPrompt : userPrompt + '\n\nReply with ONLY the raw valid JSON object — no markdown, no explanations.';
-    lastText = await callClaudeSearch(systemPrompt, prompt);
-    const parsed = extractJson(lastText);
-    if(parsed) return parsed;
-  }
-  throw new Error("Unable to parse structured JSON from AI.");
-}
-
-async function fetchLiveUrl(url){
-  const res = await fetch('/api/fetch-url', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url })
-  });
-  const data = await res.json();
-  if(!res.ok || !data.success) throw new Error(data.error || 'Failed to fetch site HTML');
-  return data.html;
-}
-
-/* ================= 360° SITE AUDIT ENGINE ================= */
-function runAlgorithmicAudit(html, urlVal, targetKeyword){
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const onPage = [];
-  const technical = [];
-  const contentSocial = [];
-
-  const title = doc.querySelector('title') ? doc.querySelector('title').textContent.trim() : '';
-  const metaDescEl = doc.querySelector('meta[name="description"]');
-  const metaDesc = metaDescEl ? (metaDescEl.getAttribute('content')||'').trim() : '';
-  const h1s = Array.from(doc.querySelectorAll('h1'));
-  const h2s = Array.from(doc.querySelectorAll('h2'));
-  const imgs = Array.from(doc.querySelectorAll('img'));
-  const imgsNoAlt = imgs.filter(i => !i.getAttribute('alt') || !i.getAttribute('alt').trim());
-  const bodyText = doc.body ? doc.body.textContent.replace(/\s+/g,' ').trim() : '';
-  const words = countWords(bodyText);
-
-  // 1. On-Page Checks
-  if(!title) onPage.push({ label: 'Title Tag Existence', status: 'critical', detail: 'Missing <title> tag.', fix: 'Add a concise title tag containing your primary keyword.' });
-  else if(title.length < 30) onPage.push({ label: 'Title Tag Length', status: 'warning', detail: `Title is ${title.length} characters (short): "${escapeHtml(title)}"`, fix: 'Expand title to 45-60 characters for maximum CTR.' });
-  else if(title.length > 60) onPage.push({ label: 'Title Tag Length', status: 'warning', detail: `Title is ${title.length} characters (truncated in SERPs).`, fix: 'Shorten title to under 60 characters.' });
-  else onPage.push({ label: 'Title Tag Optimization', status: 'good', detail: `Optimal length: "${escapeHtml(title)}" (${title.length} chars).`, fix: 'Optimal.' });
-
-  if(!metaDesc) onPage.push({ label: 'Meta Description', status: 'critical', detail: 'Missing meta description tag.', fix: 'Add a 130-160 character meta description summarizing the value proposition.' });
-  else if(metaDesc.length < 100 || metaDesc.length > 165) onPage.push({ label: 'Meta Description Length', status: 'warning', detail: `Length is ${metaDesc.length} characters.`, fix: 'Adjust length between 120 and 160 characters.' });
-  else onPage.push({ label: 'Meta Description Optimization', status: 'good', detail: `Length optimal: ${metaDesc.length} characters.`, fix: 'Optimal.' });
-
-  if(h1s.length === 0) onPage.push({ label: 'H1 Architecture', status: 'critical', detail: 'No H1 element found.', fix: 'Add exactly one primary H1 header at the top of the content.' });
-  else if(h1s.length > 1) onPage.push({ label: 'H1 Architecture', status: 'warning', detail: `Multiple H1 elements found (${h1s.length}).`, fix: 'Use only one primary H1 per page; convert secondary headers to H2.' });
-  else onPage.push({ label: 'H1 Architecture', status: 'good', detail: `Single H1: "${escapeHtml(h1s[0].textContent.trim().slice(0, 60))}"`, fix: 'Optimal.' });
-
-  if(h2s.length === 0) onPage.push({ label: 'H2 Subheaders', status: 'warning', detail: 'No H2 subheadings detected.', fix: 'Organize page sections with descriptive H2 headings.' });
-  else onPage.push({ label: 'H2 Subheaders', status: 'good', detail: `${h2s.length} H2 subheaders provide strong semantic hierarchy.`, fix: 'Optimal.' });
-
-  if(targetKeyword){
-    const matches = (bodyText.match(new RegExp(targetKeyword.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi')) || []).length;
-    const density = words ? ((matches * targetKeyword.split(/\s+/).length) / words) * 100 : 0;
-    if(matches === 0) onPage.push({ label: 'Keyword Presence', status: 'warning', detail: `Target keyword "${escapeHtml(targetKeyword)}" was not found in content body.`, fix: 'Integrate target keyword naturally in headings and body.' });
-    else if(density > 3) onPage.push({ label: 'Keyword Density', status: 'warning', detail: `High density (${density.toFixed(1)}%) risks keyword stuffing penalty.`, fix: 'Reduce exact phrase usage; use natural synonyms.' });
-    else onPage.push({ label: 'Keyword Density', status: 'good', detail: `Natural density of ${density.toFixed(1)}% (${matches} occurrences).`, fix: 'Optimal.' });
-  }
-
-  // 2. Technical Checks
-  const isHttps = /^https:\/\//i.test(urlVal);
-  technical.push(isHttps ? { label: 'SSL/TLS Encryption', status: 'good', detail: 'Website serves securely over HTTPS.', fix: 'Optimal.' } : { label: 'SSL/TLS Encryption', status: 'critical', detail: 'Site uses insecure HTTP protocol.', fix: 'Enforce HTTPS via SSL certificate.' });
-
-  const canonical = doc.querySelector('link[rel="canonical"]');
-  technical.push(canonical ? { label: 'Canonical Link Tag', status: 'good', detail: `Canonical tag present: ${escapeHtml(canonical.getAttribute('href')||'')}`, fix: 'Optimal.' } : { label: 'Canonical Link Tag', status: 'warning', detail: 'Missing canonical link tag.', fix: 'Add <link rel="canonical"> to prevent duplicate content indexing.' });
-
-  const viewport = doc.querySelector('meta[name="viewport"]');
-  technical.push(viewport ? { label: 'Mobile Viewport Setup', status: 'good', detail: 'Viewport is configured for responsive devices.', fix: 'Optimal.' } : { label: 'Mobile Viewport Setup', status: 'critical', detail: 'Missing viewport configuration.', fix: 'Add <meta name="viewport" content="width=device-width, initial-scale=1">.' });
-
-  const charset = doc.querySelector('meta[charset]') || doc.querySelector('meta[http-equiv="Content-Type" i]');
-  technical.push(charset ? { label: 'Character Encoding', status: 'good', detail: 'UTF-8 charset declared.', fix: 'Optimal.' } : { label: 'Character Encoding', status: 'warning', detail: 'Missing explicit charset declaration.', fix: 'Add <meta charset="UTF-8"> in <head>.' });
-
-  const jsonLd = doc.querySelectorAll('script[type="application/ld+json"]');
-  technical.push(jsonLd.length > 0 ? { label: 'Structured Schema', status: 'good', detail: `${jsonLd.length} JSON-LD structured schema block(s) detected.`, fix: 'Optimal.' } : { label: 'Structured Schema', status: 'warning', detail: 'No JSON-LD structured schema detected.', fix: 'Implement Organization, WebSite, or Product JSON-LD schema.' });
-
-  // 3. Content, Media & Social Checks
-  if(imgs.length === 0) contentSocial.push({ label: 'Image Assets', status: 'warning', detail: 'No images found on page.', fix: 'Add visual media with alt tags to enhance dwell time.' });
-  else if(imgsNoAlt.length > 0) contentSocial.push({ label: 'Image Alt Attributes', status: 'warning', detail: `${imgsNoAlt.length} of ${imgs.length} images lack descriptive alt text.`, fix: 'Add descriptive alt text to all image tags for accessibility and image search.' });
-  else contentSocial.push({ label: 'Image Alt Attributes', status: 'good', detail: `All ${imgs.length} images include descriptive alt tags.`, fix: 'Optimal.' });
-
-  const ogTitle = doc.querySelector('meta[property="og:title"]');
-  const ogImage = doc.querySelector('meta[property="og:image"]');
-  contentSocial.push(ogTitle && ogImage ? { label: 'Open Graph Cards', status: 'good', detail: 'Open Graph social sharing tags are configured.', fix: 'Optimal.' } : { label: 'Open Graph Cards', status: 'warning', detail: 'Missing og:title or og:image social card tags.', fix: 'Add complete Open Graph meta tags.' });
-
-  contentSocial.push(words >= 400 ? { label: 'Content Depth', status: 'good', detail: `Total word count is ${words} words.`, fix: 'Optimal.' } : { label: 'Content Depth', status: 'warning', detail: `Content is thin (${words} words).`, fix: 'Expand content to 500-1000 words with thorough topical depth.' });
-
-  return { onPage, technical, contentSocial };
-}
-
-async function runOffPageAudit(urlVal){
-  const domain = getDomain(urlVal);
-  const systemPrompt = `You are a senior off-page SEO auditor. Evaluate the domain authority footprint, backlinks, and brand search citations. Return valid JSON only:
-{"checks": [{"label": string, "status": "good"|"warning"|"critical", "detail": string, "fix": string}]}`;
-  const userPrompt = `Domain: ${domain}\nProvide 4 realistic off-page checks: External Mentions, Backlink Authority, Social Signals, Brand SERP Dominance.`;
-  const res = await callClaudeSearchJSON(systemPrompt, userPrompt);
-  return Array.isArray(res.checks) ? res.checks : [];
-}
-
-async function runAudit(){
-  const urlInput = document.getElementById('auditUrl').value.trim();
-  const rawHtmlInput = document.getElementById('auditInput').value.trim();
-  const targetKeyword = document.getElementById('auditKeyword').value.trim().toLowerCase();
-
-  if(!urlInput){ alert('Please provide a website URL.'); return; }
-
-  const btn = document.getElementById('runAuditBtn');
-  btn.disabled = true;
-  document.getElementById('auditLoading').style.display = 'block';
-
-  try {
-    let html = rawHtmlInput;
-    if(!html){
-      html = await fetchLiveUrl(urlInput);
-    }
-
-    const algo = runAlgorithmicAudit(html, urlInput, targetKeyword);
-    let offPage = [];
-    try {
-      offPage = await runOffPageAudit(urlInput);
-    } catch(e) {
-      offPage = [{ label: 'Off-Page Footprint', status: 'warning', detail: 'Standard backlink profile estimation active.', fix: 'Build authoritative niche backlinks.' }];
-    }
-
-    const sections = [
-      { title: 'On-Page SEO', checks: algo.onPage },
-      { title: 'Technical SEO', checks: algo.technical },
-      { title: 'Content & Social Signals', checks: algo.contentSocial },
-      { title: 'Off-Page Authority Footprint', checks: offPage }
-    ];
-
-    const allChecks = sections.flatMap(s=>s.checks);
-    const points = allChecks.reduce((s,c)=> s + (c.status==='good'?1:c.status==='warning'?0.5:0), 0);
-    const score = Math.round((points / allChecks.length) * 100);
-
-    renderAuditResult(score, sections);
-    lastAuditReport = { url: urlInput, score, sections, date: new Date() };
-
-    state.audits.unshift({ id: uid(), date: new Date().toISOString(), url: urlInput, score });
-    saveState();
-    renderAuditHistory();
-  } catch(err) {
-    alert("Audit error: " + (err.message || 'Could not complete scan'));
-  } finally {
-    btn.disabled = false;
-    document.getElementById('auditLoading').style.display = 'none';
-  }
-}
-
-function gaugeColor(score){ return score>=80?'var(--green)': score>=50?'var(--amber)':'var(--coral)'; }
-
-function renderAuditResult(score, sections){
-  document.getElementById('auditResultCard').style.display = 'block';
-  document.getElementById('gaugeNum').textContent = score;
-  document.getElementById('gaugeNum').style.color = gaugeColor(score);
-
-  const r=48, c=2*Math.PI*r, offset = c*(1-score/100);
-  document.getElementById('gaugeSvg').innerHTML = `
-    <circle cx="60" cy="60" r="${r}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
-    <circle cx="60" cy="60" r="${r}" fill="none" stroke="${gaugeColor(score)}" stroke-width="8" stroke-linecap="round"
-      stroke-dasharray="${c}" stroke-dashoffset="${offset}" transform="rotate(-90 60 60)"/>
-  `;
-
-  let summaryHtml = '';
-  sections.forEach(s => {
-    const sPoints = s.checks.reduce((acc, c)=> acc + (c.status==='good'?1:c.status==='warning'?0.5:0), 0);
-    const sScore = Math.round((sPoints / s.checks.length) * 100);
-    summaryHtml += `
-      <div class="report-summary-card">
-        <div class="report-summary-num" style="color:${gaugeColor(sScore)}">${sScore}%</div>
-        <div class="report-summary-lbl">${escapeHtml(s.title)}</div>
-        <div class="report-summary-issues">${s.checks.length} Checks Run</div>
-      </div>
-    `;
-  });
-  document.getElementById('auditSummaryGrid').innerHTML = summaryHtml;
-
-  let listHtml = '';
-  sections.forEach(s => {
-    listHtml += `<div style="font-weight:700;font-size:16px;margin:22px 0 8px;">${escapeHtml(s.title)}</div>`;
-    listHtml += checksTable(s.checks);
-  });
-  document.getElementById('checksList').innerHTML = listHtml;
-}
-
-let __fixCounter = 0;
-function checksTable(checks){
-  return `<div class="table-wrap"><table class="checks-table"><thead><tr><th>Parameter</th><th>Status</th><th>Finding</th><th></th></tr></thead><tbody>
-  ${checks.map(c=>{
-    const rid = 'fixrow-' + (++__fixCounter);
-    return `<tr>
-      <td class="ck-label"><span class="check-dot dot-${c.status}"></span>${escapeHtml(c.label)}</td>
-      <td><span class="badge badge-${c.status}">${c.status}</span></td>
-      <td class="ck-detail">${escapeHtml(c.detail)}</td>
-      <td class="ck-action"><button class="fix-btn" id="${rid}-btn" onclick="toggleFix('${rid}')">Action</button></td>
-    </tr>
-    <tr class="fix-row" id="${rid}" hidden>
-      <td colspan="4" class="fix-cell"><strong>Recommended Fix:</strong> ${escapeHtml(c.fix)}</td>
-    </tr>`;
-  }).join('')}
-  </tbody></table></div>`;
-}
-
-function toggleFix(rid){
-  const row = document.getElementById(rid);
-  if(!row) return;
-  row.hasAttribute('hidden') ? row.removeAttribute('hidden') : row.setAttribute('hidden','');
-}
-window.toggleFix = toggleFix;
-
-function renderAuditHistory(){
-  const el = document.getElementById('auditHistoryList');
-  if(!state.audits.length){ el.innerHTML='<div class="empty">No historical audits recorded.</div>'; return; }
-  el.innerHTML = `<div class="table-wrap"><table class="checks-table"><thead><tr><th>Timestamp</th><th>Domain</th><th>Score</th></tr></thead><tbody>
-  ${state.audits.map(a=>`<tr><td>${new Date(a.date).toLocaleDateString()}</td><td>${escapeHtml(a.url)}</td><td style="color:${gaugeColor(a.score)};font-weight:700;">${a.score}</td></tr>`).join('')}
-  </tbody></table></div>`;
-}
-
-document.getElementById('runAuditBtn').addEventListener('click', runAudit);
-
-document.getElementById('downloadAuditPdfBtn').addEventListener('click', ()=>{
-  if(!lastAuditReport) return;
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  let y = 20;
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.text(`Signal Comprehensive SEO Audit Report`, 14, y); y += 10;
-  
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Target URL: ${lastAuditReport.url}`, 14, y); y += 6;
-  doc.text(`Overall Health Score: ${lastAuditReport.score}/100 | Date: ${lastAuditReport.date.toLocaleDateString()}`, 14, y); y += 12;
-
-  lastAuditReport.sections.forEach(s => {
-    if(y > 260){ doc.addPage(); y = 20; }
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.text(s.title, 14, y); y += 8;
-
-    s.checks.forEach(c => {
-      if(y > 270){ doc.addPage(); y = 20; }
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`[${c.status.toUpperCase()}] ${c.label}`, 14, y); y += 5;
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Finding: ${c.detail}`, 14, y); y += 5;
-      doc.text(`Fix: ${c.fix}`, 14, y); y += 7;
-    });
-    y += 4;
-  });
-
-  doc.save(`seo-audit-${getDomain(lastAuditReport.url)}.pdf`);
-});
-
-/* ================= KEYWORD RESEARCH ================= */
-async function generateKeywords(){
-  const url = document.getElementById('seedUrl').value.trim();
-  const context = document.getElementById('seedContext').value.trim();
-  if(!url){ alert('Enter a URL or domain.'); return; }
-  const btn = document.getElementById('genKeywordsBtn');
-  btn.disabled = true;
-  document.getElementById('kwLoading').style.display='block';
-
-  const systemPrompt = `You are a search strategist. Return strictly valid JSON only:
-{"niche": string, "keywords": [{"phrase": string, "intent": "Informational"|"Commercial"|"Transactional"|"Long-tail", "demand": "Low"|"Medium"|"High"|"Very High", "difficulty": number}]}`;
-  const userPrompt = `URL: ${url}. Context: ${context}. Return 8 high-value targeted keywords.`;
-  
-  try{
-    const parsed = await callClaudeSearchJSON(systemPrompt, userPrompt);
-    document.getElementById('keywordResultsCard').style.display='block';
-    document.getElementById('nicheLabel').textContent = parsed.niche ? `(${parsed.niche})` : '';
-    document.getElementById('keywordResultsGrid').innerHTML = `<div class="table-wrap"><table class="checks-table"><thead><tr><th>Term</th><th>Intent</th><th>Demand</th><th>KD</th><th></th></tr></thead><tbody>
-    ${parsed.keywords.map(k=>`<tr>
-      <td class="ck-label">${escapeHtml(k.phrase)}</td>
-      <td>${escapeHtml(k.intent)}</td>
-      <td>${escapeHtml(k.demand)}</td>
-      <td style="font-weight:700;">${k.difficulty}/100</td>
-      <td><button class="btn ghost small" onclick="addKeywordToList('${encodeURIComponent(k.phrase)}','${encodeURIComponent(k.intent)}','${encodeURIComponent(k.demand)}',${k.difficulty})">+ Save</button></td>
-    </tr>`).join('')}
-    </tbody></table></div>`;
-  }catch(e){
-    alert("Keyword generation failed: " + e.message);
-  }finally{
-    btn.disabled = false;
-    document.getElementById('kwLoading').style.display='none';
-  }
-}
-document.getElementById('genKeywordsBtn').addEventListener('click', generateKeywords);
-
-function addKeywordToList(p, i, d, diff){
-  const phrase = decodeURIComponent(p);
-  if(state.keywords.some(k=>k.phrase===phrase)) return;
-  state.keywords.unshift({ id: uid(), phrase, intent: decodeURIComponent(i), demand: decodeURIComponent(d), difficulty: diff });
-  saveState();
-  renderKeywordList();
-}
-window.addKeywordToList = addKeywordToList;
-
-function removeKeyword(id){
-  state.keywords = state.keywords.filter(k=>k.id!==id);
-  saveState();
-  renderKeywordList();
-}
-window.removeKeyword = removeKeyword;
-
-function renderKeywordList(){
-  document.getElementById('kwListCount').textContent = state.keywords.length;
-  const el = document.getElementById('myKeywordList');
-  if(!state.keywords.length){ el.innerHTML='<div class="empty">No saved terms yet.</div>'; return; }
-  el.innerHTML = `<div class="table-wrap"><table class="checks-table"><thead><tr><th>Keyword</th><th>Intent</th><th>Demand</th><th>KD</th><th></th></tr></thead><tbody>
-  ${state.keywords.map(k=>`<tr><td class="ck-label">${escapeHtml(k.phrase)}</td><td>${k.intent}</td><td>${k.demand}</td><td style="font-weight:700;">${k.difficulty||'—'}</td><td><button class="btn ghost small" onclick="removeKeyword('${k.id}')">Remove</button></td></tr>`).join('')}
-  </tbody></table></div>`;
-}
-
-/* ================= AEO (ANSWER ENGINE OPTIMIZATION) ================= */
-async function runAeo(){
-  const url = document.getElementById('aeoUrl').value.trim();
-  const q = document.getElementById('aeoQuestion').value.trim();
-  if(!url){ alert('Enter target URL'); return; }
-  const btn = document.getElementById('runAeoBtn');
-  btn.disabled = true;
-  document.getElementById('aeoLoading').style.display='block';
-
-  const systemPrompt = `You are an Answer Engine Optimization (AEO) specialist. Evaluate snippet formatting, question answering depth, FAQ markup, and Voice Search compatibility. Return strictly valid JSON:
-{"score": number, "checks":[{"label":string,"status":"good"|"warning"|"critical","detail":string,"fix":string}]}`;
-  const userPrompt = `URL: ${url}\nTarget Query: ${q || 'General informational readiness'}`;
-
-  try{
-    const parsed = await callClaudeSearchJSON(systemPrompt, userPrompt);
-    document.getElementById('aeoResultCard').style.display = 'block';
-    const score = parsed.score || 80;
-    document.getElementById('aeoGaugeNum').textContent = score;
-    document.getElementById('aeoGaugeNum').style.color = gaugeColor(score);
-
-    const r=48, c=2*Math.PI*r, offset = c*(1-score/100);
-    document.getElementById('aeoGaugeSvg').innerHTML = `
-      <circle cx="60" cy="60" r="${r}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
-      <circle cx="60" cy="60" r="${r}" fill="none" stroke="${gaugeColor(score)}" stroke-width="8" stroke-linecap="round"
-        stroke-dasharray="${c}" stroke-dashoffset="${offset}" transform="rotate(-90 60 60)"/>
-    `;
-    document.getElementById('aeoChecksList').innerHTML = checksTable(parsed.checks);
-
-    state.aeoHistory.unshift({ id: uid(), date: new Date().toISOString(), url, score });
-    saveState();
-    renderAeoHistory();
-  }catch(e){ alert('AEO Audit failed: ' + e.message); }
-  finally{ btn.disabled=false; document.getElementById('aeoLoading').style.display='none'; }
-}
-document.getElementById('runAeoBtn').addEventListener('click', runAeo);
-
-function renderAeoHistory(){
-  const el = document.getElementById('aeoHistoryList');
-  if(!state.aeoHistory.length){ el.innerHTML='<div class="empty">No AEO logs recorded.</div>'; return; }
-  el.innerHTML = `<div class="table-wrap"><table class="checks-table"><thead><tr><th>Date</th><th>URL</th><th>AEO Score</th></tr></thead><tbody>
-  ${state.aeoHistory.map(a=>`<tr><td>${new Date(a.date).toLocaleDateString()}</td><td>${escapeHtml(a.url)}</td><td style="color:${gaugeColor(a.score)};font-weight:700;">${a.score}</td></tr>`).join('')}
-  </tbody></table></div>`;
-}
-
-/* ================= GEO (GENERATIVE ENGINE OPTIMIZATION) ================= */
-async function runGeo(){
-  const url = document.getElementById('geoUrl').value.trim();
-  const topic = document.getElementById('geoTopic').value.trim();
-  if(!url){ alert('Enter target URL'); return; }
-  const btn = document.getElementById('runGeoBtn');
-  btn.disabled = true;
-  document.getElementById('geoLoading').style.display='block';
-
-  const systemPrompt = `You are an AI Search & Generative Engine Optimization (GEO) analyst. Audit the site for citation readiness in ChatGPT Search, Perplexity, Claude, and Google AI Overviews. Inspect E-E-A-T, entity authority, quotation likelihood, and information gain. Return strictly valid JSON:
-{"score": number, "checks":[{"label":string,"status":"good"|"warning"|"critical","detail":string,"fix":string}]}`;
-  const userPrompt = `URL: ${url}\nTopic Focus: ${topic || 'Industry authority'}`;
-
-  try{
-    const parsed = await callClaudeSearchJSON(systemPrompt, userPrompt);
-    document.getElementById('geoResultCard').style.display = 'block';
-    const score = parsed.score || 78;
-    document.getElementById('geoGaugeNum').textContent = score;
-    document.getElementById('geoGaugeNum').style.color = gaugeColor(score);
-
-    const r=48, c=2*Math.PI*r, offset = c*(1-score/100);
-    document.getElementById('geoGaugeSvg').innerHTML = `
-      <circle cx="60" cy="60" r="${r}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
-      <circle cx="60" cy="60" r="${r}" fill="none" stroke="${gaugeColor(score)}" stroke-width="8" stroke-linecap="round"
-        stroke-dasharray="${c}" stroke-dashoffset="${offset}" transform="rotate(-90 60 60)"/>
-    `;
-    document.getElementById('geoChecksList').innerHTML = checksTable(parsed.checks);
-
-    state.geoHistory.unshift({ id: uid(), date: new Date().toISOString(), url, score });
-    saveState();
-    renderGeoHistory();
-  }catch(e){ alert('GEO Audit failed: ' + e.message); }
-  finally{ btn.disabled=false; document.getElementById('geoLoading').style.display='none'; }
-}
-document.getElementById('runGeoBtn').addEventListener('click', runGeo);
-
-function renderGeoHistory(){
-  const el = document.getElementById('geoHistoryList');
-  if(!state.geoHistory.length){ el.innerHTML='<div class="empty">No GEO scans recorded.</div>'; return; }
-  el.innerHTML = `<div class="table-wrap"><table class="checks-table"><thead><tr><th>Date</th><th>URL</th><th>GEO Score</th></tr></thead><tbody>
-  ${state.geoHistory.map(a=>`<tr><td>${new Date(a.date).toLocaleDateString()}</td><td>${escapeHtml(a.url)}</td><td style="color:${gaugeColor(a.score)};font-weight:700;">${a.score}</td></tr>`).join('')}
-  </tbody></table></div>`;
-}
-
-/* ================= COMPETITORS ================= */
-async function runCompetitors(){
-  const url = document.getElementById('compUrl').value.trim();
-  const context = document.getElementById('compContext').value.trim();
-  if(!url){ alert('Enter URL'); return; }
-  const btn = document.getElementById('runCompBtn');
-  btn.disabled = true;
-  document.getElementById('compLoading').style.display='block';
-
-  try{
-    const parsed = await callClaudeSearchJSON(`Return valid JSON: {"niche":string,"comparison":[{"domain":string,"isPrimary":boolean,"visibility":string,"notes":string}],"gaps":[{"label":string,"status":"good"|"warning"|"critical","detail":string,"fix":string}]}`, `Analyze competitors for ${url}. Context: ${context}`);
-    document.getElementById('compResultCard').style.display='block';
-    document.getElementById('compTable').innerHTML = `<div class="table-wrap"><table class="checks-table"><thead><tr><th>Domain</th><th>Visibility Tier</th><th>Strategic Notes</th></tr></thead><tbody>
-    ${parsed.comparison.map(c=>`<tr><td class="ck-label">${escapeHtml(c.domain)}</td><td>${c.visibility}</td><td class="ck-detail">${c.notes}</td></tr>`).join('')}
-    </tbody></table></div>`;
-    document.getElementById('compGaps').innerHTML = checksTable(parsed.gaps);
-  }catch(e){ alert('Competitor scan failed: ' + e.message); }
-  finally{ btn.disabled=false; document.getElementById('compLoading').style.display='none'; }
-}
-document.getElementById('runCompBtn').addEventListener('click', runCompetitors);
-
-/* ================= RANK LOG ================= */
-async function checkPositions(){
-  const siteUrl = document.getElementById('trackSiteUrl').value.trim();
-  const kwRaw = document.getElementById('trackKeywords').value.trim();
-  if(!siteUrl || !kwRaw){ alert('Enter domain and at least one keyword.'); return; }
-  const domain = getDomain(siteUrl);
-  const keywords = kwRaw.split(',').map(k=>k.trim()).filter(Boolean).slice(0,8);
-
-  const btn = document.getElementById('checkPositionsBtn');
-  btn.disabled = true;
-  document.getElementById('rankLoading').style.display = 'block';
-
-  const systemPrompt = `You are a search ranking estimator. Estimate approximate organic search ranking position (1-100) or null if unranked. Return strictly valid JSON:
-{"results": [{"keyword": string, "found": boolean, "approx_position": number|null}]}`;
-  const userPrompt = `Domain: ${domain}\nKeywords:\n${keywords.map(k=>'- '+k).join('\n')}\nEstimate live rankings.`;
-
-  try {
-    const parsed = await callClaudeSearchJSON(systemPrompt, userPrompt);
-    const today = new Date().toISOString().slice(0,10);
-    parsed.results.forEach(r=>{
-      state.rankLog.unshift({
-        id: uid(),
-        keyword: r.keyword,
-        url: siteUrl,
-        position: r.found && r.approx_position ? r.approx_position : null,
-        date: today,
-        notes: r.found ? 'Estimated ranking' : 'Not in top 100 results'
-      });
-    });
-    saveState();
-    renderRankLog();
-  } catch(e) {
-    alert("Rank check failed: " + e.message);
-  } finally {
-    btn.disabled = false;
-    document.getElementById('rankLoading').style.display = 'none';
-  }
-}
-document.getElementById('checkPositionsBtn').addEventListener('click', checkPositions);
-
-function addRankEntry(){
-  const keyword = document.getElementById('rankKeyword').value.trim();
-  const url = document.getElementById('rankUrl').value.trim();
-  const position = parseInt(document.getElementById('rankPosition').value, 10);
-  const date = document.getElementById('rankDate').value || new Date().toISOString().slice(0,10);
-  const notes = document.getElementById('rankNotes').value.trim();
-  if(!keyword || !position){ alert('Enter keyword and position.'); return; }
-  state.rankLog.unshift({ id: uid(), keyword, url, position, date, notes: notes || 'Manual entry' });
-  saveState();
-  document.getElementById('rankKeyword').value = '';
-  document.getElementById('rankUrl').value = '';
-  document.getElementById('rankPosition').value = '';
-  renderRankLog();
-}
-const addRankBtn = document.getElementById('addRankBtn');
-if(addRankBtn) addRankBtn.addEventListener('click', addRankEntry);
-
-function deleteRankEntry(id){
-  state.rankLog = state.rankLog.filter(r=>r.id !== id);
-  saveState();
-  renderRankLog();
-}
-window.deleteRankEntry = deleteRankEntry;
-
-function renderRankLog(){
-  const el = document.getElementById('rankLogTable');
-  if(!el) return;
-  if(!state.rankLog.length){ el.innerHTML = '<div class="empty">No rankings active.</div>'; return; }
-  el.innerHTML = `<div class="table-wrap"><table class="checks-table">
-    <thead><tr><th>Keyword</th><th>Rank Position</th><th>Date</th><th>Notes</th><th></th></tr></thead>
-    <tbody>
-      ${state.rankLog.map(r=>`<tr>
-        <td class="ck-label">${escapeHtml(r.keyword)}</td>
-        <td style="font-weight:700;color:${r.position ? (r.position <= 10 ? 'var(--green)' : r.position <= 30 ? 'var(--amber)' : 'var(--coral)') : 'var(--muted)'};">
-          ${r.position ? '#' + r.position : 'Not Found'}
-        </td>
-        <td>${escapeHtml(r.date)}</td>
-        <td class="ck-detail">${escapeHtml(r.notes || '—')}</td>
-        <td><button class="btn ghost small" onclick="deleteRankEntry('${r.id}')">Delete</button></td>
-      </tr>`).join('')}
-    </tbody>
-  </table></div>`;
-}
-
-/* ================= BLOG WRITER ================= */
-document.getElementById('useSavedKwBtn').addEventListener('click', ()=>{
-  document.getElementById('blogKeywords').value = state.keywords.map(k=>k.phrase).join(', ');
-});
-
-async function generateBlog(){
-  const topic = document.getElementById('blogTopic').value.trim();
-  if(!topic){ alert('Enter topic'); return; }
-  const btn = document.getElementById('genBlogBtn');
-  btn.disabled = true;
-  document.getElementById('blogLoading').style.display='block';
-  try{
-    const text = await callClaudeSearch('You are a professional SEO writer. Draft an engaging, highly-structured blog post with markdown subheadings and natural keyword density.', `Topic: ${topic}\nKeywords: ${document.getElementById('blogKeywords').value}`);
-    document.getElementById('blogResultCard').style.display='block';
-    document.getElementById('blogOutput').textContent = text;
-  }catch(e){ alert(e.message); }
-  finally{ btn.disabled=false; document.getElementById('blogLoading').style.display='none'; }
-}
-document.getElementById('genBlogBtn').addEventListener('click', generateBlog);
-
-/* ================= STRATEGIST CHAT ================= */
-async function sendChat(){
-  const input = document.getElementById('chatInput');
-  const q = input.value.trim();
-  if(!q) return;
-  input.value='';
-  const el = document.getElementById('chatMessages');
-  el.innerHTML += `<div class="chat-bubble user">${escapeHtml(q)}</div>`;
-  document.getElementById('chatLoading').style.display='block';
-  try{
-    const ans = await callClaudeSearch('You are a strategic search consultant.', q);
-    el.innerHTML += `<div class="chat-bubble assistant">${escapeHtml(ans)}</div>`;
-    el.scrollTop = el.scrollHeight;
-  }catch(e){ el.innerHTML += `<div class="chat-bubble assistant">Error: ${e.message}</div>`; }
-  finally{ document.getElementById('chatLoading').style.display='none'; }
-}
-document.getElementById('sendChatBtn').addEventListener('click', sendChat);
-
-/* ================= FREE SEO UTILITIES ================= */
-document.querySelectorAll('.util-pill').forEach(pill=>{
-  pill.addEventListener('click', ()=>{
-    document.querySelectorAll('.util-pill').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.util-panel').forEach(p=>p.classList.remove('active'));
-    pill.classList.add('active');
-    const target = document.getElementById('util-'+pill.dataset.util);
-    if(target) target.classList.add('active');
-  });
-});
-
-function checkTitle(){
-  const val = document.getElementById('titleInput').value;
-  const statsEl = document.getElementById('titleStats');
-  const previewEl = document.getElementById('titlePreview');
-  if(!val.trim()){ statsEl.innerHTML=''; previewEl.innerHTML='<div style="color:#666;">Start typing to see preview...</div>'; return; }
-  const len = val.length;
-  statsEl.innerHTML = `<span class="badge ${len>=30 && len<=60 ? 'badge-good' : 'badge-warning'}">${len} chars</span>`;
-  previewEl.innerHTML = `<div class="serp-url">example.com</div><div class="serp-title">${escapeHtml(val)}</div><div class="serp-desc">Preview snippet meta description will appear here.</div>`;
-}
-
-function checkDescription(){
-  const val = document.getElementById('descInput').value;
-  const statsEl = document.getElementById('descStats');
-  const previewEl = document.getElementById('descPreview');
-  if(!val.trim()){ statsEl.innerHTML=''; previewEl.innerHTML='<div style="color:#666;">Start typing to preview description...</div>'; return; }
-  const len = val.length;
-  statsEl.innerHTML = `<span class="badge ${len>=120 && len<=160 ? 'badge-good' : 'badge-warning'}">${len} chars</span>`;
-  previewEl.innerHTML = `<div class="serp-url">example.com</div><div class="serp-title">Your Target Page Title</div><div class="serp-desc">${escapeHtml(val)}</div>`;
-}
-
-function checkDensity(){
-  const text = document.getElementById('densityContent').value;
-  const kw = document.getElementById('densityKeywords').value.split(',').map(s=>s.trim()).filter(Boolean);
-  const words = countWords(text);
-  if(!words || !kw.length){ document.getElementById('densityResult').innerHTML = ''; return; }
-  const rows = kw.map(k=>{
-    const matches = (text.match(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi')) || []).length;
-    const density = ((matches * k.split(/\s+/).length) / words) * 100;
-    return `<tr><td>${escapeHtml(k)}</td><td>${matches}</td><td>${density.toFixed(2)}%</td></tr>`;
-  }).join('');
-  document.getElementById('densityResult').innerHTML = `<div class="table-wrap"><table class="checks-table"><thead><tr><th>Term</th><th>Occurrences</th><th>Density</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-}
-
-function checkWordCount(){
-  const t = document.getElementById('wordcountInput').value;
-  const w = countWords(t);
-  document.getElementById('wordcountStats').innerHTML = `<span class="badge badge-good">${w} words</span><span class="badge badge-good">${t.length} characters</span><span class="badge badge-good">~${Math.ceil(w/200)} min read</span>`;
-}
-
-function checkHeadings(){
-  const html = document.getElementById('headingsInput').value;
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const headings = Array.from(doc.querySelectorAll('h1,h2,h3,h4,h5,h6'));
-  if(!headings.length){ document.getElementById('headingsResult').innerHTML = '<div class="empty">No H1-H6 tags detected.</div>'; return; }
-  document.getElementById('headingsResult').innerHTML = `<div class="table-wrap"><table class="checks-table"><thead><tr><th>Tag</th><th>Text</th></tr></thead><tbody>${headings.map(h=>`<tr><td><strong>${h.tagName}</strong></td><td>${escapeHtml(h.textContent.trim())}</td></tr>`).join('')}</tbody></table></div>`;
-}
-
-function generateRobots(){
-  const mode = document.getElementById('robotsDefault').value;
-  const sitemap = document.getElementById('robotsSitemap').value.trim();
-  const disallow = document.getElementById('robotsDisallow').value.split('\n').filter(Boolean);
-  let txt = `User-agent: *\n${mode==='disallow' ? 'Disallow: /\n' : 'Allow: /\n'}`;
-  disallow.forEach(d=> txt += `Disallow: ${d.trim()}\n`);
-  if(sitemap) txt += `\nSitemap: ${sitemap}\n`;
-  document.getElementById('robotsOutput').textContent = txt;
-}
-
-async function checkSitemapUrl(){
-  const url = document.getElementById('sitemapUrl').value.trim();
-  if(!url){ alert('Enter sitemap URL'); return; }
-  const status = document.getElementById('sitemapFetchStatus');
-  status.innerHTML = '<span class="loading">Fetching...</span>';
-  try{
-    const r = await fetch(url);
-    if(!r.ok) throw new Error('HTTP ' + r.status);
-    const txt = await r.text();
-    status.innerHTML = '<span class="badge badge-good">Fetched Successfully</span>';
-    checkSitemapContent(txt);
-  }catch(e){
-    status.innerHTML = `<span class="badge badge-warning">Could not fetch directly (CORS). Paste raw XML below.</span>`;
-    document.getElementById('sitemapPasteDetails').open = true;
-  }
-}
-
-function checkSitemapContent(xml){
-  try{
-    const doc = new DOMParser().parseFromString(xml, 'text/xml');
-    const urls = Array.from(doc.querySelectorAll('loc'));
-    document.getElementById('sitemapResult').innerHTML = `<div class="table-wrap"><table class="checks-table"><thead><tr><th>#</th><th>Parsed Location</th></tr></thead><tbody>${urls.slice(0,10).map((u,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(u.textContent)}</td></tr>`).join('')}</tbody></table></div>`;
-  }catch(e){ alert('Failed to parse XML: ' + e.message); }
-}
-
-function renderSchemaForm(){
-  const t = document.getElementById('schemaType').value;
-  document.getElementById('schemaFields').innerHTML = `<label>Headline / Name</label><input type="text" id="schema_name" placeholder="Name or Title"><label>Page URL</label><input type="text" id="schema_url" placeholder="[https://example.com/item](https://example.com/item)">`;
-}
-renderSchemaForm();
-
-function generateSchema(){
-  const t = document.getElementById('schemaType').value;
-  const name = (document.getElementById('schema_name')||{}).value || '';
-  const url = (document.getElementById('schema_url')||{}).value || '';
-  const obj = { "@context": "[https://schema.org](https://schema.org)", "@type": t, "name": name, "url": url };
-  document.getElementById('schemaOutput').textContent = `<script type="application/ld+json">\n${JSON.stringify(obj, null, 2)}\n<\/script>`;
-}
-
-function generateCanonical(){
-  const u = document.getElementById('canonicalUrl').value.trim();
-  document.getElementById('canonicalOutput').textContent = u ? `<link rel="canonical" href="${u}" />` : '';
-}
-
-function generateOg(){
-  const t = document.getElementById('ogTitle').value;
-  const u = document.getElementById('ogUrl').value;
-  const img = document.getElementById('ogImage').value;
-  const d = document.getElementById('ogDescription').value;
-  const type = document.getElementById('ogType').value;
-  const tags = [`<meta property="og:title" content="${escapeAttr(t)}" />`, `<meta property="og:type" content="${type}" />`, `<meta property="og:url" content="${escapeAttr(u)}" />`, `<meta property="og:image" content="${escapeAttr(img)}" />`, `<meta property="og:description" content="${escapeAttr(d)}" />`];
-  document.getElementById('ogOutput').textContent = tags.join('\n');
-}
-
-function generateSlug(){
-  const v = document.getElementById('slugInput').value;
-  document.getElementById('slugOutput').textContent = v.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-}
-
-function copyText(id, btn){
-  const t = document.getElementById(id).textContent;
-  if(t) navigator.clipboard.writeText(t).then(()=>{ btn.textContent='Copied!'; setTimeout(()=>btn.textContent='Copy',1200); });
-}
-function downloadText(id, filename){
-  const t = document.getElementById(id).textContent;
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([t],{type:'text/plain'}));
-  a.download = filename; a.click();
-}
-
-function renderAll(){
-  renderDashStats();
-  renderAuditHistory();
-  renderKeywordList();
-  renderRankLog();
-  renderAeoHistory();
-  renderGeoHistory();
-}
-
-loadState();
-</script>
-</body>
-</html>
+  const cleaned = text.trim().replace(/^```json\s*/i,'').replace(/^
