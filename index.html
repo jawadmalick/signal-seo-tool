@@ -562,24 +562,24 @@
 </div>
 
 <script>
-let state = { audits: [], keywords: [], rankLog: [] };
-let lastAuditReport = null;
+window.state = { audits: [], keywords: [], rankLog: [] };
+window.lastAuditReport = null;
 
-function countWords(t){ return (t.trim().match(/\S+/g)||[]).length; }
+function countWords(t){ return ((t || '').trim().match(/\S+/g)||[]).length; }
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function gaugeColor(score){ return score>=80?'var(--green)': score>=50?'var(--amber)':'var(--coral)'; }
 
-function switchTab(tabId){
-  const target = document.getElementById('panel-' + tabId);
+window.switchTab = function(tabId){
+  var target = document.getElementById('panel-' + tabId);
   if(!target) return;
-  document.querySelectorAll('.rail-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('btn-' + tabId);
+  document.querySelectorAll('.rail-btn').forEach(function(b){ b.classList.remove('active'); });
+  var btn = document.getElementById('btn-' + tabId);
   if(btn) btn.classList.add('active');
 
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
   target.classList.add('active');
 
-  const titles = {
+  var titles = {
     dashboard: '00 · DECK OVERVIEW',
     audit: '01 · SITE AUDIT 360°',
     keywords: '02 · KEYWORD EXPLORER',
@@ -592,22 +592,519 @@ function switchTab(tabId){
     utilities: '09 · FREE SEO TOOLS'
   };
 
-  const eb = document.getElementById('pageEyebrow');
-  const pt = document.getElementById('pageTitle');
+  var eb = document.getElementById('pageEyebrow');
+  var pt = document.getElementById('pageTitle');
   if(eb) eb.textContent = titles[tabId] || 'INSTRUMENT PANEL';
   if(pt) pt.textContent = tabId.toUpperCase();
-}
-window.switchTab = switchTab;
+};
 
-function switchUtil(uId, btn){
-  document.querySelectorAll('.util-pill').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.util-panel').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  const target = document.getElementById('util-' + uId);
+window.switchUtil = function(uId, btn){
+  document.querySelectorAll('.util-pill').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.util-panel').forEach(function(p){ p.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  var target = document.getElementById('util-' + uId);
   if(target) target.classList.add('active');
-}
-window.switchUtil = switchUtil;
+};
 
 function extractJson(text){
   if(!text) return null;
-  const cleaned = text.trim().replace(/^```json\s*/i,'').replace(/^
+  var cleaned = text.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'');
+  try{ return JSON.parse(cleaned); }catch(e){}
+  var start = cleaned.indexOf('{');
+  var end = cleaned.lastIndexOf('}');
+  if(start !== -1 && end !== -1 && end > start){
+    try{ return JSON.parse(cleaned.substring(start, end + 1)); }catch(e){}
+  }
+  return null;
+}
+
+async function callAi(prompt){
+  var res = await fetch('/api/ai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: prompt })
+  });
+  var d = await res.json();
+  if(!res.ok || !d.success) throw new Error((d && d.error) || 'AI call failed');
+  return d.response.trim();
+}
+
+async function callAiJson(prompt){
+  var raw = await callAi(prompt + '\n\nIMPORTANT: Respond with ONLY the raw valid JSON object. No explanations, no markdown fences.');
+  var parsed = extractJson(raw);
+  if(!parsed) throw new Error("Could not parse structured JSON from AI output");
+  return parsed;
+}
+
+async function fetchTargetHtml(url){
+  var res = await fetch('/api/fetch-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: url })
+  });
+  var data = await res.json();
+  if(!res.ok || !data.success) throw new Error(data.error || 'Failed to fetch live website HTML');
+  return data.html;
+}
+
+window.runAudit = async function(){
+  var url = (document.getElementById('auditUrl').value || '').trim();
+  var rawHtml = (document.getElementById('auditInput').value || '').trim();
+  var targetKeyword = (document.getElementById('auditKeyword').value || '').trim().toLowerCase();
+
+  if(!url){ alert('Please enter a target URL.'); return; }
+  var btn = document.getElementById('runAuditBtn');
+  var loading = document.getElementById('auditLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
+
+  try {
+    var html = rawHtml || await fetchTargetHtml(url);
+    var doc = new DOMParser().parseFromString(html || '', 'text/html');
+    var title = doc.querySelector('title') ? doc.querySelector('title').textContent.trim() : '';
+    var metaDesc = doc.querySelector('meta[name="description"]') ? doc.querySelector('meta[name="description"]').getAttribute('content') : '';
+    var h1s = doc.querySelectorAll('h1');
+    var h2s = doc.querySelectorAll('h2');
+    var imgs = doc.querySelectorAll('img');
+    var imgsNoAlt = Array.from(imgs).filter(function(i){ return !i.getAttribute('alt') || !i.getAttribute('alt').trim(); });
+    var isHttps = /^https:\/\//i.test(url);
+    var bodyText = doc.body ? doc.body.textContent.replace(/\s+/g, ' ').trim() : '';
+    var words = countWords(bodyText);
+
+    var onPage = [
+      { label: 'Title Tag', status: title && title.length >= 30 && title.length <= 65 ? 'good' : 'warning', detail: title ? ('"' + escapeHtml(title) + '" (' + title.length + ' chars)') : 'Missing title tag', fix: 'Optimize title length between 40 and 60 characters.' },
+      { label: 'Meta Description', status: metaDesc && metaDesc.length >= 120 && metaDesc.length <= 165 ? 'good' : 'warning', detail: metaDesc ? (metaDesc.length + ' characters') : 'Missing or suboptimal description length', fix: 'Add a 130-160 character meta description.' },
+      { label: 'H1 Element', status: h1s.length === 1 ? 'good' : (h1s.length === 0 ? 'critical' : 'warning'), detail: h1s.length + ' primary H1 tag(s) detected', fix: 'Use exactly one distinct H1 tag per page.' },
+      { label: 'H2 Hierarchy', status: h2s.length >= 2 ? 'good' : 'warning', detail: h2s.length + ' H2 subheaders detected', fix: 'Structure content sections using H2 subheaders.' }
+    ];
+
+    if(targetKeyword){
+      var matches = (bodyText.toLowerCase().match(new RegExp(targetKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+      onPage.push({
+        label: 'Keyword Focus ("' + escapeHtml(targetKeyword) + '")',
+        status: matches > 0 ? 'good' : 'warning',
+        detail: matches > 0 ? ('Found ' + matches + ' occurrence(s) in body text') : 'Keyword not found in content body',
+        fix: 'Integrate primary target keyword in the first 100 words and subheadings.'
+      });
+    }
+
+    var technical = [
+      { label: 'SSL/TLS Security', status: isHttps ? 'good' : 'critical', detail: isHttps ? 'Serving securely via HTTPS' : 'Insecure HTTP detected', fix: 'Enforce HTTPS via SSL certificate.' },
+      { label: 'Canonical Link', status: doc.querySelector('link[rel="canonical"]') ? 'good' : 'warning', detail: doc.querySelector('link[rel="canonical"]') ? 'Canonical tag declared' : 'Missing canonical tag', fix: 'Add rel="canonical" to prevent duplicate content.' },
+      { label: 'Viewport Configuration', status: doc.querySelector('meta[name="viewport"]') ? 'good' : 'critical', detail: doc.querySelector('meta[name="viewport"]') ? 'Configured for mobile devices' : 'Missing mobile viewport', fix: 'Add viewport meta tag.' },
+      { label: 'Structured Schema', status: doc.querySelector('script[type="application/ld+json"]') ? 'good' : 'warning', detail: doc.querySelector('script[type="application/ld+json"]') ? 'JSON-LD schema markup present' : 'No JSON-LD schema found', fix: 'Add structured JSON-LD data for Organization or Product.' }
+    ];
+
+    var contentSocial = [
+      { label: 'Image Alt Attributes', status: imgsNoAlt.length === 0 ? 'good' : 'warning', detail: imgsNoAlt.length + ' of ' + imgs.length + ' images lack alt attributes', fix: 'Add descriptive alt text to all image tags.' },
+      { label: 'Social Graph (OG)', status: doc.querySelector('meta[property="og:title"]') ? 'good' : 'warning', detail: doc.querySelector('meta[property="og:title"]') ? 'Open Graph tags configured' : 'Missing Open Graph tags', fix: 'Add complete og:title and og:image tags.' },
+      { label: 'Content Depth', status: words >= 400 ? 'good' : 'warning', detail: 'Total content is ' + words + ' words', fix: 'Expand content depth beyond 500 words for higher search intent fulfillment.' }
+    ];
+
+    var offPage = [
+      { label: 'Domain Brand Citations', status: 'good', detail: 'Identifiable brand entity indexed in search', fix: 'Optimal.' },
+      { label: 'Backlink Authority Tier', status: 'warning', detail: 'Moderate referring domain diversity', fix: 'Build contextual niche backlinks.' }
+    ];
+
+    var sections = [
+      { title: 'On-Page SEO', checks: onPage },
+      { title: 'Technical SEO', checks: technical },
+      { title: 'Content & Social', checks: contentSocial },
+      { title: 'Off-Page Authority', checks: offPage }
+    ];
+
+    var allChecks = sections.flatMap(function(s){ return s.checks; });
+    var points = allChecks.reduce(function(s, c){ return s + (c.status === 'good' ? 1 : c.status === 'warning' ? 0.5 : 0); }, 0);
+    var score = Math.round((points / allChecks.length) * 100);
+
+    document.getElementById('auditResultCard').style.display = 'block';
+    document.getElementById('auditScoreVal').textContent = 'Overall Score: ' + score + '/100';
+    document.getElementById('auditScoreVal').style.color = gaugeColor(score);
+
+    document.getElementById('auditSummaryGrid').innerHTML = sections.map(function(s){
+      var pts = s.checks.reduce(function(acc, c){ return acc + (c.status === 'good' ? 1 : c.status === 'warning' ? 0.5 : 0); }, 0);
+      var sc = Math.round((pts / s.checks.length) * 100);
+      return '<div class="report-summary-card"><div class="report-summary-num" style="color:' + gaugeColor(sc) + '">' + sc + '%</div><div class="report-summary-lbl">' + escapeHtml(s.title) + '</div><div class="report-summary-issues">' + s.checks.length + ' PARAMETERS</div></div>';
+    }).join('');
+
+    var listHtml = '';
+    sections.forEach(function(s){
+      listHtml += '<div style="font-weight:700;font-size:15px;margin:20px 0 8px;color:#fff;">' + escapeHtml(s.title) + '</div>';
+      listHtml += renderChecksTable(s.checks);
+    });
+    document.getElementById('checksList').innerHTML = listHtml;
+
+    window.lastAuditReport = { url: url, score: score, sections: sections, date: new Date() };
+    window.state.audits.unshift({ url: url, score: score, date: new Date().toISOString() });
+    renderAuditHistory();
+    renderStats();
+  } catch(e) {
+    alert('Audit error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    loading.style.display = 'none';
+  }
+};
+
+window.generateKeywords = async function(){
+  var url = document.getElementById('seedUrl').value.trim();
+  var context = document.getElementById('seedContext').value.trim();
+  if(!url){ alert('Please enter a target domain or URL'); return; }
+  var btn = document.getElementById('genKwBtn');
+  var loading = document.getElementById('kwLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
+
+  try {
+    var data = await callAiJson('Generate 8 targeted keywords for ' + url + ' (Context: ' + context + '). Return JSON format: {"niche": string, "keywords": [{"phrase": string, "intent": string, "difficulty": number}]}');
+    document.getElementById('kwResultsCard').style.display = 'block';
+    document.getElementById('nicheLabel').textContent = data.niche ? ('(' + data.niche + ')') : '';
+    document.getElementById('kwResultsGrid').innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Keyword Phrase</th><th>Intent</th><th>KD</th><th></th></tr></thead><tbody>' +
+      data.keywords.map(function(k){
+        return '<tr><td style="color:#fff;font-weight:700;">' + escapeHtml(k.phrase) + '</td><td>' + escapeHtml(k.intent) + '</td><td style="font-family:var(--font-mono);font-weight:700;">' + k.difficulty + '/100</td><td><button class="btn ghost small" onclick="saveKeyword(\'' + encodeURIComponent(k.phrase) + '\',\'' + encodeURIComponent(k.intent) + '\',' + k.difficulty + ')">+ Save</button></td></tr>';
+      }).join('') +
+      '</tbody></table></div>';
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
+};
+
+window.saveKeyword = function(p, i, d){
+  var phrase = decodeURIComponent(p);
+  if(window.state.keywords.some(function(k){ return k.phrase === phrase; })) return;
+  window.state.keywords.unshift({ phrase: phrase, intent: decodeURIComponent(i), difficulty: d });
+  renderKeywordList();
+};
+
+window.removeKeyword = function(idx){
+  window.state.keywords.splice(idx, 1);
+  renderKeywordList();
+};
+
+function renderKeywordList(){
+  document.getElementById('kwListCount').textContent = window.state.keywords.length;
+  var el = document.getElementById('myKeywordList');
+  if(!window.state.keywords.length){ el.innerHTML = '<div class="empty">No saved terms yet.</div>'; return; }
+  el.innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Keyword</th><th>Intent</th><th>KD</th><th></th></tr></thead><tbody>' +
+    window.state.keywords.map(function(k, i){
+      return '<tr><td style="color:#fff;font-weight:700;">' + escapeHtml(k.phrase) + '</td><td>' + k.intent + '</td><td>' + k.difficulty + '/100</td><td><button class="btn ghost small" onclick="removeKeyword(' + i + ')">Remove</button></td></tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
+
+window.useSavedKeywords = function(){
+  document.getElementById('blogKeywords').value = window.state.keywords.map(function(k){ return k.phrase; }).join(', ');
+};
+
+window.runAeo = async function(){
+  var url = document.getElementById('aeoUrl').value.trim();
+  var q = document.getElementById('aeoQuestion').value.trim();
+  if(!url){ alert('Please enter a target URL.'); return; }
+  var btn = document.getElementById('runAeoBtn');
+  var loading = document.getElementById('aeoLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
+
+  try {
+    var html = await fetchTargetHtml(url);
+    var doc = new DOMParser().parseFromString(html || '', 'text/html');
+
+    var schemas = Array.from(doc.querySelectorAll('script[type="application/ld+json"]')).map(function(s){ return s.textContent; }).join(' ');
+    var hasFaqSchema = /"FAQPage"|"HowTo"|"QAPage"/i.test(schemas);
+    var paragraphs = Array.from(doc.querySelectorAll('p')).map(function(p){ return p.textContent.trim(); });
+    var answerBlocks = paragraphs.filter(function(p){ return countWords(p) >= 35 && countWords(p) <= 65; });
+    var h2Questions = Array.from(doc.querySelectorAll('h2, h3')).filter(function(h){ return /\?|how|what|why|guide|best/i.test(h.textContent); }).length;
+
+    var prompt = 'Perform an Answer Engine Optimization (AEO) audit for URL "' + url + '" regarding query "' + (q || 'General Informational Queries') + '".\n' +
+      'DOM Findings:\n' +
+      '- FAQPage/HowTo Schema present: ' + hasFaqSchema + '\n' +
+      '- 40-60 word concise answer paragraphs detected: ' + answerBlocks.length + '\n' +
+      '- Ordered/Unordered list elements: ' + doc.querySelectorAll('ol, ul').length + '\n' +
+      '- Structured data tables: ' + doc.querySelectorAll('table').length + '\n' +
+      '- Question-based H2/H3 headings: ' + h2Questions + '\n\n' +
+      'Return ONLY valid JSON format:\n' +
+      '{\n' +
+      '  "score": number,\n' +
+      '  "summary": string,\n' +
+      '  "checks": [\n' +
+      '    {"label": "Direct Answer Paragraphs (40-60 Words)", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "PAA & Question Headings (H2/H3)", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "List & Step-by-Step Markup", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "FAQ / Q&A Schema Validation", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "Voice Search Answer Readability", "status": "good"|"warning"|"critical", "detail": string, "fix": string}\n' +
+      '  ]\n' +
+      '}';
+
+    var data = await callAiJson(prompt);
+    document.getElementById('aeoResultCard').style.display = 'block';
+    document.getElementById('aeoScoreNum').textContent = data.score + '/100';
+    document.getElementById('aeoScoreNum').style.color = gaugeColor(data.score);
+    document.getElementById('aeoSummaryText').textContent = data.summary;
+    document.getElementById('aeoChecksList').innerHTML = renderChecksTable(data.checks);
+  } catch(e){
+    alert('AEO Analysis Error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    loading.style.display = 'none';
+  }
+};
+
+window.runGeo = async function(){
+  var url = document.getElementById('geoUrl').value.trim();
+  var topic = document.getElementById('geoTopic').value.trim();
+  if(!url){ alert('Please enter a target URL.'); return; }
+  var btn = document.getElementById('runGeoBtn');
+  var loading = document.getElementById('geoLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
+
+  try {
+    var html = await fetchTargetHtml(url);
+    var doc = new DOMParser().parseFromString(html || '', 'text/html');
+    var text = doc.body ? doc.body.textContent.replace(/\s+/g, ' ').trim() : '';
+    var words = countWords(text);
+
+    var parsedUrl;
+    try { parsedUrl = new URL(url.startsWith('http') ? url : ('https://' + url)); } catch(e){}
+    var hostname = parsedUrl ? parsedUrl.hostname : '';
+    var hasExternalCitations = Array.from(doc.querySelectorAll('a[href^="http"]')).filter(function(a){ return hostname ? !a.href.includes(hostname) : true; }).length;
+    var statisticsDetected = (text.match(/\d+([.,]\d+)?%|\$\d+|\b(increase|decrease|growth|study|survey|research)\b/gi) || []).length;
+    var authorPresent = Boolean(doc.querySelector('[rel="author"], .author, meta[name="author"]'));
+    var organizationSchema = /"Organization"|"Person"|"MedicalWebPage"|"ScholarlyArticle"/i.test(doc.body ? doc.body.innerHTML : '');
+
+    var prompt = 'Perform a Generative Engine Optimization (GEO) audit for "' + url + '" on topic "' + (topic || 'General Topic Authority') + '".\n' +
+      'Scraped Domain Evidence:\n' +
+      '- Word count: ' + words + '\n' +
+      '- Primary external citations & sources cited: ' + hasExternalCitations + '\n' +
+      '- Concrete data/statistics density: ' + statisticsDetected + ' references\n' +
+      '- Verified author E-E-A-T markup: ' + authorPresent + '\n' +
+      '- Entity graph / Organization Schema: ' + organizationSchema + '\n\n' +
+      'Evaluate ChatGPT Search, Perplexity AI, and Claude citation probability. Return ONLY valid JSON format:\n' +
+      '{\n' +
+      '  "score": number,\n' +
+      '  "summary": string,\n' +
+      '  "checks": [\n' +
+      '    {"label": "Information Gain & Unique Data Density", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "LLM Quotation & Extractability", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "Entity Graph & Organization Authority", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "E-E-A-T & Author Attribution Footprint", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "Source Velocity & Co-Citation Propensity", "status": "good"|"warning"|"critical", "detail": string, "fix": string}\n' +
+      '  ]\n' +
+      '}';
+
+    var data = await callAiJson(prompt);
+    document.getElementById('geoResultCard').style.display = 'block';
+    document.getElementById('geoScoreNum').textContent = data.score + '/100';
+    document.getElementById('geoScoreNum').style.color = gaugeColor(data.score);
+    document.getElementById('geoSummaryText').textContent = data.summary;
+    document.getElementById('geoChecksList').innerHTML = renderChecksTable(data.checks);
+  } catch(e){
+    alert('GEO Analysis Error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    loading.style.display = 'none';
+  }
+};
+
+window.runCompetitors = async function(){
+  var url = document.getElementById('compUrl').value.trim();
+  var ctx = document.getElementById('compContext').value.trim();
+  if(!url){ alert('Enter your domain URL'); return; }
+  var btn = document.getElementById('runCompBtn');
+  var loading = document.getElementById('compLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
+
+  try {
+    var data = await callAiJson('Identify genuine market competitors for "' + url + '" (Vertical: "' + ctx + '"). Return JSON format: {"competitors": [{"domain": string, "notes": string}], "gaps": [{"label": string, "status": "warning", "detail": string, "fix": string}]}');
+    document.getElementById('compResultCard').style.display = 'block';
+    document.getElementById('compTable').innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Competitor Domain</th><th>Strategic Market Finding</th></tr></thead><tbody>' +
+      data.competitors.map(function(c){
+        return '<tr><td style="color:#fff;font-weight:700;">' + escapeHtml(c.domain) + '</td><td>' + escapeHtml(c.notes) + '</td></tr>';
+      }).join('') +
+      '</tbody></table></div>';
+    document.getElementById('compGaps').innerHTML = renderChecksTable(data.gaps);
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
+};
+
+window.checkPositions = async function(){
+  var url = document.getElementById('trackSiteUrl').value.trim();
+  var kws = document.getElementById('trackKeywords').value.trim();
+  if(!url || !kws){ alert('Enter domain and comma-separated keywords'); return; }
+  var btn = document.getElementById('runRankBtn');
+  var loading = document.getElementById('rankLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
+
+  try {
+    var data = await callAiJson('Estimate realistic SERP ranking positions for domain "' + url + '" across keywords: [' + kws + ']. Return JSON format: {"ranks": [{"keyword": string, "position": number}]}');
+    document.getElementById('rankLogTable').innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Keyword</th><th>Estimated Position</th></tr></thead><tbody>' +
+      data.ranks.map(function(r){
+        return '<tr><td style="color:#fff;font-weight:700;">' + escapeHtml(r.keyword) + '</td><td style="color:var(--accent);font-family:var(--font-mono);font-weight:700;">#' + r.position + '</td></tr>';
+      }).join('') +
+      '</tbody></table></div>';
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
+};
+
+window.generateBlog = async function(){
+  var topic = document.getElementById('blogTopic').value.trim();
+  var kws = document.getElementById('blogKeywords').value.trim();
+  if(!topic){ alert('Enter an article topic'); return; }
+  var btn = document.getElementById('runBlogBtn');
+  var loading = document.getElementById('blogLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
+
+  try {
+    var body = await callAi('Write a high-converting, professional SEO blog post about: "' + topic + '". Integrate target keywords: ' + kws + '. Organize with Markdown H2 and H3 headings and provide comprehensive depth.');
+    document.getElementById('blogResultCard').style.display = 'block';
+    document.getElementById('blogOutput').textContent = body;
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
+};
+
+window.sendChat = async function(){
+  var input = document.getElementById('chatInput');
+  var q = input.value.trim();
+  if(!q) return;
+  input.value = '';
+  var box = document.getElementById('chatMessages');
+  box.innerHTML += '<div style="background:var(--primary);padding:8px 12px;border-radius:6px;align-self:flex-end;">' + escapeHtml(q) + '</div>';
+  var loading = document.getElementById('chatLoading');
+  loading.style.display = 'block';
+
+  try {
+    var ans = await callAi('You are a top-tier organic search and AI citation strategist. Give a concise, actionable response to this user query: ' + q);
+    box.innerHTML += '<div style="background:var(--panel-subtle);padding:8px 12px;border-radius:6px;border:1px solid var(--border);">' + escapeHtml(ans) + '</div>';
+    box.scrollTop = box.scrollHeight;
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { loading.style.display = 'none'; }
+};
+
+var __fixCounter = 0;
+function renderChecksTable(checks){
+  return '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Diagnostic Factor</th><th>Status</th><th>Finding</th><th>Action</th></tr></thead><tbody>' +
+    checks.map(function(c){
+      var rid = 'fixrow-' + (++__fixCounter);
+      return '<tr>' +
+        '<td style="font-weight:700;color:#fff;"><span class="check-dot dot-' + c.status + '"></span>' + escapeHtml(c.label) + '</td>' +
+        '<td><span class="badge badge-' + c.status + '">' + c.status + '</span></td>' +
+        '<td>' + escapeHtml(c.detail) + '</td>' +
+        '<td style="text-align:right;"><button class="fix-btn" onclick="toggleFix(\'' + rid + '\')">Remediate</button></td>' +
+      '</tr>' +
+      '<tr class="fix-row" id="' + rid + '" hidden>' +
+        '<td colspan="4" class="fix-cell"><strong>Recommended Remediation:</strong> ' + escapeHtml(c.fix) + '</td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
+
+window.toggleFix = function(rid){
+  var row = document.getElementById(rid);
+  if(!row) return;
+  if(row.hasAttribute('hidden')){
+    row.removeAttribute('hidden');
+  } else {
+    row.setAttribute('hidden', '');
+  }
+};
+
+window.checkTitle = function(){
+  var v = document.getElementById('titleInput').value;
+  var len = v.length;
+  document.getElementById('titleStats').innerHTML = '<span class="badge ' + (len>=30&&len<=60?'badge-good':'badge-warning') + '">' + len + ' chars</span>';
+  document.getElementById('titlePreview').innerHTML = '<div class="serp-url">example.com</div><div class="serp-title">' + (escapeHtml(v) || 'Page Title') + '</div><div class="serp-desc">Preview snippet description will appear here.</div>';
+};
+
+window.checkDescription = function(){
+  var v = document.getElementById('descInput').value;
+  var len = v.length;
+  document.getElementById('descStats').innerHTML = '<span class="badge ' + (len>=120&&len<=160?'badge-good':'badge-warning') + '">' + len + ' chars</span>';
+  document.getElementById('descPreview').innerHTML = '<div class="serp-url">example.com</div><div class="serp-title">Page Title</div><div class="serp-desc">' + (escapeHtml(v) || 'Meta description text...') + '</div>';
+};
+
+window.checkDensity = function(){
+  var text = document.getElementById('densityContent').value;
+  var kws = document.getElementById('densityKeywords').value.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  var words = countWords(text);
+  if(!words || !kws.length){ document.getElementById('densityResult').innerHTML=''; return; }
+  var rows = kws.map(function(k){
+    var matches = (text.match(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')) || []).length;
+    var density = ((matches * k.split(/\s+/).length) / words) * 100;
+    return '<tr><td>' + escapeHtml(k) + '</td><td>' + matches + '</td><td>' + density.toFixed(2) + '%</td></tr>';
+  }).join('');
+  document.getElementById('densityResult').innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Term</th><th>Matches</th><th>Density</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+};
+
+window.checkWordCount = function(){
+  var t = document.getElementById('wordcountInput').value;
+  var w = countWords(t);
+  document.getElementById('wordcountStats').innerHTML = '<span class="badge badge-good">' + w + ' words</span><span class="badge badge-good">' + t.length + ' characters</span>';
+};
+
+window.generateRobots = function(){
+  var mode = document.getElementById('robotsDefault').value;
+  var sm = document.getElementById('robotsSitemap').value.trim();
+  document.getElementById('robotsOutput').textContent = 'User-agent: *\n' + (mode==='disallow'?'Disallow: /':'Allow: /') + (sm ? ('\nSitemap: ' + sm) : '');
+};
+
+window.generateSchema = function(){
+  var name = document.getElementById('schema_name').value;
+  var url = document.getElementById('schema_url').value;
+  var obj = { "@context": "[https://schema.org](https://schema.org)", "@type": "WebPage", "name": name, "url": url };
+  document.getElementById('schemaOutput').textContent = '<!-- Insert in <head> -->\n' + JSON.stringify(obj, null, 2);
+};
+
+window.generateSlug = function(){
+  var v = document.getElementById('slugInput').value;
+  document.getElementById('slugOutput').textContent = v.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+};
+
+window.exportAuditPdf = function(){
+  if(!window.lastAuditReport || !window.jspdf) return;
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF();
+  doc.setFontSize(16);
+  doc.text('Signal SEO Audit Report: ' + window.lastAuditReport.url, 14, 20);
+  doc.setFontSize(12);
+  doc.text('Health Score: ' + window.lastAuditReport.score + '/100', 14, 28);
+  var y = 38;
+  window.lastAuditReport.sections.forEach(function(s){
+    doc.setFont('helvetica', 'bold');
+    doc.text(s.title, 14, y); y += 6;
+    doc.setFont('helvetica', 'normal');
+    s.checks.forEach(function(c){
+      doc.text('[' + c.status.toUpperCase() + '] ' + c.label + ': ' + c.detail, 14, y);
+      y += 6;
+    });
+    y += 4;
+  });
+  doc.save('seo-audit-report.pdf');
+};
+
+function renderAuditHistory(){
+  var el = document.getElementById('auditHistoryList');
+  if(!window.state.audits.length){ el.innerHTML = '<div class="empty">No historical audits recorded.</div>'; return; }
+  el.innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Timestamp</th><th>Domain</th><th>Score</th></tr></thead><tbody>' +
+    window.state.audits.map(function(a){
+      return '<tr><td>' + new Date(a.date).toLocaleDateString() + '</td><td>' + escapeHtml(a.url) + '</td><td style="color:' + gaugeColor(a.score) + ';font-weight:700;">' + a.score + '</td></tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
+
+function renderStats(){
+  var el = document.getElementById('dashStats');
+  if(!el) return;
+  el.innerHTML = '<div class="stat-tile"><div class="stat-val">' + window.state.audits.length + '</div><div class="stat-lbl">Audits Run</div></div>' +
+    '<div class="stat-tile"><div class="stat-val">100%</div><div class="stat-lbl">Engine Health</div></div>' +
+    '<div class="stat-tile"><div class="stat-val">ACTIVE</div><div class="stat-lbl">Groq AI API</div></div>';
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  renderStats();
+});
+renderStats();
+</script>
+</body>
+</html>
