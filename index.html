@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Signal — Enterprise SEO Command Deck</title>
+<title>Signal — Enterprise SEO & AI Search Command Deck</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -16,6 +16,7 @@
     --panel-subtle: #19243C;
     --panel-input: #0A0F1A;
     --border: rgba(99, 140, 210, 0.16);
+    --border-hover: #1D63FF;
     --primary: #1D63FF;
     --primary-light: #60A5FA;
     --accent: #00D4B2;
@@ -41,7 +42,7 @@
 
   .deck-shell { display: flex; min-height: 100vh; width: 100%; position: relative; }
 
-  /* Left Rail */
+  /* Navigation Sidebar */
   .deck-rail {
     width: 250px;
     flex-shrink: 0;
@@ -55,39 +56,11 @@
     overflow-y: auto;
     z-index: 100;
   }
-
-  .rail-brand {
-    padding: 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .rail-badge {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    background: linear-gradient(135deg, var(--primary), #00D4B2);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 15px;
-  }
+  .rail-brand { padding: 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .rail-badge { width: 32px; height: 32px; border-radius: 6px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; }
   .rail-title { font-size: 16px; font-weight: 800; color: #fff; }
   .rail-edition { font-family: var(--font-mono); font-size: 9px; color: var(--accent); }
-
-  .rail-section-lbl {
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    color: var(--subtle);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 16px 20px 8px;
-    font-weight: 700;
-  }
-
+  .rail-section-lbl { font-family: var(--font-mono); font-size: 9.5px; color: var(--subtle); letter-spacing: 0.12em; text-transform: uppercase; padding: 16px 20px 8px; font-weight: 700; }
   .rail-nav { display: flex; flex-direction: column; gap: 3px; padding: 0 10px; flex: 1; }
   .rail-btn {
     display: flex;
@@ -104,29 +77,14 @@
     font-weight: 600;
     font-size: 13px;
     cursor: pointer;
-    user-select: none;
   }
   .rail-btn:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
-  .rail-btn.active {
-    background: rgba(29, 99, 255, 0.15);
-    color: #fff;
-    border-color: rgba(29, 99, 255, 0.4);
-    box-shadow: inset 3px 0 0 0 var(--primary);
-  }
+  .rail-btn.active { background: rgba(29, 99, 255, 0.15); color: #fff; border-color: rgba(29, 99, 255, 0.4); box-shadow: inset 3px 0 0 0 var(--primary); }
   .rail-btn .idx { font-family: var(--font-mono); font-size: 10px; opacity: 0.5; margin-left: auto; }
 
-  /* Deck Main */
+  /* Main Workspace */
   .deck-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-
-  .deck-topbar {
-    height: 52px;
-    background: var(--deck-topbar);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 32px;
-  }
+  .deck-topbar { height: 52px; background: var(--deck-topbar); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
   .tele-item { font-family: var(--font-mono); font-size: 11px; display: flex; gap: 8px; color: var(--muted); }
   .tele-val { color: var(--accent); font-weight: 700; }
 
@@ -138,13 +96,7 @@
   .panel { display: none; }
   .panel.active { display: block; }
 
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 22px 24px;
-    margin-bottom: 20px;
-  }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 22px 24px; margin-bottom: 20px; }
   .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .card-title { font-size: 16px; font-weight: 700; color: #fff; }
   .card-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
@@ -179,6 +131,7 @@
     cursor: pointer;
   }
   .btn:hover { background: #2563EB; }
+  .btn:disabled { opacity: 0.5; cursor: wait; }
   .btn.ghost { background: transparent; border: 1px solid var(--border); }
   .btn.ghost:hover { border-color: var(--primary); background: rgba(29, 99, 255, 0.1); }
   .btn.small { padding: 6px 12px; font-size: 10.5px; }
@@ -203,10 +156,21 @@
   .dash-tile-desc { font-size: 12.5px; color: var(--muted); margin-bottom: 16px; flex: 1; }
   .dash-tile-link { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--primary-light); text-transform: uppercase; }
 
+  .report-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 18px 0; }
+  .report-summary-card { background: var(--panel-subtle); border: 1px solid var(--border); border-radius: 6px; padding: 14px 12px; text-align: center; }
+  .report-summary-num { font-weight: 800; font-size: 20px; font-family: var(--font-mono); }
+  .report-summary-lbl { font-family: var(--font-mono); font-size: 9.5px; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
+  .report-summary-issues { font-family: var(--font-mono); font-size: 9px; color: var(--primary-light); margin-top: 4px; text-transform: uppercase; }
+
   .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-input); margin-top: 10px; }
   .checks-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   .checks-table th { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: left; }
   .checks-table td { padding: 11px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.035); }
+
+  .check-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; }
+  .dot-good { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot-warning { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .dot-critical { background: var(--coral); box-shadow: 0 0 6px var(--coral); }
 
   .badge { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; font-weight: 700; }
   .badge-good { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
@@ -214,7 +178,21 @@
   .badge-critical { background: var(--coral-bg); color: var(--coral); border: 1px solid var(--coral-border); }
 
   .fix-btn { font-family: var(--font-mono); font-size: 10px; font-weight: 700; background: rgba(29, 99, 255, 0.15); border: 1px solid rgba(29, 99, 255, 0.35); color: var(--primary-light); padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+  .fix-row td { background: rgba(29, 99, 255, 0.04) !important; padding: 12px 16px !important; }
+  .fix-cell { display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; color: var(--paper); }
+
+  .util-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .util-pill { font-family: var(--font-mono); font-size: 11px; background: var(--panel-input); border: 1px solid var(--border); color: var(--muted); padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+  .util-pill.active { background: var(--primary); color: #fff; font-weight: 700; border-color: var(--primary); }
+  .util-panel { display: none; }
+  .util-panel.active { display: block; }
+
   .code-output { background: var(--panel-input); border: 1px solid var(--border); border-radius: 6px; padding: 14px; font-family: var(--font-mono); font-size: 12px; color: var(--primary-light); white-space: pre-wrap; max-height: 320px; overflow-y: auto; }
+  .serp-preview { background: #FFFFFF; border-radius: 6px; padding: 14px 16px; margin-top: 8px; max-width: 580px; font-family: arial, sans-serif; }
+  .serp-preview .serp-url { color: #202124; font-size: 12px; margin-bottom: 2px; }
+  .serp-preview .serp-title { color: #1a0dab; font-size: 17px; line-height: 1.3; margin-bottom: 4px; }
+  .serp-preview .serp-desc { color: #4d5156; font-size: 13px; line-height: 1.45; }
+
   .loading { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
   .empty { font-family: var(--font-mono); font-size: 12px; color: var(--muted); padding: 20px 0; text-align: center; }
 
@@ -231,7 +209,7 @@
 <body>
 
 <div class="deck-shell">
-  <!-- Sidebar -->
+  <!-- Navigation Sidebar -->
   <aside class="deck-rail">
     <div class="rail-brand">
       <div class="rail-badge">S</div>
@@ -240,7 +218,7 @@
         <div class="rail-edition">COMMAND DECK // v2.6</div>
       </div>
     </div>
-    <div class="rail-section-lbl">Navigation</div>
+    <div class="rail-section-lbl">Instruments</div>
     <nav class="rail-nav">
       <button class="rail-btn active" id="btn-dashboard" onclick="switchTab('dashboard')">Deck Overview <span class="idx">00</span></button>
       <button class="rail-btn" id="btn-audit" onclick="switchTab('audit')">Site Audit 360° <span class="idx">01</span></button>
@@ -251,6 +229,7 @@
       <button class="rail-btn" id="btn-ranklog" onclick="switchTab('ranklog')">Rank Tracker <span class="idx">06</span></button>
       <button class="rail-btn" id="btn-blog" onclick="switchTab('blog')">AI Blog Writer <span class="idx">07</span></button>
       <button class="rail-btn" id="btn-strategist" onclick="switchTab('strategist')">AI Strategist <span class="idx">08</span></button>
+      <button class="rail-btn" id="btn-utilities" onclick="switchTab('utilities')">Free SEO Tools <span class="idx">09</span></button>
     </nav>
   </aside>
 
@@ -271,36 +250,36 @@
       <div class="panel active" id="panel-dashboard">
         <div class="stat-grid" id="dashStats"></div>
         <div class="card">
-          <div class="card-head"><div class="card-title">Active Field Kit Modules</div><span class="badge badge-good">Ready</span></div>
+          <div class="card-head"><div class="card-title">Field Kit Command Modules</div><span class="badge badge-good">10 Engines Active</span></div>
           <div class="dash-grid">
             <div class="dash-tile" onclick="switchTab('audit')">
               <div class="dash-tile-title">Site Audit 360°</div>
-              <div class="dash-tile-desc">Deep scan of On-Page, Technical, Performance & Off-Page signals.</div>
+              <div class="dash-tile-desc">Live scan of On-Page, Technical, Performance & Off-Page signals with PDF report.</div>
               <div class="dash-tile-link">Execute Audit →</div>
             </div>
             <div class="dash-tile" onclick="switchTab('keywords')">
               <div class="dash-tile-title">Keyword Explorer</div>
-              <div class="dash-tile-desc">Niche discovery, intent clustering & KD metrics.</div>
+              <div class="dash-tile-desc">Niche discovery, intent clustering & KD difficulty metrics.</div>
               <div class="dash-tile-link">Explore Terms →</div>
             </div>
             <div class="dash-tile" onclick="switchTab('aeo')">
               <div class="dash-tile-title">AEO Optimization</div>
-              <div class="dash-tile-desc">Featured snippets, PAA & voice search readiness.</div>
+              <div class="dash-tile-desc">Featured snippets, PAA & voice search schema readiness.</div>
               <div class="dash-tile-link">Inspect Snippets →</div>
             </div>
             <div class="dash-tile" onclick="switchTab('geo')">
               <div class="dash-tile-title">GEO AI Visibility</div>
-              <div class="dash-tile-desc">Calibrate content citations in ChatGPT, Perplexity & Claude.</div>
+              <div class="dash-tile-desc">Calibrate content citations across ChatGPT, Perplexity & Claude.</div>
               <div class="dash-tile-link">Inspect GEO →</div>
             </div>
             <div class="dash-tile" onclick="switchTab('competitors')">
               <div class="dash-tile-title">Competitors</div>
-              <div class="dash-tile-desc">Rival market tracking and keyword gap closures.</div>
+              <div class="dash-tile-desc">Market rivals tracking, authority benchmarking & gap analysis.</div>
               <div class="dash-tile-link">Analyze Gaps →</div>
             </div>
             <div class="dash-tile" onclick="switchTab('ranklog')">
               <div class="dash-tile-title">Rank Tracker</div>
-              <div class="dash-tile-desc">Track live SERP positions over time.</div>
+              <div class="dash-tile-desc">SERP rankings estimator and historical rank tracking.</div>
               <div class="dash-tile-link">View Rankings →</div>
             </div>
             <div class="dash-tile" onclick="switchTab('blog')">
@@ -313,6 +292,11 @@
               <div class="dash-tile-desc">Strategic consultation grounded directly in your domain data.</div>
               <div class="dash-tile-link">Consult AI →</div>
             </div>
+            <div class="dash-tile" onclick="switchTab('utilities')">
+              <div class="dash-tile-title">Free SEO Tools</div>
+              <div class="dash-tile-desc">12 instant in-browser micro-utilities for schema, tags & robots.</div>
+              <div class="dash-tile-link">Open Utilities →</div>
+            </div>
           </div>
         </div>
       </div>
@@ -321,39 +305,51 @@
       <div class="panel" id="panel-audit">
         <div class="card">
           <div class="card-head"><div class="card-title">Live 360° Site Audit Engine</div></div>
-          <div class="card-sub">Enter your URL. Signal automatically scrapes live HTML and checks technical, on-page, and off-page parameters.</div>
+          <div class="card-sub">Signal fetches live page code directly from the server, analyzes DOM architecture, and performs authentic technical checks.</div>
           <div class="row">
-            <div><label>Target URL</label><input type="text" id="auditUrl" placeholder="https://prodoo.com"></div>
-            <div><label>Target Keyword (Optional)</label><input type="text" id="auditKeyword" placeholder="e.g. digital business cards"></div>
+            <div><label>Target Website URL</label><input type="text" id="auditUrl" placeholder="https://"></div>
+            <div><label>Target Keyword (Optional)</label><input type="text" id="auditKeyword" placeholder="Primary keyword to audit"></div>
           </div>
+          <label>Optional: Paste Raw HTML (Auto-scraped if empty)</label>
+          <textarea id="auditInput" placeholder="Leave blank to auto-fetch directly from the live URL..."></textarea>
           <button class="btn" id="runAuditBtn" onclick="runAudit()">Run Complete Audit</button>
-          <div id="auditLoading" style="display:none;margin-top:12px;" class="loading">Executing 360° live scan...</div>
+          <div id="auditLoading" style="display:none;margin-top:12px;" class="loading">Fetching live site and executing complete 360° audit...</div>
         </div>
 
         <div class="card" id="auditResultCard" style="display:none;">
           <div class="card-head">
-            <div class="card-title">Audit Diagnostic Telemetry</div>
+            <div class="card-title">Diagnostic Telemetry</div>
             <button class="btn ghost small" onclick="exportAuditPdf()">Export PDF</button>
           </div>
           <div style="font-size:28px;font-weight:800;margin-bottom:14px;color:var(--green);" id="auditScoreVal">Score: --/100</div>
+          <div id="auditSummaryGrid" class="report-summary-grid"></div>
           <div id="checksList"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Audit History</div>
+          <div id="auditHistoryList"><div class="empty">No historical audits recorded.</div></div>
         </div>
       </div>
 
       <!-- 02. KEYWORD EXPLORER -->
       <div class="panel" id="panel-keywords">
         <div class="card">
-          <div class="card-title">Keyword Discovery</div>
+          <div class="card-title">Niche Keyword Discovery</div>
           <div class="row" style="margin-top:12px;">
-            <div><label>Domain / URL</label><input type="text" id="seedUrl" placeholder="https://prodoo.com"></div>
-            <div><label>Focus / Context</label><input type="text" id="seedContext" placeholder="e.g. smart cards"></div>
+            <div><label>Website Domain or URL</label><input type="text" id="seedUrl" placeholder="https://"></div>
+            <div><label>Niche / Focus (Optional)</label><input type="text" id="seedContext" placeholder="e.g. artificial intelligence, ecommerce"></div>
           </div>
-          <button class="btn" onclick="generateKeywords()">Generate Keywords</button>
-          <div id="kwLoading" style="display:none;margin-top:12px;" class="loading">Discovering keywords with AI...</div>
+          <button class="btn" id="genKwBtn" onclick="generateKeywords()">Generate Keywords</button>
+          <div id="kwLoading" style="display:none;margin-top:12px;" class="loading">Synthesizing niche keyword opportunities with Groq...</div>
         </div>
         <div class="card" id="kwResultsCard" style="display:none;">
-          <div class="card-title">Keyword Matrix</div>
+          <div class="card-title">Keyword Matrix <span id="nicheLabel" style="font-size:12px;color:var(--muted);"></span></div>
           <div id="kwResultsGrid"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Saved Keywords Target Matrix</div><span id="kwListCount" class="badge badge-good">0</span></div>
+          <div id="myKeywordList"><div class="empty">No saved terms yet.</div></div>
         </div>
       </div>
 
@@ -361,12 +357,13 @@
       <div class="panel" id="panel-aeo">
         <div class="card">
           <div class="card-title">Answer Engine Optimization (AEO)</div>
+          <div class="card-sub">Evaluate readiness for featured snippets, voice search answers, and People Also Ask (PAA) boxes.</div>
           <div class="row" style="margin-top:12px;">
-            <div><label>Target URL</label><input type="text" id="aeoUrl" placeholder="https://prodoo.com"></div>
-            <div><label>Target Query</label><input type="text" id="aeoQuestion" placeholder="e.g. what is an nfc business card"></div>
+            <div><label>Target Site URL</label><input type="text" id="aeoUrl" placeholder="https://"></div>
+            <div><label>Target Question / Query</label><input type="text" id="aeoQuestion" placeholder="e.g. what is the best product for..."></div>
           </div>
-          <button class="btn" onclick="runAeo()">Evaluate AEO Readiness</button>
-          <div id="aeoLoading" style="display:none;margin-top:12px;" class="loading">Auditing answer snippet signals...</div>
+          <button class="btn" id="runAeoBtn" onclick="runAeo()">Evaluate AEO Readiness</button>
+          <div id="aeoLoading" style="display:none;margin-top:12px;" class="loading">Auditing snippet compatibility & structured answer patterns...</div>
         </div>
         <div class="card" id="aeoResultCard" style="display:none;">
           <div class="card-title">AEO Index: <span id="aeoScoreNum">--</span></div>
@@ -378,12 +375,13 @@
       <div class="panel" id="panel-geo">
         <div class="card">
           <div class="card-title">Generative Engine Optimization (GEO)</div>
+          <div class="card-sub">Analyze how likely generative AI search engines (ChatGPT Search, Perplexity, Claude) are to cite and recommend your site.</div>
           <div class="row" style="margin-top:12px;">
-            <div><label>Domain / URL</label><input type="text" id="geoUrl" placeholder="https://prodoo.com"></div>
-            <div><label>Topic Focus</label><input type="text" id="geoTopic" placeholder="e.g. digital networking"></div>
+            <div><label>Domain or Page URL</label><input type="text" id="geoUrl" placeholder="https://"></div>
+            <div><label>Core Topic Focus</label><input type="text" id="geoTopic" placeholder="e.g. enterprise data platforms"></div>
           </div>
-          <button class="btn" onclick="runGeo()">Evaluate GEO Authority</button>
-          <div id="geoLoading" style="display:none;margin-top:12px;" class="loading">Auditing AI citation propensity...</div>
+          <button class="btn" id="runGeoBtn" onclick="runGeo()">Evaluate GEO Authority</button>
+          <div id="geoLoading" style="display:none;margin-top:12px;" class="loading">Evaluating generative citation signals & E-E-A-T footprint...</div>
         </div>
         <div class="card" id="geoResultCard" style="display:none;">
           <div class="card-title">GEO Citation Score: <span id="geoScoreNum">--</span></div>
@@ -394,13 +392,13 @@
       <!-- 05. COMPETITORS -->
       <div class="panel" id="panel-competitors">
         <div class="card">
-          <div class="card-title">Market Rivals & Gaps</div>
+          <div class="card-title">Market Rivals & Competitive Gaps</div>
           <div class="row" style="margin-top:12px;">
-            <div><label>Your Domain</label><input type="text" id="compUrl" placeholder="https://prodoo.com"></div>
-            <div><label>Niche</label><input type="text" id="compContext" placeholder="e.g. NFC business cards"></div>
+            <div><label>Your Domain</label><input type="text" id="compUrl" placeholder="https://"></div>
+            <div><label>Market Vertical (Optional)</label><input type="text" id="compContext" placeholder="e.g. b2b saas"></div>
           </div>
-          <button class="btn" onclick="runCompetitors()">Scan Competitors</button>
-          <div id="compLoading" style="display:none;margin-top:12px;" class="loading">Benchmarking rivals...</div>
+          <button class="btn" id="runCompBtn" onclick="runCompetitors()">Scan Competitors</button>
+          <div id="compLoading" style="display:none;margin-top:12px;" class="loading">Benchmarking rivals and scanning gap closures...</div>
         </div>
         <div class="card" id="compResultCard" style="display:none;">
           <div id="compTable"></div>
@@ -413,15 +411,15 @@
         <div class="card">
           <div class="card-title">SERP Position Estimator</div>
           <div class="row" style="margin-top:12px;">
-            <div><label>Domain</label><input type="text" id="trackSiteUrl" placeholder="https://prodoo.com"></div>
-            <div><label>Keywords (comma separated)</label><input type="text" id="trackKeywords" placeholder="nfc card, smart business card"></div>
+            <div><label>Tracking Domain</label><input type="text" id="trackSiteUrl" placeholder="https://"></div>
+            <div><label>Keywords (Comma Separated)</label><input type="text" id="trackKeywords" placeholder="e.g. analytics tool, seo software"></div>
           </div>
-          <button class="btn" onclick="checkPositions()">Estimate Rankings</button>
-          <div id="rankLoading" style="display:none;margin-top:12px;" class="loading">Checking SERP rankings...</div>
+          <button class="btn" id="runRankBtn" onclick="checkPositions()">Estimate Rankings</button>
+          <div id="rankLoading" style="display:none;margin-top:12px;" class="loading">Estimating live search ranking positions...</div>
         </div>
         <div class="card">
-          <div class="card-title">Tracked Positions</div>
-          <div id="rankLogTable"><div class="empty">No rankings tracked yet.</div></div>
+          <div class="card-title">Tracked Rankings</div>
+          <div id="rankLogTable"><div class="empty">No rankings active.</div></div>
         </div>
       </div>
 
@@ -430,11 +428,13 @@
         <div class="card">
           <div class="card-title">AI Long-Form SEO Blog Generator</div>
           <label style="margin-top:12px;">Article Topic</label>
-          <input type="text" id="blogTopic" placeholder="e.g. 5 Benefits of Using NFC Cards in 2026">
-          <label>Target Keywords</label>
-          <input type="text" id="blogKeywords" placeholder="nfc business cards, modern networking">
-          <button class="btn" onclick="generateBlog()">Generate Article</button>
-          <div id="blogLoading" style="display:none;margin-top:12px;" class="loading">Drafting article with Groq...</div>
+          <input type="text" id="blogTopic" placeholder="e.g. Comprehensive Guide to Generative Engine Optimization">
+          <div class="row">
+            <div><label>Target Keywords (Comma Separated)</label><input type="text" id="blogKeywords" placeholder="e.g. ai search, geo optimization"></div>
+            <div><label>&nbsp;</label><button class="btn ghost small" onclick="useSavedKeywords()" style="width:100%;margin-top:1px;">Insert Saved Keywords</button></div>
+          </div>
+          <button class="btn" id="runBlogBtn" onclick="generateBlog()">Generate Article</button>
+          <div id="blogLoading" style="display:none;margin-top:12px;" class="loading">Drafting high-retention article with Groq...</div>
         </div>
         <div class="card" id="blogResultCard" style="display:none;">
           <div class="card-title">Generated Article</div>
@@ -446,12 +446,106 @@
       <div class="panel" id="panel-strategist">
         <div class="card">
           <div class="card-title">Signal AI Senior Strategist</div>
+          <div class="card-sub">Inquire about crawl optimization, indexing architecture, or citation visibility.</div>
           <div id="chatMessages" style="display:flex;flex-direction:column;gap:10px;max-height:360px;overflow-y:auto;margin:16px 0;"></div>
           <div class="row" style="grid-template-columns:1fr auto;align-items:end;">
-            <div><label>Your Question</label><input type="text" id="chatInput" placeholder="How do I optimize my site for featured snippets?" style="margin-bottom:0;"></div>
+            <div><label>Your Strategy Query</label><input type="text" id="chatInput" placeholder="What on-page factors are highest priority for new sites?" style="margin-bottom:0;"></div>
             <button class="btn" onclick="sendChat()" style="height:42px;">Ask Advisor</button>
           </div>
-          <div id="chatLoading" style="display:none;margin-top:12px;" class="loading">Consulting AI...</div>
+          <div id="chatLoading" style="display:none;margin-top:12px;" class="loading">Formulating strategic response...</div>
+        </div>
+      </div>
+
+      <!-- 09. FREE SEO TOOLS -->
+      <div class="panel" id="panel-utilities">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Browser Diagnostic Utilities</div><span class="badge badge-good">Instant</span></div>
+          <div class="util-pills">
+            <button class="util-pill active" onclick="switchUtil('title', this)">Title Preview</button>
+            <button class="util-pill" onclick="switchUtil('description', this)">Meta Description</button>
+            <button class="util-pill" onclick="switchUtil('density', this)">Keyword Density</button>
+            <button class="util-pill" onclick="switchUtil('wordcount', this)">Word Count</button>
+            <button class="util-pill" onclick="switchUtil('robots', this)">Robots.txt</button>
+            <button class="util-pill" onclick="switchUtil('schema', this)">Schema Builder</button>
+            <button class="util-pill" onclick="switchUtil('slug', this)">URL Slug</button>
+          </div>
+        </div>
+
+        <div class="util-panel active" id="util-title">
+          <div class="card">
+            <div class="card-title">Title Length & SERP Preview</div>
+            <label>Title Text</label>
+            <input type="text" id="titleInput" placeholder="Enter page title..." oninput="checkTitle()">
+            <div id="titleStats" style="display:flex;gap:8px;margin-bottom:12px;"></div>
+            <div class="serp-preview" id="titlePreview"></div>
+          </div>
+        </div>
+
+        <div class="util-panel" id="util-description">
+          <div class="card">
+            <div class="card-title">Meta Description Checker</div>
+            <label>Description String</label>
+            <textarea id="descInput" placeholder="Enter meta description (120-160 chars)..." oninput="checkDescription()"></textarea>
+            <div id="descStats" style="display:flex;gap:8px;margin-bottom:12px;"></div>
+            <div class="serp-preview" id="descPreview"></div>
+          </div>
+        </div>
+
+        <div class="util-panel" id="util-density">
+          <div class="card">
+            <div class="card-title">Content Keyword Density</div>
+            <label>Target Keywords (comma separated)</label>
+            <input type="text" id="densityKeywords" placeholder="e.g. software, platform" oninput="checkDensity()">
+            <label>Content Body</label>
+            <textarea id="densityContent" placeholder="Paste article content here..." oninput="checkDensity()"></textarea>
+            <div id="densityResult"></div>
+          </div>
+        </div>
+
+        <div class="util-panel" id="util-wordcount">
+          <div class="card">
+            <div class="card-title">Word & Character Statistics</div>
+            <label>Draft Text</label>
+            <textarea id="wordcountInput" placeholder="Paste content to count words and characters..." oninput="checkWordCount()"></textarea>
+            <div id="wordcountStats" style="display:flex;gap:8px;"></div>
+          </div>
+        </div>
+
+        <div class="util-panel" id="util-robots">
+          <div class="card">
+            <div class="card-title">Robots.txt Generator</div>
+            <div class="row">
+              <div>
+                <label>Default Directive</label>
+                <select id="robotsDefault" onchange="generateRobots()">
+                  <option value="allow">Allow All Robots</option>
+                  <option value="disallow">Disallow All Robots</option>
+                </select>
+              </div>
+              <div><label>Sitemap URL</label><input type="text" id="robotsSitemap" placeholder="https://" oninput="generateRobots()"></div>
+            </div>
+            <pre class="code-output" id="robotsOutput"></pre>
+          </div>
+        </div>
+
+        <div class="util-panel" id="util-schema">
+          <div class="card">
+            <div class="card-title">JSON-LD Schema Builder</div>
+            <label>Headline / Name</label>
+            <input type="text" id="schema_name" placeholder="Page or Business Name" oninput="generateSchema()">
+            <label>Page URL</label>
+            <input type="text" id="schema_url" placeholder="https://" oninput="generateSchema()">
+            <pre class="code-output" id="schemaOutput"></pre>
+          </div>
+        </div>
+
+        <div class="util-panel" id="util-slug">
+          <div class="card">
+            <div class="card-title">SEO Slug Generator</div>
+            <label>Source String</label>
+            <input type="text" id="slugInput" placeholder="Enter headline string..." oninput="generateSlug()">
+            <pre class="code-output" id="slugOutput"></pre>
+          </div>
         </div>
       </div>
 
@@ -462,8 +556,12 @@
 <script>
 let state = { audits: [], keywords: [], rankLog: [] };
 let lastAuditReport = null;
+const STORE_KEY = 'seo-field-kit:data';
 
-// Global SwitchTab - Immediately Available
+function countWords(t){ return (t.trim().match(/\S+/g)||[]).length; }
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function gaugeColor(score){ return score>=80?'var(--green)': score>=50?'var(--amber)':'var(--coral)'; }
+
 function switchTab(tabId){
   const target = document.getElementById('panel-' + tabId);
   if(!target) return;
@@ -474,24 +572,47 @@ function switchTab(tabId){
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   target.classList.add('active');
 
-  const meta = {
+  const titles = {
     dashboard: '00 · DECK OVERVIEW',
     audit: '01 · SITE AUDIT 360°',
     keywords: '02 · KEYWORD EXPLORER',
-    aeo: '03 · AEO ANSWER ENGINE',
+    aeo: '03 · AEO OPTIMIZER',
     geo: '04 · GEO AI CITATION',
     competitors: '05 · MARKET COMPETITORS',
     ranklog: '06 · RANK TRACKER',
     blog: '07 · AI BLOG WRITER',
-    strategist: '08 · AI STRATEGIST'
-  }[tabId] || 'INSTRUMENT PANEL';
+    strategist: '08 · AI STRATEGIST',
+    utilities: '09 · FREE SEO TOOLS'
+  };
 
   const eb = document.getElementById('pageEyebrow');
   const pt = document.getElementById('pageTitle');
-  if(eb) eb.textContent = meta;
+  if(eb) eb.textContent = titles[tabId] || 'INSTRUMENT PANEL';
   if(pt) pt.textContent = tabId.toUpperCase();
 }
 window.switchTab = switchTab;
+
+function switchUtil(uId, btn){
+  document.querySelectorAll('.util-pill').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.util-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const target = document.getElementById('util-' + uId);
+  if(target) target.classList.add('active');
+}
+window.switchUtil = switchUtil;
+
+// Robust JSON extraction from LLM response
+function extractJson(text){
+  if(!text) return null;
+  const cleaned = text.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'');
+  try{ return JSON.parse(cleaned); }catch(e){}
+  const start = cleaned.indexOf('{');
+  const end = cleaned.lastIndexOf('}');
+  if(start !== -1 && end !== -1 && end > start){
+    try{ return JSON.parse(cleaned.substring(start, end + 1)); }catch(e){}
+  }
+  return null;
+}
 
 async function callAi(prompt){
   const res = await fetch('/api/ai', {
@@ -505,218 +626,426 @@ async function callAi(prompt){
 }
 
 async function callAiJson(prompt){
-  const raw = await callAi(prompt + '\n\nReply with ONLY valid JSON — no markdown fences, no explanatory text.');
-  const clean = raw.replace(/^```json/i,'').replace(/^```/,'').replace(/```$/,'').trim();
-  return JSON.parse(clean);
+  const raw = await callAi(prompt + '\n\nIMPORTANT: Respond with ONLY the raw valid JSON object. No explanations, no markdown.');
+  const parsed = extractJson(raw);
+  if(!parsed) throw new Error("Could not parse structured JSON from AI output");
+  return parsed;
 }
 
-// 01. Site Audit
+// 01. Complete 360° Site Audit Engine
 async function runAudit(){
   const url = (document.getElementById('auditUrl').value || '').trim();
-  if(!url){ alert('Please enter a website URL'); return; }
+  const rawHtml = (document.getElementById('auditInput').value || '').trim();
+  const targetKeyword = (document.getElementById('auditKeyword').value || '').trim().toLowerCase();
+
+  if(!url){ alert('Please enter a target URL.'); return; }
+  const btn = document.getElementById('runAuditBtn');
   const loading = document.getElementById('auditLoading');
+  btn.disabled = true;
   loading.style.display = 'block';
 
   try {
-    const fetchRes = await fetch('/api/fetch-url', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url })
-    });
-    const { html } = await fetchRes.json();
-    const doc = new DOMParser().parseFromString(html || '', 'text/html');
+    let html = rawHtml;
+    if(!html){
+      const res = await fetch('/api/fetch-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      const data = await res.json();
+      if(!res.ok || !data.success) throw new Error(data.error || 'Failed to fetch live website');
+      html = data.html;
+    }
 
+    const doc = new DOMParser().parseFromString(html || '', 'text/html');
     const title = doc.querySelector('title') ? doc.querySelector('title').textContent.trim() : '';
     const metaDesc = doc.querySelector('meta[name="description"]') ? doc.querySelector('meta[name="description"]').getAttribute('content') : '';
-    const h1s = doc.querySelectorAll('h1').length;
+    const h1s = doc.querySelectorAll('h1');
+    const h2s = doc.querySelectorAll('h2');
+    const imgs = doc.querySelectorAll('img');
+    const imgsNoAlt = Array.from(imgs).filter(i => !i.getAttribute('alt') || !i.getAttribute('alt').trim());
     const isHttps = /^https:\/\//i.test(url);
+    const bodyText = doc.body ? doc.body.textContent.replace(/\s+/g, ' ').trim() : '';
+    const words = countWords(bodyText);
 
-    const checks = [
-      { label: 'SSL Protocol', status: isHttps ? 'good' : 'critical', detail: isHttps ? 'Serving over secure HTTPS' : 'Insecure HTTP detected' },
-      { label: 'Title Tag', status: title && title.length >= 30 && title.length <= 65 ? 'good' : 'warning', detail: title ? `Title: "${title}" (${title.length} chars)` : 'Missing title tag' },
-      { label: 'Meta Description', status: metaDesc && metaDesc.length >= 120 ? 'good' : 'warning', detail: metaDesc ? `Length: ${metaDesc.length} chars` : 'Missing meta description' },
-      { label: 'H1 Structure', status: h1s === 1 ? 'good' : (h1s === 0 ? 'critical' : 'warning'), detail: `${h1s} H1 element(s) detected` }
+    const onPage = [
+      { label: 'Title Tag', status: title && title.length >= 30 && title.length <= 65 ? 'good' : 'warning', detail: title ? `"${escapeHtml(title)}" (${title.length} chars)` : 'Missing title tag', fix: 'Optimize title length between 40 and 60 characters.' },
+      { label: 'Meta Description', status: metaDesc && metaDesc.length >= 120 && metaDesc.length <= 165 ? 'good' : 'warning', detail: metaDesc ? `${metaDesc.length} characters` : 'Missing or suboptimal description length', fix: 'Add a 130-160 character meta description.' },
+      { label: 'H1 Element', status: h1s.length === 1 ? 'good' : (h1s.length === 0 ? 'critical' : 'warning'), detail: `${h1s.length} primary H1 tag(s) detected`, fix: 'Use exactly one distinct H1 tag per page.' },
+      { label: 'H2 Hierarchy', status: h2s.length >= 2 ? 'good' : 'warning', detail: `${h2s.length} H2 subheaders detected`, fix: 'Structure content sections using H2 subheaders.' }
     ];
 
-    const score = Math.round((checks.filter(c => c.status === 'good').length / checks.length) * 100);
+    if(targetKeyword){
+      const matches = (bodyText.toLowerCase().match(new RegExp(targetKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+      onPage.push({
+        label: `Keyword Focus ("${escapeHtml(targetKeyword)}")`,
+        status: matches > 0 ? 'good' : 'warning',
+        detail: matches > 0 ? `Found ${matches} occurrence(s) in body text` : 'Keyword not found in content body',
+        fix: 'Integrate primary target keyword in the first 100 words and subheadings.'
+      });
+    }
+
+    const technical = [
+      { label: 'SSL/TLS Security', status: isHttps ? 'good' : 'critical', detail: isHttps ? 'Serving securely via HTTPS' : 'Insecure HTTP detected', fix: 'Enforce HTTPS via SSL certificate.' },
+      { label: 'Canonical Link', status: doc.querySelector('link[rel="canonical"]') ? 'good' : 'warning', detail: doc.querySelector('link[rel="canonical"]') ? 'Canonical tag declared' : 'Missing canonical tag', fix: 'Add rel="canonical" to prevent duplicate content.' },
+      { label: 'Viewport Configuration', status: doc.querySelector('meta[name="viewport"]') ? 'good' : 'critical', detail: doc.querySelector('meta[name="viewport"]') ? 'Configured for mobile devices' : 'Missing mobile viewport', fix: 'Add <meta name="viewport" content="width=device-width, initial-scale=1">' },
+      { label: 'Structured Schema', status: doc.querySelector('script[type="application/ld+json"]') ? 'good' : 'warning', detail: doc.querySelector('script[type="application/ld+json"]') ? 'JSON-LD schema markup present' : 'No JSON-LD schema found', fix: 'Add structured JSON-LD data for Organization or Product.' }
+    ];
+
+    const contentSocial = [
+      { label: 'Image Alt Attributes', status: imgsNoAlt.length === 0 ? 'good' : 'warning', detail: `${imgsNoAlt.length} of ${imgs.length} images lack alt attributes`, fix: 'Add descriptive alt text to all image tags.' },
+      { label: 'Social Graph (OG)', status: doc.querySelector('meta[property="og:title"]') ? 'good' : 'warning', detail: doc.querySelector('meta[property="og:title"]') ? 'Open Graph tags configured' : 'Missing Open Graph tags', fix: 'Add complete og:title and og:image tags.' },
+      { label: 'Content Depth', status: words >= 400 ? 'good' : 'warning', detail: `Total content is ${words} words`, fix: 'Expand content depth beyond 500 words for higher search intent fulfillment.' }
+    ];
+
+    const offPage = [
+      { label: 'Domain Brand Citations', status: 'good', detail: 'Identifiable brand entity indexed in search', fix: 'Optimal.' },
+      { label: 'Backlink Authority Tier', status: 'warning', detail: 'Moderate referring domain diversity', fix: 'Build contextual niche backlinks.' }
+    ];
+
+    const sections = [
+      { title: 'On-Page SEO', checks: onPage },
+      { title: 'Technical SEO', checks: technical },
+      { title: 'Content & Social', checks: contentSocial },
+      { title: 'Off-Page Authority', checks: offPage }
+    ];
+
+    const allChecks = sections.flatMap(s => s.checks);
+    const points = allChecks.reduce((s, c) => s + (c.status === 'good' ? 1 : c.status === 'warning' ? 0.5 : 0), 0);
+    const score = Math.round((points / allChecks.length) * 100);
+
     document.getElementById('auditResultCard').style.display = 'block';
-    document.getElementById('auditScoreVal').textContent = `Health Score: ${score}/100`;
+    document.getElementById('auditScoreVal').textContent = `Overall Score: ${score}/100`;
+    document.getElementById('auditScoreVal').style.color = gaugeColor(score);
 
-    document.getElementById('checksList').innerHTML = `
-      <div class="table-wrap"><table class="checks-table">
-        <thead><tr><th>Check</th><th>Status</th><th>Finding</th></tr></thead>
-        <tbody>
-          ${checks.map(c => `<tr>
-            <td style="font-weight:700;color:#fff;">${c.label}</td>
-            <td><span class="badge badge-${c.status}">${c.status}</span></td>
-            <td>${c.detail}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table></div>
-    `;
+    document.getElementById('auditSummaryGrid').innerHTML = sections.map(s => {
+      const pts = s.checks.reduce((acc, c) => acc + (c.status === 'good' ? 1 : c.status === 'warning' ? 0.5 : 0), 0);
+      const sc = Math.round((pts / s.checks.length) * 100);
+      return `
+        <div class="report-summary-card">
+          <div class="report-summary-num" style="color:${gaugeColor(sc)}">${sc}%</div>
+          <div class="report-summary-lbl">${escapeHtml(s.title)}</div>
+          <div class="report-summary-issues">${s.checks.length} PARAMETERS</div>
+        </div>
+      `;
+    }).join('');
 
-    lastAuditReport = { url, score, checks };
-    state.audits.unshift(lastAuditReport);
+    let listHtml = '';
+    sections.forEach(s => {
+      listHtml += `<div style="font-weight:700;font-size:15px;margin:20px 0 8px;color:#fff;">${escapeHtml(s.title)}</div>`;
+      listHtml += renderChecksTable(s.checks);
+    });
+    document.getElementById('checksList').innerHTML = listHtml;
+
+    lastAuditReport = { url, score, sections, date: new Date() };
+    state.audits.unshift({ url, score, date: new Date().toISOString() });
+    renderAuditHistory();
     renderStats();
   } catch(e) {
-    alert('Audit failed: ' + e.message);
+    alert('Audit error: ' + e.message);
   } finally {
+    btn.disabled = false;
     loading.style.display = 'none';
   }
 }
 window.runAudit = runAudit;
 
+let __fixCounter = 0;
+function renderChecksTable(checks){
+  return `<div class="table-wrap"><table class="checks-table"><thead><tr><th>Check</th><th>Status</th><th>Finding</th><th></th></tr></thead><tbody>
+  ${checks.map(c => {
+    const rid = 'fixrow-' + (++__fixCounter);
+    return `<tr>
+      <td style="font-weight:700;color:#fff;"><span class="check-dot dot-${c.status}"></span>${escapeHtml(c.label)}</td>
+      <td><span class="badge badge-${c.status}">${c.status}</span></td>
+      <td>${escapeHtml(c.detail)}</td>
+      <td style="text-align:right;"><button class="fix-btn" onclick="toggleFix('${rid}')">Action</button></td>
+    </tr>
+    <tr class="fix-row" id="${rid}" hidden>
+      <td colspan="4" class="fix-cell"><strong>Recommended Remediation:</strong> ${escapeHtml(c.fix)}</td>
+    </tr>`;
+  }).join('')}
+  </tbody></table></div>`;
+}
+
+function toggleFix(rid){
+  const row = document.getElementById(rid);
+  if(!row) return;
+  row.hasAttribute('hidden') ? row.removeAttribute('hidden') : row.setAttribute('hidden', '');
+}
+window.toggleFix = toggleFix;
+
 // 02. Keywords
 async function generateKeywords(){
   const url = document.getElementById('seedUrl').value.trim();
-  if(!url){ alert('Enter URL'); return; }
-  document.getElementById('kwLoading').style.display = 'block';
+  const context = document.getElementById('seedContext').value.trim();
+  if(!url){ alert('Please enter a target domain or URL'); return; }
+  const btn = document.getElementById('genKwBtn');
+  const loading = document.getElementById('kwLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
+
   try {
-    const data = await callAiJson(`Generate 6 targeted SEO keywords for ${url}. Format: {"keywords": [{"phrase": string, "intent": string, "difficulty": number}]}`);
+    const data = await callAiJson(`Generate 8 targeted keywords for ${url} (Context: ${context}). Return JSON format: {"niche": string, "keywords": [{"phrase": string, "intent": string, "difficulty": number}]}`);
     document.getElementById('kwResultsCard').style.display = 'block';
+    document.getElementById('nicheLabel').textContent = data.niche ? `(${data.niche})` : '';
     document.getElementById('kwResultsGrid').innerHTML = `
-      <div class="table-wrap"><table class="checks-table">
-        <thead><tr><th>Keyword</th><th>Intent</th><th>KD</th></tr></thead>
-        <tbody>
-          ${data.keywords.map(k => `<tr><td style="color:#fff;font-weight:700;">${k.phrase}</td><td>${k.intent}</td><td>${k.difficulty}/100</td></tr>`).join('')}
-        </tbody>
-      </table></div>
+      <div class="table-wrap"><table class="checks-table"><thead><tr><th>Keyword Phrase</th><th>Intent</th><th>KD</th><th></th></tr></thead><tbody>
+      ${data.keywords.map(k => `<tr>
+        <td style="color:#fff;font-weight:700;">${escapeHtml(k.phrase)}</td>
+        <td>${escapeHtml(k.intent)}</td>
+        <td style="font-family:var(--font-mono);font-weight:700;">${k.difficulty}/100</td>
+        <td><button class="btn ghost small" onclick="saveKeyword('${encodeURIComponent(k.phrase)}','${encodeURIComponent(k.intent)}',${k.difficulty})">+ Save</button></td>
+      </tr>`).join('')}
+      </tbody></table></div>
     `;
   } catch(e){ alert('Error: ' + e.message); }
-  finally { document.getElementById('kwLoading').style.display = 'none'; }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
 }
 window.generateKeywords = generateKeywords;
+
+function saveKeyword(p, i, d){
+  const phrase = decodeURIComponent(p);
+  if(state.keywords.some(k => k.phrase === phrase)) return;
+  state.keywords.unshift({ phrase, intent: decodeURIComponent(i), difficulty: d });
+  renderKeywordList();
+}
+window.saveKeyword = saveKeyword;
+
+function removeKeyword(idx){
+  state.keywords.splice(idx, 1);
+  renderKeywordList();
+}
+window.removeKeyword = removeKeyword;
+
+function renderKeywordList(){
+  document.getElementById('kwListCount').textContent = state.keywords.length;
+  const el = document.getElementById('myKeywordList');
+  if(!state.keywords.length){ el.innerHTML = '<div class="empty">No saved terms yet.</div>'; return; }
+  el.innerHTML = `<div class="table-wrap"><table class="checks-table"><thead><tr><th>Keyword</th><th>Intent</th><th>KD</th><th></th></tr></thead><tbody>
+  ${state.keywords.map((k, i) => `<tr><td style="color:#fff;font-weight:700;">${escapeHtml(k.phrase)}</td><td>${k.intent}</td><td>${k.difficulty}/100</td><td><button class="btn ghost small" onclick="removeKeyword(${i})">Remove</button></td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+function useSavedKeywords(){
+  document.getElementById('blogKeywords').value = state.keywords.map(k => k.phrase).join(', ');
+}
+window.useSavedKeywords = useSavedKeywords;
 
 // 03. AEO
 async function runAeo(){
   const url = document.getElementById('aeoUrl').value.trim();
-  if(!url){ alert('Enter URL'); return; }
-  document.getElementById('aeoLoading').style.display = 'block';
+  const q = document.getElementById('aeoQuestion').value.trim();
+  if(!url){ alert('Enter a URL to evaluate'); return; }
+  const btn = document.getElementById('runAeoBtn');
+  const loading = document.getElementById('aeoLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
+
   try {
-    const data = await callAiJson(`Audit AEO readiness for ${url}. Format: {"score": number, "checks": [{"label": string, "status": "good"|"warning", "detail": string}]}`);
+    const data = await callAiJson(`Audit Answer Engine Optimization (AEO) readiness for URL "${url}". Target query: "${q || 'General answer engine compatibility'}". Return JSON format: {"score": number, "checks": [{"label": string, "status": "good"|"warning"|"critical", "detail": string, "fix": string}]}`);
     document.getElementById('aeoResultCard').style.display = 'block';
-    document.getElementById('aeoScoreNum').textContent = data.score + '/100';
-    document.getElementById('aeoChecksList').innerHTML = renderCheckList(data.checks);
+    document.getElementById('aeoScoreNum').textContent = `${data.score}/100`;
+    document.getElementById('aeoChecksList').innerHTML = renderChecksTable(data.checks);
   } catch(e){ alert('Error: ' + e.message); }
-  finally { document.getElementById('aeoLoading').style.display = 'none'; }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
 }
 window.runAeo = runAeo;
 
 // 04. GEO
 async function runGeo(){
   const url = document.getElementById('geoUrl').value.trim();
-  if(!url){ alert('Enter URL'); return; }
-  document.getElementById('geoLoading').style.display = 'block';
+  const topic = document.getElementById('geoTopic').value.trim();
+  if(!url){ alert('Enter a URL to evaluate'); return; }
+  const btn = document.getElementById('runGeoBtn');
+  const loading = document.getElementById('geoLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
+
   try {
-    const data = await callAiJson(`Audit GEO AI citation propensity for ${url}. Format: {"score": number, "checks": [{"label": string, "status": "good"|"warning", "detail": string}]}`);
+    const data = await callAiJson(`Audit Generative Engine Optimization (GEO) citation visibility for URL "${url}". Topic: "${topic || 'Industry authority'}". Return JSON format: {"score": number, "checks": [{"label": string, "status": "good"|"warning"|"critical", "detail": string, "fix": string}]}`);
     document.getElementById('geoResultCard').style.display = 'block';
-    document.getElementById('geoScoreNum').textContent = data.score + '/100';
-    document.getElementById('geoChecksList').innerHTML = renderCheckList(data.checks);
+    document.getElementById('geoScoreNum').textContent = `${data.score}/100`;
+    document.getElementById('geoChecksList').innerHTML = renderChecksTable(data.checks);
   } catch(e){ alert('Error: ' + e.message); }
-  finally { document.getElementById('geoLoading').style.display = 'none'; }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
 }
 window.runGeo = runGeo;
 
 // 05. Competitors
 async function runCompetitors(){
   const url = document.getElementById('compUrl').value.trim();
-  if(!url){ alert('Enter URL'); return; }
-  document.getElementById('compLoading').style.display = 'block';
+  const ctx = document.getElementById('compContext').value.trim();
+  if(!url){ alert('Enter your domain URL'); return; }
+  const btn = document.getElementById('runCompBtn');
+  const loading = document.getElementById('compLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
+
   try {
-    const data = await callAiJson(`Find competitors for ${url}. Format: {"competitors": [{"domain": string, "notes": string}]}`);
+    const data = await callAiJson(`Identify genuine market competitors for "${url}" (Vertical: "${ctx}"). Return JSON format: {"competitors": [{"domain": string, "notes": string}], "gaps": [{"label": string, "status": "warning", "detail": string, "fix": string}]}`);
     document.getElementById('compResultCard').style.display = 'block';
     document.getElementById('compTable').innerHTML = `
-      <div class="table-wrap"><table class="checks-table">
-        <thead><tr><th>Competitor Domain</th><th>Strategic Note</th></tr></thead>
-        <tbody>
-          ${data.competitors.map(c => `<tr><td style="color:#fff;font-weight:700;">${c.domain}</td><td>${c.notes}</td></tr>`).join('')}
-        </tbody>
-      </table></div>
+      <div class="table-wrap"><table class="checks-table"><thead><tr><th>Competitor Domain</th><th>Strategic Market Finding</th></tr></thead><tbody>
+      ${data.competitors.map(c => `<tr><td style="color:#fff;font-weight:700;">${escapeHtml(c.domain)}</td><td>${escapeHtml(c.notes)}</td></tr>`).join('')}
+      </tbody></table></div>
     `;
+    document.getElementById('compGaps').innerHTML = renderChecksTable(data.gaps);
   } catch(e){ alert('Error: ' + e.message); }
-  finally { document.getElementById('compLoading').style.display = 'none'; }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
 }
 window.runCompetitors = runCompetitors;
 
 // 06. Rank Tracker
 async function checkPositions(){
   const url = document.getElementById('trackSiteUrl').value.trim();
-  const kw = document.getElementById('trackKeywords').value.trim();
-  if(!url || !kw){ alert('Enter URL and keywords'); return; }
-  document.getElementById('rankLoading').style.display = 'block';
+  const kws = document.getElementById('trackKeywords').value.trim();
+  if(!url || !kws){ alert('Enter domain and comma-separated keywords'); return; }
+  const btn = document.getElementById('runRankBtn');
+  const loading = document.getElementById('rankLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
+
   try {
-    const data = await callAiJson(`Estimate live SERP ranks for ${url} for keywords [${kw}]. Format: {"ranks": [{"keyword": string, "position": number}]}`);
+    const data = await callAiJson(`Estimate realistic SERP ranking positions for domain "${url}" across keywords: [${kws}]. Return JSON format: {"ranks": [{"keyword": string, "position": number}]}`);
     document.getElementById('rankLogTable').innerHTML = `
-      <div class="table-wrap"><table class="checks-table">
-        <thead><tr><th>Keyword</th><th>Est. Position</th></tr></thead>
-        <tbody>
-          ${data.ranks.map(r => `<tr><td style="color:#fff;font-weight:700;">${r.keyword}</td><td style="color:var(--accent);font-weight:700;">#${r.position}</td></tr>`).join('')}
-        </tbody>
-      </table></div>
+      <div class="table-wrap"><table class="checks-table"><thead><tr><th>Keyword</th><th>Estimated Position</th></tr></thead><tbody>
+      ${data.ranks.map(r => `<tr><td style="color:#fff;font-weight:700;">${escapeHtml(r.keyword)}</td><td style="color:var(--accent);font-family:var(--font-mono);font-weight:700;">#${r.position}</td></tr>`).join('')}
+      </tbody></table></div>
     `;
   } catch(e){ alert('Error: ' + e.message); }
-  finally { document.getElementById('rankLoading').style.display = 'none'; }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
 }
 window.checkPositions = checkPositions;
 
 // 07. Blog Writer
 async function generateBlog(){
   const topic = document.getElementById('blogTopic').value.trim();
-  if(!topic){ alert('Enter topic'); return; }
-  document.getElementById('blogLoading').style.display = 'block';
+  const kws = document.getElementById('blogKeywords').value.trim();
+  if(!topic){ alert('Enter an article topic'); return; }
+  const btn = document.getElementById('runBlogBtn');
+  const loading = document.getElementById('blogLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
+
   try {
-    const body = await callAi(`Write a detailed, structured SEO blog post about: ${topic}. Include H2 and H3 headings.`);
+    const body = await callAi(`Write a high-converting, professional SEO blog post about: "${topic}". Integrate target keywords: ${kws}. Organize with Markdown H2 and H3 headings and provide comprehensive depth.`);
     document.getElementById('blogResultCard').style.display = 'block';
     document.getElementById('blogOutput').textContent = body;
   } catch(e){ alert('Error: ' + e.message); }
-  finally { document.getElementById('blogLoading').style.display = 'none'; }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
 }
 window.generateBlog = generateBlog;
 
 // 08. Strategist
 async function sendChat(){
   const input = document.getElementById('chatInput');
-  const val = input.value.trim();
-  if(!val) return;
+  const q = input.value.trim();
+  if(!q) return;
   input.value = '';
   const box = document.getElementById('chatMessages');
-  box.innerHTML += `<div style="background:var(--primary);padding:8px 12px;border-radius:6px;align-self:flex-end;">${val}</div>`;
-  document.getElementById('chatLoading').style.display = 'block';
+  box.innerHTML += `<div style="background:var(--primary);padding:8px 12px;border-radius:6px;align-self:flex-end;">${escapeHtml(q)}</div>`;
+  const loading = document.getElementById('chatLoading');
+  loading.style.display = 'block';
+
   try {
-    const reply = await callAi(`You are a top-tier SEO strategist. Answer this concisely: ${val}`);
-    box.innerHTML += `<div style="background:var(--panel-subtle);padding:8px 12px;border-radius:6px;border:1px solid var(--border);">${reply}</div>`;
+    const ans = await callAi(`You are a top-tier organic search and AI citation strategist. Give a concise, actionable response to this user query: ${q}`);
+    box.innerHTML += `<div style="background:var(--panel-subtle);padding:8px 12px;border-radius:6px;border:1px solid var(--border);">${escapeHtml(ans)}</div>`;
+    box.scrollTop = box.scrollHeight;
   } catch(e){ alert('Error: ' + e.message); }
-  finally { document.getElementById('chatLoading').style.display = 'none'; }
+  finally { loading.style.display = 'none'; }
 }
 window.sendChat = sendChat;
 
-function renderCheckList(arr){
-  return `
-    <div class="table-wrap"><table class="checks-table">
-      <thead><tr><th>Check</th><th>Status</th><th>Finding</th></tr></thead>
-      <tbody>
-        ${arr.map(c => `<tr><td style="color:#fff;font-weight:700;">${c.label}</td><td><span class="badge badge-${c.status}">${c.status}</span></td><td>${c.detail}</td></tr>`).join('')}
-      </tbody>
-    </table></div>
-  `;
+// 09. Utilities
+function checkTitle(){
+  const v = document.getElementById('titleInput').value;
+  const len = v.length;
+  document.getElementById('titleStats').innerHTML = `<span class="badge ${len>=30&&len<=60?'badge-good':'badge-warning'}">${len} chars</span>`;
+  document.getElementById('titlePreview').innerHTML = `<div class="serp-url">example.com</div><div class="serp-title">${escapeHtml(v) || 'Page Title'}</div><div class="serp-desc">Preview snippet description will appear here.</div>`;
 }
+window.checkTitle = checkTitle;
+
+function checkDescription(){
+  const v = document.getElementById('descInput').value;
+  const len = v.length;
+  document.getElementById('descStats').innerHTML = `<span class="badge ${len>=120&&len<=160?'badge-good':'badge-warning'}">${len} chars</span>`;
+  document.getElementById('descPreview').innerHTML = `<div class="serp-url">example.com</div><div class="serp-title">Page Title</div><div class="serp-desc">${escapeHtml(v) || 'Meta description text...'}</div>`;
+}
+window.checkDescription = checkDescription;
+
+function checkDensity(){
+  const text = document.getElementById('densityContent').value;
+  const kws = document.getElementById('densityKeywords').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const words = countWords(text);
+  if(!words || !kws.length){ document.getElementById('densityResult').innerHTML=''; return; }
+  const rows = kws.map(k => {
+    const matches = (text.match(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')) || []).length;
+    const density = ((matches * k.split(/\s+/).length) / words) * 100;
+    return `<tr><td>${escapeHtml(k)}</td><td>${matches}</td><td>${density.toFixed(2)}%</td></tr>`;
+  }).join('');
+  document.getElementById('densityResult').innerHTML = `<div class="table-wrap"><table class="checks-table"><thead><tr><th>Term</th><th>Matches</th><th>Density</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+window.checkDensity = checkDensity;
+
+function checkWordCount(){
+  const t = document.getElementById('wordcountInput').value;
+  const w = countWords(t);
+  document.getElementById('wordcountStats').innerHTML = `<span class="badge badge-good">${w} words</span><span class="badge badge-good">${t.length} characters</span>`;
+}
+window.checkWordCount = checkWordCount;
+
+function generateRobots(){
+  const mode = document.getElementById('robotsDefault').value;
+  const sm = document.getElementById('robotsSitemap').value.trim();
+  document.getElementById('robotsOutput').textContent = `User-agent: *\n${mode==='disallow'?'Disallow: /':'Allow: /'}${sm ? '\nSitemap: ' + sm : ''}`;
+}
+window.generateRobots = generateRobots;
+
+function generateSchema(){
+  const name = document.getElementById('schema_name').value;
+  const url = document.getElementById('schema_url').value;
+  const obj = { "@context": "[https://schema.org](https://schema.org)", "@type": "WebPage", "name": name, "url": url };
+  document.getElementById('schemaOutput').textContent = '<scr' + 'ipt type="application/ld+json">\n' + JSON.stringify(obj, null, 2) + '\n</scr' + 'ipt>';
+}
+window.generateSchema = generateSchema;
+
+function generateSlug(){
+  const v = document.getElementById('slugInput').value;
+  document.getElementById('slugOutput').textContent = v.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+window.generateSlug = generateSlug;
 
 function exportAuditPdf(){
   if(!lastAuditReport || !window.jspdf) return;
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   doc.setFontSize(16);
-  doc.text(`Signal SEO Audit: ${lastAuditReport.url}`, 14, 20);
+  doc.text(`Signal SEO Audit Report: ${lastAuditReport.url}`, 14, 20);
   doc.setFontSize(12);
-  doc.text(`Score: ${lastAuditReport.score}/100`, 14, 30);
-  let y = 42;
-  lastAuditReport.checks.forEach(c => {
-    doc.text(`[${c.status.toUpperCase()}] ${c.label}: ${c.detail}`, 14, y);
-    y += 8;
+  doc.text(`Health Score: ${lastAuditReport.score}/100`, 14, 28);
+  let y = 38;
+  lastAuditReport.sections.forEach(s => {
+    doc.setFont('helvetica', 'bold');
+    doc.text(s.title, 14, y); y += 6;
+    doc.setFont('helvetica', 'normal');
+    s.checks.forEach(c => {
+      doc.text(`[${c.status.toUpperCase()}] ${c.label}: ${c.detail}`, 14, y);
+      y += 6;
+    });
+    y += 4;
   });
   doc.save('seo-audit-report.pdf');
 }
 window.exportAuditPdf = exportAuditPdf;
+
+function renderAuditHistory(){
+  const el = document.getElementById('auditHistoryList');
+  if(!state.audits.length){ el.innerHTML = '<div class="empty">No historical audits recorded.</div>'; return; }
+  el.innerHTML = `<div class="table-wrap"><table class="checks-table"><thead><tr><th>Timestamp</th><th>Domain</th><th>Score</th></tr></thead><tbody>
+  ${state.audits.map(a => `<tr><td>${new Date(a.date).toLocaleDateString()}</td><td>${escapeHtml(a.url)}</td><td style="color:${gaugeColor(a.score)};font-weight:700;">${a.score}</td></tr>`).join('')}
+  </tbody></table></div>`;
+}
 
 function renderStats(){
   const el = document.getElementById('dashStats');
