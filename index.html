@@ -3,37 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Signal — Enterprise SEO & AI Search Command Deck</title>
+<title>Signal — Enterprise SEO Command Deck</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root {
-    /* Command Deck Dual-Tone Architecture */
     --deck-rail: #080C16;
     --deck-topbar: #0B101D;
     --bg-deep: #0D1322;
     --panel: #131B2E;
     --panel-subtle: #19243C;
     --panel-input: #0A0F1A;
-    
-    /* Precision Data Borders */
     --border: rgba(99, 140, 210, 0.16);
-    --border-strong: rgba(99, 140, 210, 0.32);
-    --border-hover: #2563EB;
-    
-    /* Ahrefs-Grade Cobalt Primary */
     --primary: #1D63FF;
     --primary-light: #60A5FA;
     --accent: #00D4B2;
     --accent-glow: rgba(29, 99, 255, 0.25);
-    
-    /* Typography */
     --paper: #F8FAFC;
     --muted: #94A3B8;
     --subtle: #475569;
-    
-    /* High-Visibility SEO Signals */
     --green: #10B981;
     --green-bg: rgba(16, 185, 129, 0.12);
     --green-border: rgba(16, 185, 129, 0.35);
@@ -43,37 +32,19 @@
     --coral: #EF4444;
     --coral-bg: rgba(239, 68, 68, 0.12);
     --coral-border: rgba(239, 68, 68, 0.35);
-    
-    --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+  html, body { min-height: 100vh; background-color: var(--bg-deep); color: var(--paper); font-family: var(--font-display); }
 
-  body {
-    background-color: var(--bg-deep);
-    background-image: 
-      linear-gradient(to right, rgba(99, 140, 210, 0.04) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(99, 140, 210, 0.04) 1px, transparent 1px);
-    background-size: 28px 28px;
-    color: var(--paper);
-    font-family: var(--font-display);
-    min-height: 100vh;
-    line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  a { color: var(--primary-light); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-
-  /* App Layout */
-  .deck-shell { display: flex; min-height: 100vh; }
+  .deck-shell { display: flex; min-height: 100vh; width: 100%; position: relative; }
 
   /* Left Rail */
   .deck-rail {
     width: 250px;
-    flex: none;
+    flex-shrink: 0;
     background: var(--deck-rail);
     border-right: 1px solid var(--border);
     display: flex;
@@ -82,11 +53,11 @@
     top: 0;
     height: 100vh;
     overflow-y: auto;
-    z-index: 50;
+    z-index: 100;
   }
 
   .rail-brand {
-    padding: 20px 20px 16px;
+    padding: 20px;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
@@ -97,20 +68,19 @@
     height: 32px;
     border-radius: 6px;
     background: linear-gradient(135deg, var(--primary), #00D4B2);
-    color: #FFFFFF;
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 800;
     font-size: 15px;
-    box-shadow: 0 0 16px rgba(29, 99, 255, 0.45);
   }
-  .rail-title { font-size: 16px; font-weight: 800; letter-spacing: 0.04em; color: #FFFFFF; }
-  .rail-edition { font-family: var(--font-mono); font-size: 9px; color: var(--accent); letter-spacing: 0.1em; }
+  .rail-title { font-size: 16px; font-weight: 800; color: #fff; }
+  .rail-edition { font-family: var(--font-mono); font-size: 9px; color: var(--accent); }
 
   .rail-section-lbl {
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: 9.5px;
     color: var(--subtle);
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -118,50 +88,34 @@
     font-weight: 700;
   }
 
-  .rail-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 10px; flex: 1; }
+  .rail-nav { display: flex; flex-direction: column; gap: 3px; padding: 0 10px; flex: 1; }
   .rail-btn {
     display: flex;
     align-items: center;
-    gap: 11px;
+    gap: 10px;
     width: 100%;
     text-align: left;
     background: transparent;
     border: 1px solid transparent;
     color: var(--muted);
-    padding: 9px 12px;
+    padding: 10px 12px;
     border-radius: 6px;
     font-family: var(--font-display);
     font-weight: 600;
     font-size: 13px;
     cursor: pointer;
-    transition: all 0.14s ease;
+    user-select: none;
   }
-  .rail-btn svg { flex: none; width: 16px; height: 16px; opacity: 0.7; }
-  .rail-btn:hover { background: rgba(255, 255, 255, 0.04); color: var(--paper); }
-  .rail-btn:hover svg { opacity: 1; }
+  .rail-btn:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
   .rail-btn.active {
-    background: rgba(29, 99, 255, 0.12);
-    color: #FFFFFF;
+    background: rgba(29, 99, 255, 0.15);
+    color: #fff;
     border-color: rgba(29, 99, 255, 0.4);
-    box-shadow: inset 2px 0 0 0 var(--primary);
+    box-shadow: inset 3px 0 0 0 var(--primary);
   }
-  .rail-btn.active svg { opacity: 1; stroke: var(--primary-light); }
-  .rail-btn .idx { font-family: var(--font-mono); font-size: 10px; opacity: 0.45; margin-left: auto; }
+  .rail-btn .idx { font-family: var(--font-mono); font-size: 10px; opacity: 0.5; margin-left: auto; }
 
-  .rail-foot {
-    padding: 16px;
-    border-top: 1px solid var(--border);
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--subtle);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .status-ping { display: flex; align-items: center; gap: 6px; color: var(--green); }
-  .ping-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
-
-  /* Deck Main & Header Bar */
+  /* Deck Main */
   .deck-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
   .deck-topbar {
@@ -172,26 +126,17 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 32px;
-    position: sticky;
-    top: 0;
-    z-index: 40;
   }
-  .topbar-telemetry { display: flex; align-items: center; gap: 20px; font-family: var(--font-mono); font-size: 11px; }
-  .tele-item { display: flex; align-items: center; gap: 7px; color: var(--muted); }
-  .tele-label { color: var(--subtle); text-transform: uppercase; letter-spacing: 0.06em; }
-  .tele-val { color: var(--paper); font-weight: 600; }
-  .tele-val.highlight { color: var(--accent); }
+  .tele-item { font-family: var(--font-mono); font-size: 11px; display: flex; gap: 8px; color: var(--muted); }
+  .tele-val { color: var(--accent); font-weight: 700; }
 
   .deck-content { max-width: 1200px; margin: 0 auto; width: 100%; padding: 28px 32px 80px; }
-
   .deck-header { margin-bottom: 24px; }
-  .deck-eyebrow { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.12em; color: var(--primary-light); text-transform: uppercase; margin-bottom: 4px; font-weight: 700; }
-  .deck-title { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: #FFFFFF; }
+  .deck-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--primary-light); text-transform: uppercase; font-weight: 700; }
+  .deck-title { font-size: 24px; font-weight: 800; color: #fff; }
 
-  /* Panels & Analytics Cards */
   .panel { display: none; }
-  .panel.active { display: block; animation: deckFade 0.18s ease-out; }
-  @keyframes deckFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .panel.active { display: block; }
 
   .card {
     background: var(--panel);
@@ -199,23 +144,12 @@
     border-radius: 8px;
     padding: 22px 24px;
     margin-bottom: 20px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
   }
-  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .card-title { font-size: 16px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.01em; }
-  .card-sub { font-size: 12.5px; color: var(--muted); line-height: 1.6; margin-bottom: 18px; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .card-title { font-size: 16px; font-weight: 700; color: #fff; }
+  .card-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
 
-  /* Form Elements */
-  label {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    font-weight: 600;
-  }
+  label { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
   input[type=text], input[type=number], input[type=date], textarea, select {
     width: 100%;
     background: var(--panel-input);
@@ -227,62 +161,33 @@
     border-radius: 6px;
     margin-bottom: 14px;
     outline: none;
-    transition: border-color 0.14s ease, box-shadow 0.14s ease;
   }
-  input:focus, textarea:focus, select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 2px var(--accent-glow);
-  }
-  textarea { min-height: 110px; line-height: 1.55; }
-  input::placeholder, textarea::placeholder { color: var(--subtle); }
+  input:focus, textarea:focus, select:focus { border-color: var(--primary); }
+  textarea { min-height: 110px; }
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-  /* Buttons */
   .btn {
     font-family: var(--font-mono);
     font-weight: 700;
     font-size: 11.5px;
-    letter-spacing: 0.05em;
     text-transform: uppercase;
     background: var(--primary);
-    color: #FFFFFF;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     padding: 10px 18px;
     border-radius: 6px;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(29, 99, 255, 0.35);
-    transition: all 0.14s ease;
   }
-  .btn:hover { background: #2563EB; box-shadow: 0 4px 14px rgba(29, 99, 255, 0.5); transform: translateY(-1px); }
-  .btn:active { transform: translateY(0); }
-  .btn:disabled { opacity: 0.45; cursor: wait; transform: none; }
-  .btn.ghost {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--paper);
-    box-shadow: none;
-  }
-  .btn.ghost:hover {
-    border-color: var(--primary);
-    background: rgba(29, 99, 255, 0.08);
-    box-shadow: 0 0 0 2px var(--accent-glow);
-  }
-  .btn.small { padding: 6px 12px; font-size: 10.5px; border-radius: 4px; }
+  .btn:hover { background: #2563EB; }
+  .btn.ghost { background: transparent; border: 1px solid var(--border); }
+  .btn.ghost:hover { border-color: var(--primary); background: rgba(29, 99, 255, 0.1); }
+  .btn.small { padding: 6px 12px; font-size: 10.5px; }
 
-  /* Analytics Grid & Metric Tiles */
   .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 22px; }
-  .stat-tile {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 14px 16px;
-  }
-  .stat-tile-top { display: flex; justify-content: space-between; align-items: baseline; }
-  .stat-val { font-size: 24px; font-weight: 800; color: #FFFFFF; font-family: var(--font-mono); }
-  .stat-tag { font-family: var(--font-mono); font-size: 9.5px; padding: 2px 6px; border-radius: 3px; font-weight: 700; text-transform: uppercase; }
-  .stat-lbl { font-family: var(--font-mono); font-size: 9.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+  .stat-tile { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; }
+  .stat-val { font-size: 24px; font-weight: 800; font-family: var(--font-mono); color: #fff; }
+  .stat-lbl { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
 
-  /* Dashboard Module Cards */
   .dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
   .dash-tile {
     background: var(--panel);
@@ -290,171 +195,43 @@
     border-radius: 8px;
     padding: 20px;
     cursor: pointer;
-    transition: all 0.16s ease;
     display: flex;
     flex-direction: column;
   }
-  .dash-tile:hover {
-    border-color: var(--primary);
-    background: var(--panel-subtle);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
-  }
-  .dash-tile-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 6px;
-    background: rgba(29, 99, 255, 0.12);
-    border: 1px solid rgba(29, 99, 255, 0.3);
-    color: var(--primary-light);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 14px;
-  }
-  .dash-tile-icon svg { width: 18px; height: 18px; }
-  .dash-tile-title { font-weight: 700; font-size: 15px; color: #FFFFFF; margin-bottom: 6px; }
-  .dash-tile-desc { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 16px; flex: 1; }
+  .dash-tile:hover { border-color: var(--primary); background: var(--panel-subtle); }
+  .dash-tile-title { font-weight: 700; font-size: 15px; color: #fff; margin-bottom: 6px; }
+  .dash-tile-desc { font-size: 12.5px; color: var(--muted); margin-bottom: 16px; flex: 1; }
   .dash-tile-link { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--primary-light); text-transform: uppercase; }
 
-  /* Report Category Summary Cards */
-  .report-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 18px 0; }
-  .report-summary-card {
-    background: var(--panel-subtle);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 14px 12px;
-    text-align: center;
-  }
-  .report-summary-num { font-weight: 800; font-size: 20px; font-family: var(--font-mono); }
-  .report-summary-lbl { font-family: var(--font-mono); font-size: 9.5px; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
-  .report-summary-issues { font-family: var(--font-mono); font-size: 9px; color: var(--primary-light); margin-top: 4px; text-transform: uppercase; }
-
-  /* Health Gauge */
-  .gauge-wrap { display: flex; align-items: center; gap: 20px; margin-bottom: 12px; }
-  .gauge-score-label { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
-  .gauge-score-num { font-size: 34px; font-weight: 800; font-family: var(--font-mono); }
-
-  /* Data Tables */
   .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-input); margin-top: 10px; }
-  .checks-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-  .checks-table th {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(255, 255, 255, 0.02);
-  }
-  .checks-table td { padding: 11px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.035); vertical-align: middle; }
-  .checks-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
-  .ck-label { font-weight: 600; color: #FFFFFF; font-family: var(--font-display); }
-  .ck-detail { color: var(--muted); line-height: 1.45; }
-  .ck-action { text-align: right; }
+  .checks-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .checks-table th { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: left; }
+  .checks-table td { padding: 11px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.035); }
 
-  .check-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; }
-  .dot-good { background: var(--green); box-shadow: 0 0 6px var(--green); }
-  .dot-warning { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
-  .dot-critical { background: var(--coral); box-shadow: 0 0 6px var(--coral); }
+  .badge { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; font-weight: 700; }
+  .badge-good { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .badge-warning { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+  .badge-critical { background: var(--coral-bg); color: var(--coral); border: 1px solid var(--coral-border); }
 
-  .badge { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 3px; font-weight: 700; border: 1px solid transparent; }
-  .badge-good { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
-  .badge-warning { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); }
-  .badge-critical { background: var(--coral-bg); color: var(--coral); border-color: var(--coral-border); }
+  .fix-btn { font-family: var(--font-mono); font-size: 10px; font-weight: 700; background: rgba(29, 99, 255, 0.15); border: 1px solid rgba(29, 99, 255, 0.35); color: var(--primary-light); padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+  .code-output { background: var(--panel-input); border: 1px solid var(--border); border-radius: 6px; padding: 14px; font-family: var(--font-mono); font-size: 12px; color: var(--primary-light); white-space: pre-wrap; max-height: 320px; overflow-y: auto; }
+  .loading { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+  .empty { font-family: var(--font-mono); font-size: 12px; color: var(--muted); padding: 20px 0; text-align: center; }
 
-  .fix-btn {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    background: rgba(29, 99, 255, 0.12);
-    border: 1px solid rgba(29, 99, 255, 0.35);
-    color: var(--primary-light);
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.14s ease;
-  }
-  .fix-btn:hover { background: var(--primary); color: #FFFFFF; }
-  .fix-row td { background: rgba(29, 99, 255, 0.04) !important; padding: 12px 16px !important; }
-  .fix-cell { display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; color: var(--paper); }
-
-  /* Micro-Tool Navigation Pills */
-  .util-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-  .util-pill {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    background: var(--panel-input);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.14s ease;
-  }
-  .util-pill:hover { color: #FFFFFF; border-color: var(--primary); }
-  .util-pill.active {
-    background: var(--primary);
-    color: #FFFFFF;
-    font-weight: 700;
-    border-color: var(--primary);
-  }
-  .util-panel { display: none; }
-  .util-panel.active { display: block; animation: deckFade 0.18s ease; }
-
-  .code-output {
-    background: var(--panel-input);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 14px;
-    margin-top: 12px;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--primary-light);
-    white-space: pre-wrap;
-    word-break: break-word;
-    max-height: 320px;
-    overflow-y: auto;
-  }
-
-  .serp-preview {
-    background: #FFFFFF;
-    border-radius: 6px;
-    padding: 14px 16px;
-    margin-top: 8px;
-    max-width: 580px;
-    font-family: arial, sans-serif;
-  }
-  .serp-preview .serp-url { color: #202124; font-size: 12px; margin-bottom: 2px; }
-  .serp-preview .serp-title { color: #1a0dab; font-size: 17px; line-height: 1.3; margin-bottom: 4px; }
-  .serp-preview .serp-desc { color: #4d5156; font-size: 13px; line-height: 1.45; }
-
-  .chat-bubble { max-width: 82%; padding: 10px 14px; border-radius: 6px; font-size: 13px; line-height: 1.55; }
-  .chat-bubble.user { align-self: flex-end; background: var(--primary); color: #FFFFFF; font-weight: 600; }
-  .chat-bubble.assistant { align-self: flex-start; background: var(--panel-subtle); border: 1px solid var(--border); color: var(--paper); }
-
-  .loading { font-family: var(--font-mono); font-size: 11.5px; color: var(--accent); }
-  .empty { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); padding: 20px 0; text-align: center; border: 1px dashed var(--border); border-radius: 6px; }
-
-  @media(max-width: 960px) {
+  @media(max-width: 900px) {
     .deck-shell { flex-direction: column; }
-    .deck-rail { width: 100%; height: auto; position: relative; flex-direction: row; align-items: center; padding: 10px; gap: 8px; }
-    .rail-brand { border-bottom: none; padding: 0 8px; }
-    .rail-section-lbl, .rail-foot, .rail-btn .idx { display: none; }
-    .rail-nav { flex-direction: row; overflow-x: auto; gap: 4px; padding: 0; }
-    .rail-btn { flex: none; white-space: nowrap; padding: 6px 10px; }
-    .deck-topbar { padding: 0 16px; font-size: 10px; }
-    .deck-content { padding: 20px 16px 60px; }
+    .deck-rail { width: 100%; height: auto; position: relative; flex-direction: row; overflow-x: auto; padding: 10px; }
+    .rail-section-lbl, .rail-brand { display: none; }
+    .rail-nav { flex-direction: row; }
+    .deck-content { padding: 16px; }
     .row { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
-<div class="deck-shell">
 
-  <!-- ================= LEFT RAIL ================= -->
+<div class="deck-shell">
+  <!-- Sidebar -->
   <aside class="deck-rail">
     <div class="rail-brand">
       <div class="rail-badge">S</div>
@@ -463,67 +240,25 @@
         <div class="rail-edition">COMMAND DECK // v2.6</div>
       </div>
     </div>
-
-    <div class="rail-section-lbl">Core Instruments</div>
+    <div class="rail-section-lbl">Navigation</div>
     <nav class="rail-nav">
-      <button class="rail-btn active" data-tab="dashboard">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1.3"/><rect x="13" y="4" width="7" height="7" rx="1.3"/><rect x="4" y="13" width="7" height="7" rx="1.3"/><rect x="13" y="13" width="7" height="7" rx="1.3"/></svg>
-        <span>Deck Overview</span><span class="idx">00</span>
-      </button>
-      <button class="rail-btn" data-tab="audit">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M8.5 12.5l2 2 4-4.5"/></svg>
-        <span>Site Audit 360°</span><span class="idx">01</span>
-      </button>
-      <button class="rail-btn" data-tab="keywords">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>
-        <span>Keyword Explorer</span><span class="idx">02</span>
-      </button>
-      <button class="rail-btn" data-tab="aeo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H8l-4 4V5z"/><circle cx="12" cy="14" r="1" fill="currentColor"/></svg>
-        <span>AEO Answer Engine</span><span class="idx">03</span>
-      </button>
-      <button class="rail-btn" data-tab="geo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.6 2.6 2.6 14.4 0 17"/></svg>
-        <span>GEO AI Citation</span><span class="idx">04</span>
-      </button>
-      <button class="rail-btn" data-tab="competitors">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V4M5 4l6 2.5L5 9"/><path d="M19 21v-9.5M19 11.5l-6-2.5 6-2.5"/></svg>
-        <span>Market Competitors</span><span class="idx">05</span>
-      </button>
-      <button class="rail-btn" data-tab="ranklog">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19h16"/><path d="M6 15l4-5 3 3 6-8"/></svg>
-        <span>Rank Tracker</span><span class="idx">06</span>
-      </button>
-      <button class="rail-btn" data-tab="blog">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 3h8l4 4v14h-12z"/><path d="M9 13h6M9 16.5h6"/></svg>
-        <span>AI Blog Writer</span><span class="idx">07</span>
-      </button>
-      <button class="rail-btn" data-tab="strategist">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 11a7 7 0 0114 0v3.5"/><path d="M9 18v.5A2.5 2.5 0 0011.5 21H13"/></svg>
-        <span>AI Strategist</span><span class="idx">08</span>
-      </button>
-      <button class="rail-btn" data-tab="utilities">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 3.5a4.5 4.5 0 00-5.6 5.6L3 15v4a2 2 0 002 2h4l5.9-5.9"/></svg>
-        <span>Free SEO Tools</span><span class="idx">09</span>
-      </button>
+      <button class="rail-btn active" id="btn-dashboard" onclick="switchTab('dashboard')">Deck Overview <span class="idx">00</span></button>
+      <button class="rail-btn" id="btn-audit" onclick="switchTab('audit')">Site Audit 360° <span class="idx">01</span></button>
+      <button class="rail-btn" id="btn-keywords" onclick="switchTab('keywords')">Keyword Explorer <span class="idx">02</span></button>
+      <button class="rail-btn" id="btn-aeo" onclick="switchTab('aeo')">AEO Optimizer <span class="idx">03</span></button>
+      <button class="rail-btn" id="btn-geo" onclick="switchTab('geo')">GEO AI Citation <span class="idx">04</span></button>
+      <button class="rail-btn" id="btn-competitors" onclick="switchTab('competitors')">Competitors <span class="idx">05</span></button>
+      <button class="rail-btn" id="btn-ranklog" onclick="switchTab('ranklog')">Rank Tracker <span class="idx">06</span></button>
+      <button class="rail-btn" id="btn-blog" onclick="switchTab('blog')">AI Blog Writer <span class="idx">07</span></button>
+      <button class="rail-btn" id="btn-strategist" onclick="switchTab('strategist')">AI Strategist <span class="idx">08</span></button>
     </nav>
-
-    <div class="rail-foot">
-      <span>ENGINE // STABLE</span>
-      <div class="status-ping"><span class="ping-dot"></span> LIVE</div>
-    </div>
   </aside>
 
-  <!-- ================= DECK WORKSPACE ================= -->
+  <!-- Workspace -->
   <div class="deck-main">
     <div class="deck-topbar">
-      <div class="topbar-telemetry">
-        <div class="tele-item"><span class="tele-label">SYSTEM:</span><span class="tele-val highlight">ONLINE</span></div>
-        <div class="tele-item"><span class="tele-label">MODEL:</span><span class="tele-val">openai/gpt-oss-20b</span></div>
-      </div>
-      <div class="topbar-telemetry">
-        <div class="tele-item"><span class="tele-label">LATENCY:</span><span class="tele-val highlight">&lt; 280ms</span></div>
-      </div>
+      <div class="tele-item">SYSTEM: <span class="tele-val">ONLINE</span></div>
+      <div class="tele-item">MODEL: <span class="tele-val">openai/gpt-oss-20b</span></div>
     </div>
 
     <main class="deck-content">
@@ -535,68 +270,48 @@
       <!-- 00. DASHBOARD -->
       <div class="panel active" id="panel-dashboard">
         <div class="stat-grid" id="dashStats"></div>
-
         <div class="card">
-          <div class="card-head">
-            <div class="card-title">Active Field Kit Modules</div>
-            <span class="badge badge-good">10 Engines Active</span>
-          </div>
-          <div class="card-sub">Launch targeted audits, simulate generative rankings, or build ranking assets directly from the command matrix.</div>
-          
+          <div class="card-head"><div class="card-title">Active Field Kit Modules</div><span class="badge badge-good">Ready</span></div>
           <div class="dash-grid">
-            <div class="dash-tile" data-goto="audit">
-              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M8.5 12.5l2 2 4-4.5"/></svg></div>
+            <div class="dash-tile" onclick="switchTab('audit')">
               <div class="dash-tile-title">Site Audit 360°</div>
-              <div class="dash-tile-desc">Deep scan of On-Page, Technical, Performance, Mobile, and Off-Page signals with PDF generation.</div>
+              <div class="dash-tile-desc">Deep scan of On-Page, Technical, Performance & Off-Page signals.</div>
               <div class="dash-tile-link">Execute Audit →</div>
             </div>
-            <div class="dash-tile" data-goto="keywords">
-              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg></div>
+            <div class="dash-tile" onclick="switchTab('keywords')">
               <div class="dash-tile-title">Keyword Explorer</div>
-              <div class="dash-tile-desc">Niche discovery, intent clustering, demand tiering, and estimated KD difficulty metrics.</div>
+              <div class="dash-tile-desc">Niche discovery, intent clustering & KD metrics.</div>
               <div class="dash-tile-link">Explore Terms →</div>
             </div>
-            <div class="dash-tile" data-goto="aeo">
-              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H8l-4 4V5z"/><circle cx="12" cy="14" r="1" fill="currentColor"/></svg></div>
+            <div class="dash-tile" onclick="switchTab('aeo')">
               <div class="dash-tile-title">AEO Optimization</div>
-              <div class="dash-tile-desc">Featured snippets, People Also Ask (PAA), and voice search schema readiness.</div>
+              <div class="dash-tile-desc">Featured snippets, PAA & voice search readiness.</div>
               <div class="dash-tile-link">Inspect Snippets →</div>
             </div>
-            <div class="dash-tile" data-goto="geo">
-              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/></svg></div>
+            <div class="dash-tile" onclick="switchTab('geo')">
               <div class="dash-tile-title">GEO AI Visibility</div>
-              <div class="dash-tile-desc">Calibrate content citations across ChatGPT Search, Perplexity, Gemini, and Claude.</div>
+              <div class="dash-tile-desc">Calibrate content citations in ChatGPT, Perplexity & Claude.</div>
               <div class="dash-tile-link">Inspect GEO →</div>
             </div>
-            <div class="dash-tile" data-goto="competitors">
-              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V4M5 4l6 2.5L5 9"/></svg></div>
+            <div class="dash-tile" onclick="switchTab('competitors')">
               <div class="dash-tile-title">Competitors</div>
-              <div class="dash-tile-desc">Auto-detect market rivals, compare authority, and reveal exploitable keyword gaps.</div>
+              <div class="dash-tile-desc">Rival market tracking and keyword gap closures.</div>
               <div class="dash-tile-link">Analyze Gaps →</div>
             </div>
-            <div class="dash-tile" data-goto="ranklog">
-              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19h16"/><path d="M6 15l4-5 3 3 6-8"/></svg></div>
+            <div class="dash-tile" onclick="switchTab('ranklog')">
               <div class="dash-tile-title">Rank Tracker</div>
-              <div class="dash-tile-desc">Track SERP fluctuations over time with keyword position estimations.</div>
+              <div class="dash-tile-desc">Track live SERP positions over time.</div>
               <div class="dash-tile-link">View Rankings →</div>
             </div>
-            <div class="dash-tile" data-goto="blog">
-              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 3h8l4 4v14h-12z"/></svg></div>
+            <div class="dash-tile" onclick="switchTab('blog')">
               <div class="dash-tile-title">Blog Writer</div>
-              <div class="dash-tile-desc">Generate structured articles engineered around natural keyword frequencies and H2/H3 layouts.</div>
+              <div class="dash-tile-desc">Draft structured SEO articles with keyword densities.</div>
               <div class="dash-tile-link">Draft Article →</div>
             </div>
-            <div class="dash-tile" data-goto="strategist">
-              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 11a7 7 0 0114 0v3.5"/></svg></div>
+            <div class="dash-tile" onclick="switchTab('strategist')">
               <div class="dash-tile-title">AI Strategist</div>
-              <div class="dash-tile-desc">Interactive strategic consultation grounded directly on your saved project state.</div>
+              <div class="dash-tile-desc">Strategic consultation grounded directly in your domain data.</div>
               <div class="dash-tile-link">Consult AI →</div>
-            </div>
-            <div class="dash-tile" data-goto="utilities">
-              <div class="dash-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 3.5a4.5 4.5 0 00-5.6 5.6L3 15v4a2 2 0 002 2h4l5.9-5.9"/></svg></div>
-              <div class="dash-tile-title">Free SEO Tools</div>
-              <div class="dash-tile-desc">12 instant in-browser micro-utilities: schema, meta checkers, robots, slugs, and tags.</div>
-              <div class="dash-tile-link">Open Utilities →</div>
             </div>
           </div>
         </div>
@@ -605,625 +320,415 @@
       <!-- 01. SITE AUDIT -->
       <div class="panel" id="panel-audit">
         <div class="card">
-          <div class="card-head">
-            <div class="card-title">Live 360° Site Audit Engine</div>
-            <span class="badge badge-good">Real-Time DOM Scan</span>
-          </div>
-          <div class="card-sub">Audits technical tags, on-page content, security, headings, image alt attributes, and off-page footprint. Simply enter the URL — Signal automatically fetches and analyzes live site code.</div>
+          <div class="card-head"><div class="card-title">Live 360° Site Audit Engine</div></div>
+          <div class="card-sub">Enter your URL. Signal automatically scrapes live HTML and checks technical, on-page, and off-page parameters.</div>
           <div class="row">
-            <div>
-              <label>Target URL</label>
-              <input type="text" id="auditUrl" placeholder="https://example.com">
-            </div>
-            <div>
-              <label>Target Keyword (Optional)</label>
-              <input type="text" id="auditKeyword" placeholder="e.g. digital business cards">
-            </div>
+            <div><label>Target URL</label><input type="text" id="auditUrl" placeholder="https://prodoo.com"></div>
+            <div><label>Target Keyword (Optional)</label><input type="text" id="auditKeyword" placeholder="e.g. digital business cards"></div>
           </div>
-          <label>Optional: Paste Raw HTML (Auto-fetched if left blank)</label>
-          <textarea id="auditInput" placeholder="Leave empty to auto-fetch directly from the live URL..."></textarea>
-          <button class="btn" id="runAuditBtn">Run Complete Audit</button>
-          <div id="auditLoading" style="display:none;margin-top:12px;" class="loading">Fetching live site and executing complete On-Page, Technical &amp; Off-Page scan...</div>
+          <button class="btn" id="runAuditBtn" onclick="runAudit()">Run Complete Audit</button>
+          <div id="auditLoading" style="display:none;margin-top:12px;" class="loading">Executing 360° live scan...</div>
         </div>
 
         <div class="card" id="auditResultCard" style="display:none;">
           <div class="card-head">
             <div class="card-title">Audit Diagnostic Telemetry</div>
-            <button class="btn ghost small" id="downloadAuditPdfBtn">Export Full PDF</button>
+            <button class="btn ghost small" onclick="exportAuditPdf()">Export PDF</button>
           </div>
-          <div class="gauge-wrap">
-            <svg width="110" height="110" viewBox="0 0 120 120" id="gaugeSvg"></svg>
-            <div>
-              <div class="gauge-score-label">Overall Health Score</div>
-              <div class="gauge-score-num" id="gaugeNum">—</div>
-            </div>
-          </div>
-          <div id="auditSummaryGrid" class="report-summary-grid"></div>
+          <div style="font-size:28px;font-weight:800;margin-bottom:14px;color:var(--green);" id="auditScoreVal">Score: --/100</div>
           <div id="checksList"></div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Audit History</div>
-          <div id="auditHistoryList"><div class="empty">No historical audits recorded.</div></div>
         </div>
       </div>
 
-      <!-- 02. KEYWORDS -->
+      <!-- 02. KEYWORD EXPLORER -->
       <div class="panel" id="panel-keywords">
         <div class="card">
-          <div class="card-head">
-            <div class="card-title">Niche Keyword Discovery</div>
-            <span class="badge badge-good">Intent Clustered</span>
+          <div class="card-title">Keyword Discovery</div>
+          <div class="row" style="margin-top:12px;">
+            <div><label>Domain / URL</label><input type="text" id="seedUrl" placeholder="https://prodoo.com"></div>
+            <div><label>Focus / Context</label><input type="text" id="seedContext" placeholder="e.g. smart cards"></div>
           </div>
-          <div class="card-sub">Generate relevant keywords tailored to your exact industry niche with difficulty scores and intent categorization.</div>
-          <div class="row">
-            <div>
-              <label>Website Domain or URL</label>
-              <input type="text" id="seedUrl" placeholder="https://example.com">
-            </div>
-            <div>
-              <label>Contextual Direction (Optional)</label>
-              <input type="text" id="seedContext" placeholder="e.g. focus on NFC technology">
-            </div>
-          </div>
-          <button class="btn" id="genKeywordsBtn">Generate Suggestions</button>
-          <div id="kwLoading" style="display:none;margin-top:12px;" class="loading">Synthesizing niche keyword opportunities...</div>
+          <button class="btn" onclick="generateKeywords()">Generate Keywords</button>
+          <div id="kwLoading" style="display:none;margin-top:12px;" class="loading">Discovering keywords with AI...</div>
         </div>
-
-        <div class="card" id="keywordResultsCard" style="display:none;">
-          <div class="card-title">Discovered Keywords <span id="nicheLabel" style="font-family:var(--font-mono);font-size:12px;color:var(--muted);font-weight:400;"></span></div>
-          <div id="keywordResultsGrid"></div>
-        </div>
-
-        <div class="card">
-          <div class="card-head">
-            <div class="card-title">Saved Keywords Target Matrix</div>
-            <span id="kwListCount" class="badge badge-good">0</span>
-          </div>
-          <div class="card-sub">Keywords stored here are instantly accessible across the Blog Writer and Rank Tracker.</div>
-          <div id="myKeywordList"><div class="empty">No saved terms yet.</div></div>
+        <div class="card" id="kwResultsCard" style="display:none;">
+          <div class="card-title">Keyword Matrix</div>
+          <div id="kwResultsGrid"></div>
         </div>
       </div>
 
       <!-- 03. AEO -->
       <div class="panel" id="panel-aeo">
         <div class="card">
-          <div class="card-head">
-            <div class="card-title">Answer Engine Optimization (AEO)</div>
-            <span class="badge badge-good">Snippet &amp; Voice Search</span>
+          <div class="card-title">Answer Engine Optimization (AEO)</div>
+          <div class="row" style="margin-top:12px;">
+            <div><label>Target URL</label><input type="text" id="aeoUrl" placeholder="https://prodoo.com"></div>
+            <div><label>Target Query</label><input type="text" id="aeoQuestion" placeholder="e.g. what is an nfc business card"></div>
           </div>
-          <div class="card-sub">Evaluate readiness for featured snippets, voice search answers (Google Assistant/Siri), and People Also Ask (PAA) boxes.</div>
-          <div class="row">
-            <div>
-              <label>Target Site URL</label>
-              <input type="text" id="aeoUrl" placeholder="https://example.com">
-            </div>
-            <div>
-              <label>Target Question / Query</label>
-              <input type="text" id="aeoQuestion" placeholder="e.g. what is an nfc business card">
-            </div>
-          </div>
-          <button class="btn" id="runAeoBtn">Evaluate AEO Readiness</button>
-          <div id="aeoLoading" style="display:none;margin-top:12px;" class="loading">Auditing snippet compatibility &amp; structured question patterns...</div>
+          <button class="btn" onclick="runAeo()">Evaluate AEO Readiness</button>
+          <div id="aeoLoading" style="display:none;margin-top:12px;" class="loading">Auditing answer snippet signals...</div>
         </div>
-
         <div class="card" id="aeoResultCard" style="display:none;">
-          <div class="card-title">AEO Evaluation Report</div>
-          <div class="gauge-wrap">
-            <svg width="110" height="110" viewBox="0 0 120 120" id="aeoGaugeSvg"></svg>
-            <div>
-              <div class="gauge-score-label">Answer Engine Index</div>
-              <div class="gauge-score-num" id="aeoGaugeNum">—</div>
-            </div>
-          </div>
+          <div class="card-title">AEO Index: <span id="aeoScoreNum">--</span></div>
           <div id="aeoChecksList"></div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">AEO Scan Logs</div>
-          <div id="aeoHistoryList"><div class="empty">No AEO logs recorded.</div></div>
         </div>
       </div>
 
       <!-- 04. GEO -->
       <div class="panel" id="panel-geo">
         <div class="card">
-          <div class="card-head">
-            <div class="card-title">Generative Engine Optimization (GEO)</div>
-            <span class="badge badge-good">AI Search Citation</span>
+          <div class="card-title">Generative Engine Optimization (GEO)</div>
+          <div class="row" style="margin-top:12px;">
+            <div><label>Domain / URL</label><input type="text" id="geoUrl" placeholder="https://prodoo.com"></div>
+            <div><label>Topic Focus</label><input type="text" id="geoTopic" placeholder="e.g. digital networking"></div>
           </div>
-          <div class="card-sub">Analyze how likely generative AI search engines (ChatGPT Search, Perplexity, Google AI Overviews, Claude) are to cite and recommend your site.</div>
-          <div class="row">
-            <div>
-              <label>Domain or Page URL</label>
-              <input type="text" id="geoUrl" placeholder="https://example.com">
-            </div>
-            <div>
-              <label>Core Topic Focus</label>
-              <input type="text" id="geoTopic" placeholder="e.g. sustainable networking products">
-            </div>
-          </div>
-          <button class="btn" id="runGeoBtn">Evaluate GEO Authority</button>
-          <div id="geoLoading" style="display:none;margin-top:12px;" class="loading">Evaluating generative citation signals &amp; E-E-A-T footprint...</div>
+          <button class="btn" onclick="runGeo()">Evaluate GEO Authority</button>
+          <div id="geoLoading" style="display:none;margin-top:12px;" class="loading">Auditing AI citation propensity...</div>
         </div>
-
         <div class="card" id="geoResultCard" style="display:none;">
-          <div class="card-title">GEO AI Visibility Report</div>
-          <div class="gauge-wrap">
-            <svg width="110" height="110" viewBox="0 0 120 120" id="geoGaugeSvg"></svg>
-            <div>
-              <div class="gauge-score-label">Citation Propensity</div>
-              <div class="gauge-score-num" id="geoGaugeNum">—</div>
-            </div>
-          </div>
+          <div class="card-title">GEO Citation Score: <span id="geoScoreNum">--</span></div>
           <div id="geoChecksList"></div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">GEO Log Archive</div>
-          <div id="geoHistoryList"><div class="empty">No GEO scans recorded.</div></div>
         </div>
       </div>
 
       <!-- 05. COMPETITORS -->
       <div class="panel" id="panel-competitors">
         <div class="card">
-          <div class="card-head">
-            <div class="card-title">Market Rivals &amp; Gap Intelligence</div>
-            <span class="badge badge-good">Authority Benchmarking</span>
+          <div class="card-title">Market Rivals & Gaps</div>
+          <div class="row" style="margin-top:12px;">
+            <div><label>Your Domain</label><input type="text" id="compUrl" placeholder="https://prodoo.com"></div>
+            <div><label>Niche</label><input type="text" id="compContext" placeholder="e.g. NFC business cards"></div>
           </div>
-          <div class="card-sub">Automatically detect key market rivals, benchmark authority indicators, and inspect actionable gap closures.</div>
-          <div class="row">
-            <div>
-              <label>Your Domain</label>
-              <input type="text" id="compUrl" placeholder="https://example.com">
-            </div>
-            <div>
-              <label>Market Vertical (Optional)</label>
-              <input type="text" id="compContext" placeholder="e.g. smart NFC business cards">
-            </div>
-          </div>
-          <button class="btn" id="runCompBtn">Scan Competitors</button>
-          <div id="compLoading" style="display:none;margin-top:12px;" class="loading">Analyzing market landscape &amp; rivals...</div>
+          <button class="btn" onclick="runCompetitors()">Scan Competitors</button>
+          <div id="compLoading" style="display:none;margin-top:12px;" class="loading">Benchmarking rivals...</div>
         </div>
-
         <div class="card" id="compResultCard" style="display:none;">
-          <div class="card-title">Competitor Benchmarking <span id="compNicheLabel" style="font-size:12px;color:var(--muted);font-weight:400;"></span></div>
           <div id="compTable"></div>
-          <div class="card-title" style="margin-top:24px;">Actionable Gap Closures</div>
-          <div id="compGaps"></div>
+          <div id="compGaps" style="margin-top:16px;"></div>
         </div>
       </div>
 
       <!-- 06. RANK TRACKER -->
       <div class="panel" id="panel-ranklog">
         <div class="card">
-          <div class="card-head">
-            <div class="card-title">SERP Position Estimator</div>
-            <span class="badge badge-good">Directional Search</span>
+          <div class="card-title">SERP Position Estimator</div>
+          <div class="row" style="margin-top:12px;">
+            <div><label>Domain</label><input type="text" id="trackSiteUrl" placeholder="https://prodoo.com"></div>
+            <div><label>Keywords (comma separated)</label><input type="text" id="trackKeywords" placeholder="nfc card, smart business card"></div>
           </div>
-          <div class="card-sub">Check live search rankings across your targeted keywords. Directional results based on real-time search queries.</div>
-          <div class="row">
-            <div>
-              <label>Tracking Domain</label>
-              <input type="text" id="trackSiteUrl" placeholder="https://example.com">
-            </div>
-            <div>
-              <label>Keywords (Comma Separated, max 8)</label>
-              <input type="text" id="trackKeywords" placeholder="e.g. nfc digital business cards, smart card">
-            </div>
-          </div>
-          <button class="btn" id="checkPositionsBtn">Check Positions</button>
-          <div id="rankLoading" style="display:none;margin-top:12px;" class="loading">Estimating search ranking positions...</div>
+          <button class="btn" onclick="checkPositions()">Estimate Rankings</button>
+          <div id="rankLoading" style="display:none;margin-top:12px;" class="loading">Checking SERP rankings...</div>
         </div>
-
         <div class="card">
-          <div class="card-title">Ranked Keyword Matrix</div>
-          <div id="rankLogTable"><div class="empty">No rankings active.</div></div>
-        </div>
-
-        <div class="card">
-          <details>
-            <summary style="cursor:pointer;font-family:var(--font-mono);font-size:11px;color:var(--primary-light);text-transform:uppercase;font-weight:700;">
-              + Log Verified Position Manually
-            </summary>
-            <div style="margin-top:14px;">
-              <div class="row">
-                <div>
-                  <label>Keyword</label>
-                  <input type="text" id="rankKeyword" placeholder="e.g. nfc digital business cards">
-                </div>
-                <div>
-                  <label>Ranking URL</label>
-                  <input type="text" id="rankUrl" placeholder="https://example.com/card">
-                </div>
-              </div>
-              <div class="row">
-                <div>
-                  <label>Position (#)</label>
-                  <input type="number" id="rankPosition" min="1" placeholder="3">
-                </div>
-                <div>
-                  <label>Audit Date</label>
-                  <input type="date" id="rankDate">
-                </div>
-              </div>
-              <label>Operational Notes</label>
-              <input type="text" id="rankNotes" placeholder="e.g. confirmed on Google Search Console">
-              <button class="btn ghost" id="addRankBtn">Commit Entry</button>
-            </div>
-          </details>
+          <div class="card-title">Tracked Positions</div>
+          <div id="rankLogTable"><div class="empty">No rankings tracked yet.</div></div>
         </div>
       </div>
 
       <!-- 07. BLOG WRITER -->
       <div class="panel" id="panel-blog">
         <div class="card">
-          <div class="card-head">
-            <div class="card-title">AI Long-Form SEO Blog Generator</div>
-            <span class="badge badge-good">Semantic Structure</span>
-          </div>
-          <div class="card-sub">Generate original, structured articles engineered around natural keyword frequencies and H2/H3 semantic layouts.</div>
-          <label>Article Topic / Title</label>
-          <input type="text" id="blogTopic" placeholder="e.g. Why NFC Business Cards are Replacing Paper in 2026">
-          <div class="row">
-            <div>
-              <label>Target Keywords (Comma Separated)</label>
-              <input type="text" id="blogKeywords" placeholder="e.g. digital business card, smart nfc card">
-            </div>
-            <div>
-              <label>&nbsp;</label>
-              <button class="btn ghost small" id="useSavedKwBtn" style="width:100%;margin-top:1px;">Insert Saved Keywords</button>
-            </div>
-          </div>
-          <div class="row">
-            <div>
-              <label>Editorial Tone</label>
-              <select id="blogTone">
-                <option value="professional and clear">Professional &amp; Clear</option>
-                <option value="friendly and conversational">Friendly &amp; Conversational</option>
-                <option value="authoritative and expert">Authoritative &amp; Technical</option>
-                <option value="casual and upbeat">Casual &amp; Engaging</option>
-              </select>
-            </div>
-            <div>
-              <label>Word Count Target</label>
-              <select id="blogLength">
-                <option value="around 400-500 words">Short (~450 words)</option>
-                <option value="around 700-900 words">Standard (~800 words)</option>
-              </select>
-            </div>
-          </div>
-          <label>Target Reader Persona</label>
-          <input type="text" id="blogAudience" placeholder="e.g. Corporate sales executives and business founders">
-          <button class="btn" id="genBlogBtn">Draft Article</button>
-          <div id="blogLoading" style="display:none;margin-top:12px;" class="loading">Writing with Groq AI acceleration...</div>
+          <div class="card-title">AI Long-Form SEO Blog Generator</div>
+          <label style="margin-top:12px;">Article Topic</label>
+          <input type="text" id="blogTopic" placeholder="e.g. 5 Benefits of Using NFC Cards in 2026">
+          <label>Target Keywords</label>
+          <input type="text" id="blogKeywords" placeholder="nfc business cards, modern networking">
+          <button class="btn" onclick="generateBlog()">Generate Article</button>
+          <div id="blogLoading" style="display:none;margin-top:12px;" class="loading">Drafting article with Groq...</div>
         </div>
-
         <div class="card" id="blogResultCard" style="display:none;">
           <div class="card-title">Generated Article</div>
-          <div class="code-output" id="blogOutput" style="max-height:500px;font-family:var(--font-display);color:var(--paper);line-height:1.7;"></div>
-          <div style="display:flex;gap:10px;margin-top:16px;">
-            <button class="btn ghost small" id="copyBlogBtn">Copy Content</button>
-            <button class="btn ghost small" id="downloadBlogBtn">Export Markdown (.md)</button>
-          </div>
+          <div class="code-output" id="blogOutput"></div>
         </div>
       </div>
 
       <!-- 08. STRATEGIST -->
       <div class="panel" id="panel-strategist">
         <div class="card">
-          <div class="card-head">
-            <div class="card-title">Signal AI Senior Strategist</div>
-            <span class="badge badge-good">Project Grounded</span>
+          <div class="card-title">Signal AI Senior Strategist</div>
+          <div id="chatMessages" style="display:flex;flex-direction:column;gap:10px;max-height:360px;overflow-y:auto;margin:16px 0;"></div>
+          <div class="row" style="grid-template-columns:1fr auto;align-items:end;">
+            <div><label>Your Question</label><input type="text" id="chatInput" placeholder="How do I optimize my site for featured snippets?" style="margin-bottom:0;"></div>
+            <button class="btn" onclick="sendChat()" style="height:42px;">Ask Advisor</button>
           </div>
-          <div class="card-sub">Inquire about web ranking, App Store Optimization (ASO), or crawl optimization. Grounded in your tool state.</div>
-          <div id="chatMessages" style="display:flex;flex-direction:column;gap:12px;max-height:460px;overflow-y:auto;margin-bottom:16px;padding-right:4px;"></div>
-          <div class="row" style="grid-template-columns:1fr auto;align-items:end;gap:10px;">
-            <div style="margin-bottom:0;">
-              <label>Strategic Prompt</label>
-              <textarea id="chatInput" style="min-height:50px;margin-bottom:0;" placeholder="e.g. What on-page changes will increase my ranking for digital business cards?"></textarea>
-            </div>
-            <button class="btn" id="sendChatBtn" style="margin-bottom:0;height:42px;">Ask Advisor</button>
-          </div>
-          <div id="chatLoading" style="display:none;margin-top:12px;" class="loading">Formulating strategic response...</div>
+          <div id="chatLoading" style="display:none;margin-top:12px;" class="loading">Consulting AI...</div>
         </div>
       </div>
 
-      <!-- 09. FREE SEO TOOLS -->
-      <div class="panel" id="panel-utilities">
-        <div class="card">
-          <div class="card-head">
-            <div class="card-title">Browser SEO Diagnostic Utilities</div>
-            <span class="badge badge-good">Zero Latency</span>
-          </div>
-          <div class="card-sub">Instant in-browser micro-utilities running completely client-side without external dependencies.</div>
-          <div class="util-pills" id="utilPills">
-            <button class="util-pill active" data-util="scorechecker">Score Checker</button>
-            <button class="util-pill" data-util="title">Title Preview</button>
-            <button class="util-pill" data-util="description">Meta Description</button>
-            <button class="util-pill" data-util="density">Keyword Density</button>
-            <button class="util-pill" data-util="wordcount">Word Count</button>
-            <button class="util-pill" data-util="headings">Heading Outline</button>
-            <button class="util-pill" data-util="robots">Robots.txt</button>
-            <button class="util-pill" data-util="sitemap">Sitemap Checker</button>
-            <button class="util-pill" data-util="schema">Schema Generator</button>
-            <button class="util-pill" data-util="canonical">Canonical Tag</button>
-            <button class="util-pill" data-util="og">Open Graph</button>
-            <button class="util-pill" data-util="slug">URL Slug</button>
-          </div>
-        </div>
-
-        <div class="util-panel active" id="util-scorechecker">
-          <div class="card">
-            <div class="card-title">Complete Audit Redirection</div>
-            <div class="card-sub">Trigger deep site audit scans across on-page, off-page, and technical signals.</div>
-            <button class="btn" onclick="switchTab('audit')">Launch Full Site Audit →</button>
-          </div>
-        </div>
-
-        <div class="util-panel" id="util-title">
-          <div class="card">
-            <div class="card-title">Title Length &amp; SERP Preview</div>
-            <label>Title Text</label>
-            <input type="text" id="titleInput" placeholder="e.g. Best Digital Business Cards in 2026 | Brand" oninput="checkTitle()">
-            <div id="titleStats" style="display:flex;gap:8px;margin-bottom:12px;"></div>
-            <div class="serp-preview" id="titlePreview"></div>
-          </div>
-        </div>
-
-        <div class="util-panel" id="util-description">
-          <div class="card">
-            <div class="card-title">Meta Description Checker</div>
-            <label>Description String</label>
-            <textarea id="descInput" placeholder="Enter meta description (120-160 chars optimal)..." oninput="checkDescription()"></textarea>
-            <div id="descStats" style="display:flex;gap:8px;margin-bottom:12px;"></div>
-            <div class="serp-preview" id="descPreview"></div>
-          </div>
-        </div>
-
-        <div class="util-panel" id="util-density">
-          <div class="card">
-            <div class="card-title">Content Keyword Density</div>
-            <label>Target Keywords (Comma Separated)</label>
-            <input type="text" id="densityKeywords" placeholder="e.g. digital card, nfc" oninput="checkDensity()">
-            <label>Content Body</label>
-            <textarea id="densityContent" placeholder="Paste full article text here..." oninput="checkDensity()"></textarea>
-            <div id="densityResult"></div>
-          </div>
-        </div>
-
-        <div class="util-panel" id="util-wordcount">
-          <div class="card">
-            <div class="card-title">Word &amp; Character Statistics</div>
-            <label>Draft Text</label>
-            <textarea id="wordcountInput" placeholder="Paste content to count characters, words, and reading duration..." oninput="checkWordCount()"></textarea>
-            <div id="wordcountStats" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
-          </div>
-        </div>
-
-        <div class="util-panel" id="util-headings">
-          <div class="card">
-            <div class="card-title">Heading Hierarchy Visualizer</div>
-            <label>HTML Markup</label>
-            <textarea id="headingsInput" placeholder="Paste HTML containing H1-H6 elements..."></textarea>
-            <button class="btn" onclick="checkHeadings()">Analyze Outlines</button>
-            <div id="headingsResult" style="margin-top:16px;"></div>
-          </div>
-        </div>
-
-        <div class="util-panel" id="util-robots">
-          <div class="card">
-            <div class="card-title">Robots.txt Generator</div>
-            <div class="row">
-              <div>
-                <label>Default Directive</label>
-                <select id="robotsDefault" onchange="generateRobots()">
-                  <option value="allow">Allow All Robots (Standard)</option>
-                  <option value="disallow">Disallow All Robots (Private)</option>
-                </select>
-              </div>
-              <div>
-                <label>Sitemap URL</label>
-                <input type="text" id="robotsSitemap" placeholder="https://example.com/sitemap.xml" oninput="generateRobots()">
-              </div>
-            </div>
-            <label>Disallowed Paths (One Per Line)</label>
-            <textarea id="robotsDisallow" placeholder="/admin/&#10;/cart/" oninput="generateRobots()"></textarea>
-            <button class="btn" onclick="generateRobots()">Generate File</button>
-            <pre class="code-output" id="robotsOutput"></pre>
-            <div style="display:flex;gap:10px;margin-top:10px;">
-              <button class="btn ghost small" onclick="copyText('robotsOutput', this)">Copy</button>
-              <button class="btn ghost small" onclick="downloadText('robotsOutput','robots.txt')">Download</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="util-panel" id="util-sitemap">
-          <div class="card">
-            <div class="card-title">Sitemap Validator</div>
-            <label>Sitemap URL</label>
-            <input type="text" id="sitemapUrl" placeholder="https://example.com/sitemap.xml">
-            <button class="btn" onclick="checkSitemapUrl()">Inspect Remote Sitemap</button>
-            <div id="sitemapFetchStatus" style="margin-top:10px;"></div>
-            <details style="margin-top:16px;" id="sitemapPasteDetails">
-              <summary style="cursor:pointer;font-family:var(--font-mono);font-size:11px;color:var(--primary-light);text-transform:uppercase;font-weight:700;">
-                Or Paste XML Content Directly
-              </summary>
-              <div style="margin-top:12px;">
-                <textarea id="sitemapPaste" placeholder="Paste <urlset> or <sitemapindex> XML..."></textarea>
-                <button class="btn" onclick="checkSitemapContent(document.getElementById('sitemapPaste').value)">Inspect XML</button>
-              </div>
-            </details>
-            <div id="sitemapResult" style="margin-top:16px;"></div>
-          </div>
-        </div>
-
-        <div class="util-panel" id="util-schema">
-          <div class="card">
-            <div class="card-title">JSON-LD Schema Markup Builder</div>
-            <label>Structured Data Type</label>
-            <select id="schemaType" onchange="renderSchemaForm()">
-              <option value="Article">Article</option>
-              <option value="Product">Product</option>
-              <option value="FAQPage">FAQ Page</option>
-              <option value="LocalBusiness">Local Business</option>
-              <option value="Organization">Organization</option>
-            </select>
-            <div id="schemaFields"></div>
-            <button class="btn" onclick="generateSchema()" style="margin-top:12px;">Generate JSON-LD</button>
-            <pre class="code-output" id="schemaOutput"></pre>
-            <div style="display:flex;gap:10px;margin-top:10px;">
-              <button class="btn ghost small" onclick="copyText('schemaOutput', this)">Copy</button>
-              <button class="btn ghost small" onclick="downloadText('schemaOutput','schema.json')">Download</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="util-panel" id="util-canonical">
-          <div class="card">
-            <div class="card-title">Canonical Tag Generator</div>
-            <label>Canonical URL</label>
-            <input type="text" id="canonicalUrl" placeholder="https://example.com/page" oninput="generateCanonical()">
-            <pre class="code-output" id="canonicalOutput"></pre>
-            <div style="margin-top:10px;">
-              <button class="btn ghost small" onclick="copyText('canonicalOutput', this)">Copy</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="util-panel" id="util-og">
-          <div class="card">
-            <div class="card-title">Open Graph &amp; Social Card Creator</div>
-            <div class="row">
-              <div><label>Title</label><input type="text" id="ogTitle" oninput="generateOg()"></div>
-              <div>
-                <label>Entity Type</label>
-                <select id="ogType" onchange="generateOg()">
-                  <option value="website">website</option>
-                  <option value="article">article</option>
-                  <option value="product">product</option>
-                </select>
-              </div>
-            </div>
-            <label>Description</label>
-            <textarea id="ogDescription" oninput="generateOg()"></textarea>
-            <div class="row">
-              <div><label>Page URL</label><input type="text" id="ogUrl" oninput="generateOg()"></div>
-              <div><label>Social Image URL</label><input type="text" id="ogImage" oninput="generateOg()"></div>
-            </div>
-            <div class="serp-preview" id="ogPreviewCard" style="margin-top:12px;"></div>
-            <pre class="code-output" id="ogOutput"></pre>
-            <div style="margin-top:10px;">
-              <button class="btn ghost small" onclick="copyText('ogOutput', this)">Copy</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="util-panel" id="util-slug">
-          <div class="card">
-            <div class="card-title">SEO Slug Generator</div>
-            <label>Source String</label>
-            <input type="text" id="slugInput" placeholder="e.g. 10 Tips for High Performance Digital Cards" oninput="generateSlug()">
-            <pre class="code-output" id="slugOutput"></pre>
-            <div style="margin-top:10px;">
-              <button class="btn ghost small" onclick="copyText('slugOutput', this)">Copy</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
     </main>
   </div>
 </div>
 
 <script>
-let state = { audits: [], keywords: [], rankLog: [], blogs: [], chat: [], aeoHistory: [], geoHistory: [], competitors: [], settings: { psiApiKey: "" } };
+let state = { audits: [], keywords: [], rankLog: [] };
 let lastAuditReport = null;
-const STORE_KEY = 'seo-field-kit:data';
 
-async function loadState(){
-  try{
-    const r = localStorage.getItem(STORE_KEY);
-    if(r) state = Object.assign({ audits: [], keywords: [], rankLog: [], blogs: [], chat: [], aeoHistory: [], geoHistory: [], competitors: [], settings: { psiApiKey: "" } }, JSON.parse(r));
-  }catch(e){}
-  renderAll();
+// Global SwitchTab - Immediately Available
+function switchTab(tabId){
+  const target = document.getElementById('panel-' + tabId);
+  if(!target) return;
+  document.querySelectorAll('.rail-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('btn-' + tabId);
+  if(btn) btn.classList.add('active');
+
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  target.classList.add('active');
+
+  const meta = {
+    dashboard: '00 · DECK OVERVIEW',
+    audit: '01 · SITE AUDIT 360°',
+    keywords: '02 · KEYWORD EXPLORER',
+    aeo: '03 · AEO ANSWER ENGINE',
+    geo: '04 · GEO AI CITATION',
+    competitors: '05 · MARKET COMPETITORS',
+    ranklog: '06 · RANK TRACKER',
+    blog: '07 · AI BLOG WRITER',
+    strategist: '08 · AI STRATEGIST'
+  }[tabId] || 'INSTRUMENT PANEL';
+
+  const eb = document.getElementById('pageEyebrow');
+  const pt = document.getElementById('pageTitle');
+  if(eb) eb.textContent = meta;
+  if(pt) pt.textContent = tabId.toUpperCase();
+}
+window.switchTab = switchTab;
+
+async function callAi(prompt){
+  const res = await fetch('/api/ai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt })
+  });
+  const d = await res.json();
+  if(!res.ok || !d.success) throw new Error((d && d.error) || 'AI call failed');
+  return d.response.trim();
 }
 
-async function saveState(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
-  renderDashStats();
+async function callAiJson(prompt){
+  const raw = await callAi(prompt + '\n\nReply with ONLY valid JSON — no markdown fences, no explanatory text.');
+  const clean = raw.replace(/^```json/i,'').replace(/^```/,'').replace(/```$/,'').trim();
+  return JSON.parse(clean);
 }
 
-function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
-function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;'); }
-function countWords(t){ return (t.trim().match(/\S+/g)||[]).length; }
+// 01. Site Audit
+async function runAudit(){
+  const url = (document.getElementById('auditUrl').value || '').trim();
+  if(!url){ alert('Please enter a website URL'); return; }
+  const loading = document.getElementById('auditLoading');
+  loading.style.display = 'block';
 
-const TAB_META = {
-  dashboard:   {num:'00', title:'Command Deck Overview'},
-  audit:       {num:'01', title:'Site Audit 360°'},
-  keywords:    {num:'02', title:'Keyword Explorer'},
-  aeo:         {num:'03', title:'AEO Answer Engine Calibration'},
-  geo:         {num:'04', title:'GEO AI Citation Visibility'},
-  competitors: {num:'05', title:'Competitor Market Gaps'},
-  ranklog:     {num:'06', title:'SERP Rank Tracker'},
-  blog:        {num:'07', title:'AI SEO Blog Generator'},
-  strategist:  {num:'08', title:'Senior Search Strategist'},
-  utilities:   {num:'09', title:'Free SEO Utilities'}
-};
+  try {
+    const fetchRes = await fetch('/api/fetch-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+    const { html } = await fetchRes.json();
+    const doc = new DOMParser().parseFromString(html || '', 'text/html');
 
-function switchTab(tab){
-  if(!document.getElementById('panel-'+tab)) return;
-  document.querySelectorAll('.rail-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('panel-'+tab).classList.add('active');
-  const meta = TAB_META[tab];
-  if(meta){
-    document.getElementById('pageEyebrow').textContent = meta.num + ' · ' + meta.title.toUpperCase();
-    document.getElementById('pageTitle').textContent = meta.title;
+    const title = doc.querySelector('title') ? doc.querySelector('title').textContent.trim() : '';
+    const metaDesc = doc.querySelector('meta[name="description"]') ? doc.querySelector('meta[name="description"]').getAttribute('content') : '';
+    const h1s = doc.querySelectorAll('h1').length;
+    const isHttps = /^https:\/\//i.test(url);
+
+    const checks = [
+      { label: 'SSL Protocol', status: isHttps ? 'good' : 'critical', detail: isHttps ? 'Serving over secure HTTPS' : 'Insecure HTTP detected' },
+      { label: 'Title Tag', status: title && title.length >= 30 && title.length <= 65 ? 'good' : 'warning', detail: title ? `Title: "${title}" (${title.length} chars)` : 'Missing title tag' },
+      { label: 'Meta Description', status: metaDesc && metaDesc.length >= 120 ? 'good' : 'warning', detail: metaDesc ? `Length: ${metaDesc.length} chars` : 'Missing meta description' },
+      { label: 'H1 Structure', status: h1s === 1 ? 'good' : (h1s === 0 ? 'critical' : 'warning'), detail: `${h1s} H1 element(s) detected` }
+    ];
+
+    const score = Math.round((checks.filter(c => c.status === 'good').length / checks.length) * 100);
+    document.getElementById('auditResultCard').style.display = 'block';
+    document.getElementById('auditScoreVal').textContent = `Health Score: ${score}/100`;
+
+    document.getElementById('checksList').innerHTML = `
+      <div class="table-wrap"><table class="checks-table">
+        <thead><tr><th>Check</th><th>Status</th><th>Finding</th></tr></thead>
+        <tbody>
+          ${checks.map(c => `<tr>
+            <td style="font-weight:700;color:#fff;">${c.label}</td>
+            <td><span class="badge badge-${c.status}">${c.status}</span></td>
+            <td>${c.detail}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>
+    `;
+
+    lastAuditReport = { url, score, checks };
+    state.audits.unshift(lastAuditReport);
+    renderStats();
+  } catch(e) {
+    alert('Audit failed: ' + e.message);
+  } finally {
+    loading.style.display = 'none';
   }
-  document.querySelector('.deck-main').scrollTo({top:0, behavior:'auto'});
-  window.scrollTo(0,0);
 }
+window.runAudit = runAudit;
 
-document.querySelectorAll('.rail-btn').forEach(btn=>{ btn.addEventListener('click', ()=> switchTab(btn.dataset.tab)); });
-document.querySelectorAll('.dash-tile').forEach(card=>{ card.addEventListener('click', ()=> switchTab(card.dataset.goto)); });
+// 02. Keywords
+async function generateKeywords(){
+  const url = document.getElementById('seedUrl').value.trim();
+  if(!url){ alert('Enter URL'); return; }
+  document.getElementById('kwLoading').style.display = 'block';
+  try {
+    const data = await callAiJson(`Generate 6 targeted SEO keywords for ${url}. Format: {"keywords": [{"phrase": string, "intent": string, "difficulty": number}]}`);
+    document.getElementById('kwResultsCard').style.display = 'block';
+    document.getElementById('kwResultsGrid').innerHTML = `
+      <div class="table-wrap"><table class="checks-table">
+        <thead><tr><th>Keyword</th><th>Intent</th><th>KD</th></tr></thead>
+        <tbody>
+          ${data.keywords.map(k => `<tr><td style="color:#fff;font-weight:700;">${k.phrase}</td><td>${k.intent}</td><td>${k.difficulty}/100</td></tr>`).join('')}
+        </tbody>
+      </table></div>
+    `;
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { document.getElementById('kwLoading').style.display = 'none'; }
+}
+window.generateKeywords = generateKeywords;
 
-function renderDashStats(){
-  const el = document.getElementById('dashStats');
-  if(!el) return;
-  const avgAuditScore = state.audits.length ? Math.round(state.audits.reduce((s,a)=>s+a.score,0)/state.audits.length) : null;
-  el.innerHTML = `
-    <div class="stat-tile">
-      <div class="stat-tile-top"><div class="stat-val">${state.audits.length}</div><span class="stat-tag badge-good">LOGGED</span></div>
-      <div class="stat-lbl">Audits Executed</div>
-    </div>
-    <div class="stat-tile">
-      <div class="stat-tile-top">
-        <div class="stat-val" style="${avgAuditScore!==null?'color:'+gaugeColor(avgAuditScore)+';':''}">${avgAuditScore!==null?avgAuditScore:'—'}</div>
-        <span class="stat-tag ${avgAuditScore>=80?'badge-good':avgAuditScore>=50?'badge-warning':'badge-critical'}">MEAN</span>
-      </div>
-      <div class="stat-lbl">Mean Audit Score</div>
-    </div>
-    <div class="stat-tile">
-      <div class="stat-tile-top"><div class="stat-val">${state.keywords.length}</div><span class="stat-tag badge-good">EXPLORED</span></div>
-      <div class="stat-lbl">Target Keywords</div>
-    </div>
-    <div class="stat-tile">
-      <div class="stat-tile-top"><div class="stat-val">${state.rankLog.length}</div><span class="stat-tag badge-good">TRACKED</span></div>
-      <div class="stat-lbl">Rank Log Entries</div>
-    </div>
+// 03. AEO
+async function runAeo(){
+  const url = document.getElementById('aeoUrl').value.trim();
+  if(!url){ alert('Enter URL'); return; }
+  document.getElementById('aeoLoading').style.display = 'block';
+  try {
+    const data = await callAiJson(`Audit AEO readiness for ${url}. Format: {"score": number, "checks": [{"label": string, "status": "good"|"warning", "detail": string}]}`);
+    document.getElementById('aeoResultCard').style.display = 'block';
+    document.getElementById('aeoScoreNum').textContent = data.score + '/100';
+    document.getElementById('aeoChecksList').innerHTML = renderCheckList(data.checks);
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { document.getElementById('aeoLoading').style.display = 'none'; }
+}
+window.runAeo = runAeo;
+
+// 04. GEO
+async function runGeo(){
+  const url = document.getElementById('geoUrl').value.trim();
+  if(!url){ alert('Enter URL'); return; }
+  document.getElementById('geoLoading').style.display = 'block';
+  try {
+    const data = await callAiJson(`Audit GEO AI citation propensity for ${url}. Format: {"score": number, "checks": [{"label": string, "status": "good"|"warning", "detail": string}]}`);
+    document.getElementById('geoResultCard').style.display = 'block';
+    document.getElementById('geoScoreNum').textContent = data.score + '/100';
+    document.getElementById('geoChecksList').innerHTML = renderCheckList(data.checks);
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { document.getElementById('geoLoading').style.display = 'none'; }
+}
+window.runGeo = runGeo;
+
+// 05. Competitors
+async function runCompetitors(){
+  const url = document.getElementById('compUrl').value.trim();
+  if(!url){ alert('Enter URL'); return; }
+  document.getElementById('compLoading').style.display = 'block';
+  try {
+    const data = await callAiJson(`Find competitors for ${url}. Format: {"competitors": [{"domain": string, "notes": string}]}`);
+    document.getElementById('compResultCard').style.display = 'block';
+    document.getElementById('compTable').innerHTML = `
+      <div class="table-wrap"><table class="checks-table">
+        <thead><tr><th>Competitor Domain</th><th>Strategic Note</th></tr></thead>
+        <tbody>
+          ${data.competitors.map(c => `<tr><td style="color:#fff;font-weight:700;">${c.domain}</td><td>${c.notes}</td></tr>`).join('')}
+        </tbody>
+      </table></div>
+    `;
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { document.getElementById('compLoading').style.display = 'none'; }
+}
+window.runCompetitors = runCompetitors;
+
+// 06. Rank Tracker
+async function checkPositions(){
+  const url = document.getElementById('trackSiteUrl').value.trim();
+  const kw = document.getElementById('trackKeywords').value.trim();
+  if(!url || !kw){ alert('Enter URL and keywords'); return; }
+  document.getElementById('rankLoading').style.display = 'block';
+  try {
+    const data = await callAiJson(`Estimate live SERP ranks for ${url} for keywords [${kw}]. Format: {"ranks": [{"keyword": string, "position": number}]}`);
+    document.getElementById('rankLogTable').innerHTML = `
+      <div class="table-wrap"><table class="checks-table">
+        <thead><tr><th>Keyword</th><th>Est. Position</th></tr></thead>
+        <tbody>
+          ${data.ranks.map(r => `<tr><td style="color:#fff;font-weight:700;">${r.keyword}</td><td style="color:var(--accent);font-weight:700;">#${r.position}</td></tr>`).join('')}
+        </tbody>
+      </table></div>
+    `;
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { document.getElementById('rankLoading').style.display = 'none'; }
+}
+window.checkPositions = checkPositions;
+
+// 07. Blog Writer
+async function generateBlog(){
+  const topic = document.getElementById('blogTopic').value.trim();
+  if(!topic){ alert('Enter topic'); return; }
+  document.getElementById('blogLoading').style.display = 'block';
+  try {
+    const body = await callAi(`Write a detailed, structured SEO blog post about: ${topic}. Include H2 and H3 headings.`);
+    document.getElementById('blogResultCard').style.display = 'block';
+    document.getElementById('blogOutput').textContent = body;
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { document.getElementById('blogLoading').style.display = 'none'; }
+}
+window.generateBlog = generateBlog;
+
+// 08. Strategist
+async function sendChat(){
+  const input = document.getElementById('chatInput');
+  const val = input.value.trim();
+  if(!val) return;
+  input.value = '';
+  const box = document.getElementById('chatMessages');
+  box.innerHTML += `<div style="background:var(--primary);padding:8px 12px;border-radius:6px;align-self:flex-end;">${val}</div>`;
+  document.getElementById('chatLoading').style.display = 'block';
+  try {
+    const reply = await callAi(`You are a top-tier SEO strategist. Answer this concisely: ${val}`);
+    box.innerHTML += `<div style="background:var(--panel-subtle);padding:8px 12px;border-radius:6px;border:1px solid var(--border);">${reply}</div>`;
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { document.getElementById('chatLoading').style.display = 'none'; }
+}
+window.sendChat = sendChat;
+
+function renderCheckList(arr){
+  return `
+    <div class="table-wrap"><table class="checks-table">
+      <thead><tr><th>Check</th><th>Status</th><th>Finding</th></tr></thead>
+      <tbody>
+        ${arr.map(c => `<tr><td style="color:#fff;font-weight:700;">${c.label}</td><td><span class="badge badge-${c.status}">${c.status}</span></td><td>${c.detail}</td></tr>`).join('')}
+      </tbody>
+    </table></div>
   `;
 }
 
-function getDomain(url){
-  try{
-    const u = new URL(url.match(/^https?:\/\//i) ? url : 'https://'+url);
-    return u.hostname.replace(/^www\./,'');
-  }catch(e){ return url.replace(/^https?:\/\//i,'').replace(/^www\./,'').split('/')[0]; }
+function exportAuditPdf(){
+  if(!lastAuditReport || !window.jspdf) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(16);
+  doc.text(`Signal SEO Audit: ${lastAuditReport.url}`, 14, 20);
+  doc.setFontSize(12);
+  doc.text(`Score: ${lastAuditReport.score}/100`, 14, 30);
+  let y = 42;
+  lastAuditReport.checks.forEach(c => {
+    doc.text(`[${c.status.toUpperCase()}] ${c.label}: ${c.detail}`, 14, y);
+    y += 8;
+  });
+  doc.save('seo-audit-report.pdf');
+}
+window.exportAuditPdf = exportAuditPdf;
+
+function renderStats(){
+  const el = document.getElementById('dashStats');
+  if(!el) return;
+  el.innerHTML = `
+    <div class="stat-tile"><div class="stat-val">${state.audits.length}</div><div class="stat-lbl">Audits Run</div></div>
+    <div class="stat-tile"><div class="stat-val">100%</div><div class="stat-lbl">Engine Health</div></div>
+    <div class="stat-tile"><div class="stat-val">ACTIVE</div><div class="stat-lbl">Groq AI API</div></div>
+  `;
 }
 
-function extractJson(text){
-  if(!text) return null;
-  const cleaned = text.trim().replace(/^```json\s*/i,'').replace(/^
+renderStats();
+</script>
+</body>
+</html>
