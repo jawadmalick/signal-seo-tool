@@ -9,7 +9,7 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
 
 app.use(express.json({ limit: '10mb' }));
 
-// Serve static assets directly from root directory
+// Serve static assets from root directory
 app.use(express.static(__dirname));
 
 // CORS headers
@@ -114,8 +114,8 @@ app.post('/api/ai', async (req, res) => {
   groqReq.end();
 });
 
-// Serve index.html directly from project root
-app.get('*', (req, res) => {
+// Express 5 compatible catch-all (prevents PathError crash)
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
