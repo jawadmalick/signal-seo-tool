@@ -799,11 +799,19 @@ window.generateKeywords = async function() {
 
     (data.keywords || []).forEach(function(k, idx) {
       var kdColor = k.difficulty > 65 ? '#ff4d4d' : (k.difficulty > 35 ? '#ffd000' : '#00ffaa');
-      var isLong = k.lengthType && k.lengthType.includes('Long-Tail');
-      var typeBadge = isLong 
-        ? '<span style="background:rgba(0,240,255,0.12);color:#00f0ff;border:1px solid rgba(0,240,255,0.3);padding:2px 6px;border-radius:4px;font-size:0.75rem;font-weight:600;">Long-Tail</span>'
-        : '<span style="background:rgba(255,255,255,0.06);color:#94a3b8;padding:2px 6px;border-radius:4px;font-size:0.75rem;">Short-Tail</span>';
+     var kwText = (k.keyword || '').toLowerCase();
+      var wordCount = kwText.trim().split(/\s+/).length;
+      var isTrending = /202[4-9]|trending|viral|future of|right now|modern|emerging|versus|vs|automation tools|strategy/i.test(kwText) || (k.tier === 'Trending');
+      var isLongTail = wordCount >= 4 || (k.tier === 'Long-Tail') || (k.lengthType && k.lengthType.includes('Long-Tail'));
 
+      var typeBadge = '';
+      if (isTrending) {
+        typeBadge = '<span style="background:rgba(255,77,218,0.14);color:#ff4dda;border:1px solid rgba(255,77,218,0.35);padding:2px 7px;border-radius:4px;font-size:0.75rem;font-weight:700;white-space:nowrap;">Trending</span>';
+      } else if (isLongTail) {
+        typeBadge = '<span style="background:rgba(0,240,255,0.12);color:#00f0ff;border:1px solid rgba(0,240,255,0.35);padding:2px 7px;border-radius:4px;font-size:0.75rem;font-weight:700;white-space:nowrap;">Long-Tail</span>';
+      } else {
+        typeBadge = '<span style="background:rgba(148,163,184,0.12);color:#94a3b8;border:1px solid rgba(148,163,184,0.25);padding:2px 7px;border-radius:4px;font-size:0.75rem;font-weight:600;white-space:nowrap;">Short-Tail</span>';
+      }
       outHtml += '<tr>' +
         '<td style="color:#8b949e;font-size:0.8rem;">' + (idx + 1) + '</td>' +
         '<td style="color:#fff;font-weight:700;">' + escapeHtml(k.keyword) + '</td>' +
