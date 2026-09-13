@@ -308,6 +308,7 @@ app.post('/api/rank-check', async (req, res) => {
 
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
+// 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 app.post('/api/keyword-data', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
@@ -495,7 +496,6 @@ app.post('/api/keyword-data', async (req, res) => {
     return res.status(500).json({ success: false, error: `Keyword extraction failed: ${err.message}` });
   }
 });
-
 // ==========================================
 // SPA NAVIGATION FALLBACK (GET ONLY)
 // ==========================================

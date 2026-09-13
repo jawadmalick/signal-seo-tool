@@ -777,7 +777,7 @@ window.generateKeywords = async function() {
 
     var outHtml = '';
 
-    // 1. Live Organic Competitors Top 10
+    // 1. Organic Competitors Section
     if (data.competitors && data.competitors.length > 0) {
       outHtml += '<div style="margin-bottom:1.5rem;">';
       outHtml += '<h4 style="color:var(--accent,#00f0ff); margin-bottom:0.75rem; font-size:0.95rem; text-transform:uppercase; letter-spacing:0.05em;">Organic Competitors in Google Top 10</h4>';
@@ -792,16 +792,22 @@ window.generateKeywords = async function() {
       outHtml += '</tbody></table></div></div>';
     }
 
-    // 2. 50+ Keywords Matrix (Density, Difficulty, Country Demand)
+    // 2. 50+ Keywords Intelligence Matrix with Long-Tail Filtering
     outHtml += '<div>';
-    outHtml += '<h4 style="color:var(--accent,#00f0ff); margin-bottom:0.75rem; font-size:0.95rem; text-transform:uppercase; letter-spacing:0.05em;">Niche Keywords Matrix (50+ Keywords, Density & KD)</h4>';
-    outHtml += '<div class="table-wrap"><table class="checks-table"><thead><tr><th>#</th><th>Target Keyword Phrase</th><th>Intent</th><th>On-Page Density</th><th>KD</th><th>Top Country Demand</th><th>Action</th></tr></thead><tbody>';
+    outHtml += '<h4 style="color:var(--accent,#00f0ff); margin-bottom:0.75rem; font-size:0.95rem; text-transform:uppercase; letter-spacing:0.05em;">Niche & Long-Tail Keyword Matrix (Density, KD & Intent)</h4>';
+    outHtml += '<div class="table-wrap"><table class="checks-table"><thead><tr><th>#</th><th>Target Keyword Phrase</th><th>Type</th><th>Intent</th><th>On-Page Density</th><th>KD</th><th>Top Country Demand</th><th>Action</th></tr></thead><tbody>';
 
     (data.keywords || []).forEach(function(k, idx) {
-      var kdColor = k.difficulty > 65 ? '#ff4d4d' : (k.difficulty > 40 ? '#ffd000' : '#00ffaa');
+      var kdColor = k.difficulty > 65 ? '#ff4d4d' : (k.difficulty > 35 ? '#ffd000' : '#00ffaa');
+      var isLong = k.lengthType && k.lengthType.includes('Long-Tail');
+      var typeBadge = isLong 
+        ? '<span style="background:rgba(0,240,255,0.12);color:#00f0ff;border:1px solid rgba(0,240,255,0.3);padding:2px 6px;border-radius:4px;font-size:0.75rem;font-weight:600;">Long-Tail</span>'
+        : '<span style="background:rgba(255,255,255,0.06);color:#94a3b8;padding:2px 6px;border-radius:4px;font-size:0.75rem;">Short-Tail</span>';
+
       outHtml += '<tr>' +
         '<td style="color:#8b949e;font-size:0.8rem;">' + (idx + 1) + '</td>' +
         '<td style="color:#fff;font-weight:700;">' + escapeHtml(k.keyword) + '</td>' +
+        '<td>' + typeBadge + '</td>' +
         '<td><span style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;font-size:0.75rem;">' + escapeHtml(k.intent) + '</span></td>' +
         '<td style="font-family:var(--font-mono);color:' + (k.occurrences > 0 ? '#00ffaa' : '#8b949e') + ';">' + k.density + ' (' + k.occurrences + 'x)</td>' +
         '<td style="font-family:var(--font-mono);font-weight:700;color:' + kdColor + ';">' + k.difficulty + '/100</td>' +
