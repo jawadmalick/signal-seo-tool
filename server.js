@@ -86,6 +86,43 @@ app.post('/api/groq', async (req, res) => {
 });
 
 // Live Web Scraper / Technical Audit Endpoint
+// Fetch URL proxy for audit, AEO, and GEO tools
+app.post('/api/fetch-url', async (req, res) => {
+  try {
+    let { url } = req.body;
+    if (!url) {
+      return res.status(400).json({ error: 'URL is required.' });
+    }
+
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+
+    const startTime = Date.now();
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 SignalSEO/2.6'
+      },
+      redirect: 'follow'
+    });
+
+    const loadTimeMs = Date.now() - startTime;
+    const html = await response.text();
+
+    res.json({
+      url,
+      status: response.status,
+      statusCode: response.status,
+      loadTime: loadTimeMs,
+      loadTimeMs,
+      html,
+      content: html
+    });
+  } catch (err) {
+    console.error('Fetch URL error:', err);
+    res.status(500).json({ error: `Failed to fetch target URL: ${err.message}` });
+  }
+});
 app.post('/api/audit', async (req, res) => {
   try {
     let { url } = req.body;
