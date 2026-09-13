@@ -11,11 +11,11 @@ app.use(cors());
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 
-// Static assets (CSS, JS, images if present)
+// Static assets
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 // ==========================================
-// SEO & SEARCH CONSOLE VERIFICATION ROUTES
+// SEO & BOT CRAWLER ROUTES
 // ==========================================
 
 app.get('/robots.txt', (req, res) => {
@@ -44,7 +44,7 @@ app.get('/sitemap.xml', (req, res) => {
 });
 
 // ==========================================
-// CORE PROXY & API ENDPOINTS
+// LIVE DOM FETCHER / CRAWLER PROXY
 // ==========================================
 
 const handleFetchUrl = async (req, res) => {
@@ -68,9 +68,7 @@ const handleFetchUrl = async (req, res) => {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
+        'Accept-Language': 'en-US,en;q=0.9'
       },
       redirect: 'follow'
     });
@@ -100,41 +98,68 @@ const handleFetchUrl = async (req, res) => {
   }
 };
 
-// Handle both standard paths required by frontend tools
 app.post('/api/fetch-url', handleFetchUrl);
 app.post('/fetch-url', handleFetchUrl);
 app.post('/api/audit', handleFetchUrl);
 
-// Groq / OpenRouter AI Proxy Endpoint
-app.post('/api/groq', async (req, res) => {
+// ==========================================
+// AI EVALUATION ENDPOINT (/api/ai)
+// ==========================================
+
+app.post('/api/ai', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ success: false, error: 'GROQ_API_KEY environment variable is not configured on server.' });
+      return res.status(500).json({
+        success: false,
+        error: 'GROQ_API_KEY environment variable is not configured on Railway.'
+      });
     }
 
-    const { messages, model, temperature, max_tokens } = req.body;
+    const { prompt } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ success: false, error: 'Prompt is required.' });
+    }
 
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: model || 'llama-3.3-70b-versatile',
-        messages: messages || [],
-        temperature: temperature !== undefined ? temperature : 0.4,
-        max_tokens: max_tokens || 2048
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.3,
+        max_tokens: 2048
       })
     });
 
-    const data = await response.json();
-    return res.status(response.status).json(data);
-  } catch (error) {
-    console.error('Groq Proxy Error:', error);
-    return res.status(500).json({ success: false, error: error.message });
+    const data = await groqResponse.json();
+
+    if (!groqResponse.ok) {
+      console.error('Groq API Error:', data);
+      return res.status(groqResponse.status).json({
+        success: false,
+        error: data.error?.message || 'Upstream AI model request failed.'
+      });
+    }
+
+    const aiContent = data.choices?.[0]?.message?.content || '';
+
+    return res.json({
+      success: true,
+      response: aiContent
+    });
+  } catch (err) {
+    console.error('AI Proxy Error:', err);
+    return res.status(500).json({
+      success: false,
+      error: `AI processing failure: ${err.message}`
+    });
   }
 });
 
@@ -142,17 +167,16 @@ app.post('/api/groq', async (req, res) => {
 // FRONTEND ROUTING & FALLBACK
 // ==========================================
 
-// Serve index.html for GET root
+// Explicit GET routes for SPA navigation
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Express 5 single-page application fallback for GET routes
 app.get('{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Start Server
+// Server listener
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Signal SEO server running on port ${PORT}`);
+  console.log(`Signal SEO backend running on port ${PORT}`);
 });
