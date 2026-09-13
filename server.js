@@ -103,13 +103,20 @@ app.post('/fetch-url', handleFetchUrl);
 app.post('/api/audit', handleFetchUrl);
 
 // ==========================================
-// AI EVALUATION PROXY (/api/ai)
+// AI EVALUATION PROXY (/api/ai) WITH MODEL FALLBACK
 // ==========================================
+
+const candidateModels = [
+  'llama-3.3-70b-specdec',
+  'llama3-8b-8192',
+  'gemma2-9b-it',
+  'mixtral-8x7b-32768'
+];
 
 const handleAi = async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
-    const apiKey = process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY || process.env.AI_API_KEY || process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
       return res.status(500).json({
         success: false,
@@ -122,34 +129,43 @@ const handleAi = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Prompt is required.' });
     }
 
-    const aiResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.2,
-        max_tokens: 2048
-      })
-    });
+    let lastError = 'No models succeeded';
+    
+    // Try candidate models in succession
+    for (const model of candidateModels) {
+      try {
+        const aiResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.2,
+            max_tokens: 2048
+          })
+        });
 
-    const data = await aiResponse.json();
+        const data = await aiResponse.json();
 
-    if (!aiResponse.ok) {
-      return res.status(aiResponse.status).json({
-        success: false,
-        error: data.error?.message || 'AI provider request failed'
-      });
+        if (aiResponse.ok && data.choices?.[0]?.message?.content) {
+          return res.json({
+            success: true,
+            response: data.choices[0].message.content
+          });
+        }
+
+        lastError = data.error?.message || `Model ${model} failed`;
+      } catch (err) {
+        lastError = err.message;
+      }
     }
 
-    const aiContent = data.choices?.[0]?.message?.content || '';
-
-    return res.json({
-      success: true,
-      response: aiContent
+    return res.status(500).json({
+      success: false,
+      error: `AI provider error: ${lastError}`
     });
   } catch (err) {
     console.error('AI Proxy Error:', err);
