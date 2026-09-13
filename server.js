@@ -6,12 +6,12 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Body parser & CORS middleware
 app.use(cors());
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 
-// Static assets
+// Static assets folder
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 // ==========================================
@@ -44,7 +44,7 @@ app.get('/sitemap.xml', (req, res) => {
 });
 
 // ==========================================
-// LIVE DOM FETCHER / CRAWLER PROXY
+// SCRAPER / DOM FETCHER PROXY
 // ==========================================
 
 const handleFetchUrl = async (req, res) => {
@@ -90,7 +90,7 @@ const handleFetchUrl = async (req, res) => {
       rawHtml: html
     });
   } catch (err) {
-    console.error('Fetch error:', err);
+    console.error('Fetch URL error:', err);
     return res.status(500).json({
       success: false,
       error: `Failed to fetch target URL: ${err.message}`
@@ -103,17 +103,17 @@ app.post('/fetch-url', handleFetchUrl);
 app.post('/api/audit', handleFetchUrl);
 
 // ==========================================
-// AI EVALUATION ENDPOINT (/api/ai)
+// AI EVALUATION PROXY (/api/ai)
 // ==========================================
 
-app.post('/api/ai', async (req, res) => {
+const handleAi = async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
-    const apiKey = process.env.GROQ_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
       return res.status(500).json({
         success: false,
-        error: 'GROQ_API_KEY environment variable is not configured on Railway.'
+        error: 'GROQ_API_KEY is not configured in Railway Variables.'
       });
     }
 
@@ -122,7 +122,7 @@ app.post('/api/ai', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Prompt is required.' });
     }
 
-    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const aiResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -130,21 +130,18 @@ app.post('/api/ai', async (req, res) => {
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        messages: [
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.3,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2,
         max_tokens: 2048
       })
     });
 
-    const data = await groqResponse.json();
+    const data = await aiResponse.json();
 
-    if (!groqResponse.ok) {
-      console.error('Groq API Error:', data);
-      return res.status(groqResponse.status).json({
+    if (!aiResponse.ok) {
+      return res.status(aiResponse.status).json({
         success: false,
-        error: data.error?.message || 'Upstream AI model request failed.'
+        error: data.error?.message || 'AI provider request failed'
       });
     }
 
@@ -158,16 +155,19 @@ app.post('/api/ai', async (req, res) => {
     console.error('AI Proxy Error:', err);
     return res.status(500).json({
       success: false,
-      error: `AI processing failure: ${err.message}`
+      error: `AI processing error: ${err.message}`
     });
   }
-});
+};
+
+app.post('/api/ai', handleAi);
+app.post('/ai', handleAi);
+app.post('/api/groq', handleAi);
 
 // ==========================================
-// FRONTEND ROUTING & FALLBACK
+// SPA NAVIGATION FALLBACK (GET ONLY)
 // ==========================================
 
-// Explicit GET routes for SPA navigation
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -176,7 +176,7 @@ app.get('{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Server listener
+// Start Server
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Signal SEO backend running on port ${PORT}`);
+  console.log(`Signal SEO backend online on port ${PORT}`);
 });
