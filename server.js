@@ -311,22 +311,37 @@ app.post('/api/rank-check', async (req, res) => {
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Multi-Tier Organic Keyword Research Engine (Short-Tail, Long-Tail, Trending)
 
+// 2. Multi-Tier Organic Keyword Research Engine (Brand-Free Generic Niche Discovery)
 app.post('/api/keyword-data', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
     let { url = '', context = '', query = '', country = 'us' } = req.body;
-    const apiKey = process.env.SERPER_API_KEY;
+    const serperKey = process.env.SERPER_API_KEY;
+    const groqKey = process.env.GROQ_API_KEY || process.env.AI_API_KEY;
 
     let seedUrl = (url || '').trim();
     if (seedUrl && !seedUrl.startsWith('http://') && !seedUrl.startsWith('https://')) {
       seedUrl = 'https://' + seedUrl;
     }
 
-    let pageText = '';
-    let extractedTitle = '';
-    let metaDesc = '';
+    // 1. Identify and isolate brand/domain tokens to blacklist them from keywords
+    let domainHost = '';
+    let brandTokens = [];
+    if (seedUrl) {
+      try {
+        domainHost = new URL(seedUrl).hostname.replace(/^www\./i, '').toLowerCase();
+        const mainPart = domainHost.split('.')[0];
+        brandTokens = mainPart.split(/[-_]/).filter(t => t.length > 2);
+        brandTokens.push(mainPart);
+      } catch (e) {}
+    }
 
-    // 1. Live crawl target URL for on-page text, title, and meta tags
+    let pageText = '';
+    let scrapedTitle = '';
+    let metaDesc = '';
+    let h1Text = '';
+
+    // 2. Crawl target website to understand its true business topic
     if (seedUrl) {
       try {
         const controller = new AbortController();
@@ -341,10 +356,13 @@ app.post('/api/keyword-data', async (req, res) => {
         const rawHtml = await fRes.text();
 
         const titleMatch = rawHtml.match(/<title[^>]*>([^<]+)<\/title>/i);
-        if (titleMatch) extractedTitle = titleMatch[1];
+        if (titleMatch) scrapedTitle = titleMatch[1];
 
         const metaMatch = rawHtml.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
         if (metaMatch) metaDesc = metaMatch[1];
+
+        const h1Match = rawHtml.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+        if (h1Match) h1Text = h1Match[1];
 
         pageText = rawHtml
           .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ')
@@ -356,52 +374,85 @@ app.post('/api/keyword-data', async (req, res) => {
       }
     }
 
-    // 2. Extract core keywords from seed and on-page content
-    const stopWords = new Set(['and','or','the','a','an','in','on','with','for','of','at','by','to','from','is','are','this','that','top','best','worldwide']);
-    let seedTerms = [];
+    // 3. Infer the pure generic niche using AI or semantic analysis (Strictly Brand-Free)
+    let nicheSeeds = [];
 
     if (context && context.trim().length > 0) {
-      seedTerms.push(context.trim().toLowerCase());
+      nicheSeeds.push(context.trim().toLowerCase());
     }
 
-    const headerTokens = (extractedTitle + ' ' + metaDesc)
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, ' ')
-      .split(/\s+/)
-      .filter(w => w.length > 2 && !stopWords.has(w));
+    if (groqKey && (scrapedTitle || pageText)) {
+      try {
+        const aiPrompt = `Analyze this website title and excerpt:
+Title: "${scrapedTitle}"
+Headings/Meta: "${h1Text} ${metaDesc}"
+Content Excerpt: "${pageText.slice(0, 1200)}"
+Domain to exclude: "${domainHost}"
 
-    for (let i = 0; i < headerTokens.length; i++) {
-      if (headerTokens[i + 1]) {
-        seedTerms.push(`${headerTokens[i]} ${headerTokens[i + 1]}`);
+Identify the exact commercial industry niche and business category. Return ONLY a JSON array of 5 generic, highly-searched, commercial SEO seed phrases (2 to 3 words each) that potential clients search for on Google.
+CRITICAL MANDATE:
+- DO NOT use the brand name "${brandTokens.join(' ')}" or website name in any keyword.
+- Return ONLY purely generic industry search terms (e.g., "digital marketing agency", "b2b lead generation", "conversion rate optimization").
+- Format response strictly as JSON: ["seed 1", "seed 2", "seed 3", "seed 4", "seed 5"]`;
+
+        const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${groqKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              { role: 'system', content: 'You are a professional SEO keyword research analyst. Respond in strict JSON array format only.' },
+              { role: 'user', content: aiPrompt }
+            ],
+            temperature: 0.1,
+            max_tokens: 300
+          })
+        });
+
+        const aiData = await aiRes.json();
+        if (aiData.choices?.[0]?.message?.content) {
+          const parsed = JSON.parse(aiData.choices[0].message.content.replace(/```json|```/g, '').trim());
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            nicheSeeds = parsed.map(s => s.toLowerCase().trim());
+          }
+        }
+      } catch (e) {
+        console.warn('AI Niche extraction fallback:', e.message);
       }
     }
 
-    const cleanTokens = pageText.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
-    const tokenFreq = {};
-    for (let i = 0; i < Math.min(cleanTokens.length - 1, 500); i++) {
-      const bigram = `${cleanTokens[i]} ${cleanTokens[i + 1]}`;
-      tokenFreq[bigram] = (tokenFreq[bigram] || 0) + 1;
-    }
-    Object.keys(tokenFreq).sort((a, b) => tokenFreq[b] - tokenFreq[a]).slice(0, 5).forEach(b => seedTerms.push(b));
-
-    if (seedTerms.length === 0) {
-      const domainSlug = (seedUrl || query).replace(/^https?:\/\//i, '').replace(/www\./i, '').split('.')[0];
-      seedTerms.push(domainSlug, `${domainSlug} app`);
+    // Fallback: rule-based generic extraction if AI was unavailable
+    if (nicheSeeds.length === 0) {
+      const stopWords = new Set(['and','or','the','a','an','in','on','with','for','of','at','by','to','from','is','are','this','that','home','about','contact','welcome', ...brandTokens]);
+      const combined = (scrapedTitle + ' ' + h1Text + ' ' + metaDesc).toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
+      const tokens = combined.split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
+      for (let i = 0; i < tokens.length - 1; i++) {
+        nicheSeeds.push(`${tokens[i]} ${tokens[i+1]}`);
+      }
     }
 
-    const primarySeed = seedTerms[0] || 'freelance work';
+    // Filter out any seed containing the brand name
+    nicheSeeds = nicheSeeds.filter(seed => {
+      const lower = seed.toLowerCase();
+      return !brandTokens.some(bt => bt && lower.includes(bt));
+    });
 
-    // 3. Collect SERP Data & Competitors
+    const primaryNiche = nicheSeeds[0] || 'digital marketing';
+
+    // 4. Live Google SERP Competitors for this generic niche
     let organicCompetitors = [];
     let livePaa = [];
     let liveRelated = [];
 
-    if (apiKey) {
+    if (serperKey) {
       try {
         const serperRes = await fetch('https://google.serper.dev/search', {
           method: 'POST',
-          headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ q: primarySeed, gl: country, num: 10 })
+          headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ q: primaryNiche, gl: country, num: 10 })
         });
         const serperData = await serperRes.json();
         organicCompetitors = (serperData.organic || []).slice(0, 10).map(r => ({
@@ -413,10 +464,11 @@ app.post('/api/keyword-data', async (req, res) => {
         livePaa = (serperData.peopleAlsoAsk || []).map(p => p.question);
         liveRelated = (serperData.relatedSearches || []).map(r => r.query);
 
+        // Official Google Autocomplete suggestions
         const acRes = await fetch('https://google.serper.dev/autocomplete', {
           method: 'POST',
-          headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ q: primarySeed })
+          headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ q: primaryNiche })
         });
         const acData = await acRes.json();
         if (Array.isArray(acData.suggestions)) {
@@ -427,70 +479,72 @@ app.post('/api/keyword-data', async (req, res) => {
       }
     }
 
-    // 4. Construct Multi-Tier Keyword Sets
+    // 5. Build Mixed Organic Tiers (Short-Tail, Long-Tail, Trending) without brand name
     const currentYear = new Date().getFullYear();
     const shortTailList = [];
     const longTailList = [];
     const trendingList = [];
 
-    // TIER A: Short-Tail Head Keywords (1-2 words)
-    seedTerms.slice(0, 3).forEach(s => {
+    // TIER 1: Generic Short-Tail Head Keywords
+    nicheSeeds.forEach(s => {
       shortTailList.push(s);
-      shortTailList.push(`${s} tools`);
-      shortTailList.push(`${s} platform`);
-      shortTailList.push(`${s} app`);
-      shortTailList.push(`online ${s}`);
+      shortTailList.push(`${s} services`);
+      shortTailList.push(`${s} strategy`);
+      shortTailList.push(`b2b ${s}`);
     });
-    liveRelated.filter(r => r.split(' ').length <= 2).forEach(r => shortTailList.push(r));
+    liveRelated.filter(r => r.split(' ').length <= 3).forEach(r => shortTailList.push(r));
 
-    // TIER B: Long-Tail High-Intent Keywords (4+ words)
+    // TIER 2: Commercial & Informational Long-Tail Keywords (4+ words)
     livePaa.forEach(q => longTailList.push(q));
     const longTailTemplates = [
-      `how to find remote ${primarySeed} with no experience`,
-      `best ${primarySeed} platforms for high paying clients`,
-      `step by step guide to scaling a ${primarySeed} business`,
-      `is it worth starting a ${primarySeed} career today`,
-      `how to avoid common scams in ${primarySeed}`,
-      `affordable software and tools needed for ${primarySeed}`,
-      `top rated websites offering legitimate ${primarySeed}`,
-      `what are the legal tax requirements for ${primarySeed}`
+      `how to choose the best ${primaryNiche} agency`,
+      `what is the cost of hiring a ${primaryNiche} consultant`,
+      `step by step ${primaryNiche} roadmap for growth`,
+      `best ${primaryNiche} frameworks for enterprise business`,
+      `how to scale revenue with ${primaryNiche}`,
+      `affordable ${primaryNiche} solutions for startups`,
+      `how to measure roi on ${primaryNiche} campaigns`
     ];
     longTailTemplates.forEach(t => longTailList.push(t));
 
-    // TIER C: Trending & Breakout Keywords (Emerging, Modern Patterns)
+    // TIER 3: Trending & Modern Search Patterns
     const trendingTemplates = [
-      `best ${primarySeed} platforms in ${currentYear}`,
-      `${primarySeed} ai workflow automation tools`,
-      `emerging ${primarySeed} market demand trends`,
-      `future of ${primarySeed} and autonomous agents`,
-      `top paying ${primarySeed} niches right now`,
-      `${primarySeed} versus upwork modern comparison`,
-      `high margin ${primarySeed} business ideas`,
-      `viral ${primarySeed} strategies for growth`
+      `best ${primaryNiche} tools in ${currentYear}`,
+      `${primaryNiche} ai automation trends`,
+      `future of ${primaryNiche} and predictive analytics`,
+      `high performing ${primaryNiche} case studies`,
+      `emerging ${primaryNiche} tactics for faster customer acquisition`,
+      `${primaryNiche} industry benchmarks and metrics`
     ];
     trendingTemplates.forEach(t => trendingList.push(t));
 
-    // Combine in an interleaved distribution: Short -> Long -> Trending
+    // Interleave tiers and strictly banish brand tokens
     const combinedKeywords = [];
     const seen = new Set();
-
     const maxLen = Math.max(shortTailList.length, longTailList.length, trendingList.length);
+
+    const isCleanKeyword = (text) => {
+      if (!text || text.length < 3) return false;
+      const l = text.toLowerCase();
+      return !brandTokens.some(bt => bt && bt.length > 2 && l.includes(bt));
+    };
+
     for (let i = 0; i < maxLen; i++) {
-      if (shortTailList[i] && !seen.has(shortTailList[i].toLowerCase())) {
+      if (shortTailList[i] && !seen.has(shortTailList[i].toLowerCase()) && isCleanKeyword(shortTailList[i])) {
         seen.add(shortTailList[i].toLowerCase());
         combinedKeywords.push({ phrase: shortTailList[i], tier: 'Short-Tail' });
       }
-      if (longTailList[i] && !seen.has(longTailList[i].toLowerCase())) {
+      if (longTailList[i] && !seen.has(longTailList[i].toLowerCase()) && isCleanKeyword(longTailList[i])) {
         seen.add(longTailList[i].toLowerCase());
         combinedKeywords.push({ phrase: longTailList[i], tier: 'Long-Tail' });
       }
-      if (trendingList[i] && !seen.has(trendingList[i].toLowerCase())) {
+      if (trendingList[i] && !seen.has(trendingList[i].toLowerCase()) && isCleanKeyword(trendingList[i])) {
         seen.add(trendingList[i].toLowerCase());
         combinedKeywords.push({ phrase: trendingList[i], tier: 'Trending' });
       }
     }
 
-    // 5. Enrichment: Density, KD Calculation, and Geographic Breakdown
+    // 6. Calculate On-Page Density, Intent, KD, and Country Breakdown
     const totalWords = pageText ? pageText.split(/\s+/).length : 1;
     const countryDistributionPresets = {
       'us': ['United States (62%)', 'United Kingdom (18%)', 'Canada (11%)', 'Australia (9%)'],
@@ -502,7 +556,7 @@ app.post('/api/keyword-data', async (req, res) => {
     };
     const activeCountries = countryDistributionPresets[country.toLowerCase()] || countryDistributionPresets['us'];
 
-    const enrichedResults = combinedKeywords.slice(0, 60).map((item, idx) => {
+    const enrichedResults = combinedKeywords.slice(0, 55).map((item, idx) => {
       const kw = item.phrase;
       let count = 0;
       if (pageText) {
@@ -512,20 +566,19 @@ app.post('/api/keyword-data', async (req, res) => {
       }
       const density = totalWords > 1 ? ((count / totalWords) * 100).toFixed(2) + '%' : '0.00%';
 
-      // Realistic Difficulty Model: Short-tail high KD, Long-tail low KD, Trending moderate
       let diff = 50;
       if (item.tier === 'Short-Tail') {
-        diff = Math.min(94, 75 + (idx % 15));
+        diff = Math.min(94, 72 + (idx % 18));
       } else if (item.tier === 'Long-Tail') {
-        diff = Math.max(14, 32 - ((kw.split(' ').length) * 2) + (idx % 8));
+        diff = Math.max(14, 34 - ((kw.split(' ').length) * 2) + (idx % 8));
       } else if (item.tier === 'Trending') {
-        diff = Math.min(68, 48 + (idx % 12));
+        diff = Math.min(68, 46 + (idx % 12));
       }
 
       let intent = 'Informational';
-      if (/best|top|review|comparison|vs/i.test(kw)) intent = 'Commercial';
-      if (/hire|platform|buy|salary|rates|tools|software/i.test(kw)) intent = 'Transactional';
-      if (/how to|guide|is it worth|scams|tutorial/i.test(kw)) intent = 'Informational';
+      if (/best|top|review|comparison|vs|cost|pricing|agency|consultant/i.test(kw)) intent = 'Commercial';
+      if (/hire|services|solutions|tools|frameworks|acquisition|buy/i.test(kw)) intent = 'Transactional';
+      if (/how to|what is|guide|roadmap|benchmarks/i.test(kw)) intent = 'Informational';
 
       return {
         keyword: kw,
@@ -540,7 +593,7 @@ app.post('/api/keyword-data', async (req, res) => {
 
     return res.json({
       success: true,
-      query: primarySeed,
+      query: primaryNiche,
       targetUrl: seedUrl,
       competitors: organicCompetitors,
       totalFound: enrichedResults.length,
@@ -548,8 +601,8 @@ app.post('/api/keyword-data', async (req, res) => {
     });
 
   } catch (err) {
-    console.error('Multi-Tier Keyword Engine Error:', err);
-    return res.status(500).json({ success: false, error: `Keyword analysis failed: ${err.message}` });
+    console.error('Generic Niche Keyword Engine Error:', err);
+    return res.status(500).json({ success: false, error: `Keyword discovery failed: ${err.message}` });
   }
 });
 
