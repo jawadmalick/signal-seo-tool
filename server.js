@@ -164,7 +164,7 @@ app.get('/', (req, res) => {
 });
 
 // Global Fallback
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
