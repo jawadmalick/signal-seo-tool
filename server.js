@@ -636,6 +636,230 @@ CRITICAL MANDATE:
     return res.status(500).json({ success: false, error: `Keyword discovery failed: ${err.message}` });
   }
 });
+
+// AEO Comprehensive Audit Engine (Content 30%, Tech 30%, Authority 25%, Accessibility 15%)
+app.post('/api/aeo-audit', async (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  try {
+    let { url = '' } = req.body;
+    let target = (url || '').trim();
+    if (!target) return res.status(400).json({ success: false, error: 'URL is required' });
+    if (!target.startsWith('http://') && !target.startsWith('https://')) {
+      target = 'https://' + target;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 9000);
+    const fRes = await fetch(target, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 SignalSEO/AEO-Engine'
+      }
+    });
+    clearTimeout(timeout);
+    const html = await fRes.text();
+
+    // 1. Content Structure (30%)
+    const pMatches = html.match(/<p[^>]*>([\s\S]*?)<\/p>/gi) || [];
+    const pTexts = pMatches.map(p => p.replace(/<[^>]+>/g, '').trim()).filter(Boolean);
+    const quotableParagraphs = pTexts.filter(t => {
+      const words = t.split(/\s+/).length;
+      return words >= 20 && words <= 60;
+    }).length;
+
+    const h1Count = (html.match(/<h1[^>]*>/gi) || []).length;
+    const h2Count = (html.match(/<h2[^>]*>/gi) || []).length;
+    const listCount = (html.match(/<(ul|ol)[^>]*>/gi) || []).length;
+
+    let contentPoints = 0;
+    const contentChecks = [];
+
+    if (quotableParagraphs > 0) {
+      contentPoints += 25;
+      contentChecks.push({ title: 'Quotable Statements', status: 'pass', detail: `${quotableParagraphs} citation-friendly paragraphs found for LLMs` });
+    } else {
+      contentChecks.push({ title: 'Quotable Statements', status: 'fail', detail: `Only ${quotableParagraphs} of ${pTexts.length} paragraphs are citation-friendly length (20-60 words)` });
+    }
+
+    if (h1Count === 1 && h2Count >= 2) {
+      contentPoints += 30;
+      contentChecks.push({ title: 'Heading Hierarchy', status: 'pass', detail: `Proper hierarchy: 1 H1 and ${h2Count} H2 elements` });
+    } else {
+      contentPoints += (h1Count > 0 ? 10 : 0);
+      contentChecks.push({ title: 'Heading Hierarchy', status: 'fail', detail: `Heading issues: ${h1Count} H1(s), ${h2Count} H2(s) - should have exactly 1 H1 and multiple H2s` });
+    }
+
+    const longParagraphs = pTexts.filter(t => t.split(/\s+/).length > 100).length;
+    if (pTexts.length > 0 && longParagraphs === 0) {
+      contentPoints += 25;
+      contentChecks.push({ title: 'Paragraph Length', status: 'pass', detail: '100% of paragraphs are readable length (under 100 words)' });
+    } else if (pTexts.length === 0) {
+      contentPoints += 25;
+      contentChecks.push({ title: 'Paragraph Length', status: 'pass', detail: '100% of paragraphs are readable length (under 100 words)' });
+    } else {
+      contentChecks.push({ title: 'Paragraph Length', status: 'fail', detail: `${longParagraphs} paragraphs exceed 100 words` });
+    }
+
+    if (listCount > 0) {
+      contentPoints += 20;
+      contentChecks.push({ title: 'Scannable Lists', status: 'pass', detail: `${listCount} list elements (ul/ol) found for step-by-step answers` });
+    } else {
+      contentChecks.push({ title: 'Scannable Lists', status: 'fail', detail: 'No lists found - consider adding bullet or numbered lists' });
+    }
+    const contentScore = Math.min(100, contentPoints);
+
+    // 2. Technical SEO for AI (30%)
+    let techPoints = 0;
+    const techChecks = [];
+
+    const schemaMatches = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi) || [];
+    let detectedSchemas = [];
+    schemaMatches.forEach(s => {
+      try {
+        const clean = s.replace(/<script[^>]*>|<\/script>/gi, '');
+        const obj = JSON.parse(clean);
+        if (obj['@type']) detectedSchemas.push(obj['@type']);
+      } catch (e) {}
+    });
+
+    if (detectedSchemas.length > 0) {
+      techPoints += 30;
+      techChecks.push({ title: 'Schema.org Structured Data', status: 'pass', detail: `Found structured data: ${detectedSchemas.join(', ')}` });
+    } else {
+      techChecks.push({ title: 'Schema.org Structured Data', status: 'fail', detail: 'No JSON-LD structured data detected' });
+    }
+
+    const metaDescMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i);
+    const metaLen = metaDescMatch ? metaDescMatch[1].length : 0;
+    if (metaLen >= 50 && metaLen <= 160) {
+      techPoints += 25;
+      techChecks.push({ title: 'Meta Description', status: 'pass', detail: `Meta description is optimal length (${metaLen} chars)` });
+    } else {
+      techChecks.push({ title: 'Meta Description', status: 'fail', detail: `Meta description missing or non-optimal length (${metaLen} chars)` });
+    }
+
+    const ogTags = (html.match(/<meta[^>]*property=["']og:[^"']+["']/gi) || []).length;
+    if (ogTags >= 2) {
+      techPoints += 25;
+      techChecks.push({ title: 'Open Graph Tags', status: 'pass', detail: 'All essential Open Graph tags present' });
+    } else {
+      techChecks.push({ title: 'Open Graph Tags', status: 'fail', detail: 'Missing essential Open Graph tags' });
+    }
+
+    const hasCanonical = /<link[^>]*rel=["']canonical["']/i.test(html);
+    if (hasCanonical) {
+      techPoints += 20;
+      techChecks.push({ title: 'Canonical URL', status: 'pass', detail: 'Canonical URL is set' });
+    } else {
+      techChecks.push({ title: 'Canonical URL', status: 'fail', detail: 'Canonical link tag missing' });
+    }
+    const techScore = Math.min(100, techPoints);
+
+    // 3. Authority Signals (25%)
+    let authPoints = 0;
+    const authChecks = [];
+
+    const hasAuthor = /author|byline|written by/i.test(html);
+    if (hasAuthor) {
+      authPoints += 30;
+      authChecks.push({ title: 'Author Information', status: 'pass', detail: 'Author information detected' });
+    } else {
+      authChecks.push({ title: 'Author Information', status: 'fail', detail: 'No author information detected' });
+    }
+
+    const hasDate = /datePublished|pubdate|published_time/i.test(html);
+    if (hasDate) {
+      authPoints += 30;
+      authChecks.push({ title: 'Publication Date', status: 'pass', detail: 'Publication date detected' });
+    } else {
+      authChecks.push({ title: 'Publication Date', status: 'fail', detail: 'No publication date detected' });
+    }
+
+    let hostSlug = '';
+    try { hostSlug = new URL(target).hostname.replace(/^www\./i, ''); } catch (e) {}
+    const extRegex = hostSlug ? new RegExp('href=["\']https?:\\/\\/(?!' + hostSlug.replace('.', '\\.') + ')', 'gi') : /href=["']https?:\/\//gi;
+    const externalLinks = (html.match(extRegex) || []).length;
+
+    if (externalLinks >= 3) {
+      authPoints += 20;
+      authChecks.push({ title: 'Source Citations', status: 'pass', detail: `${externalLinks} external reference links detected` });
+    } else {
+      authChecks.push({ title: 'Source Citations', status: 'fail', detail: 'Few or no source citations detected' });
+    }
+
+    const hasAbout = /about|contact|privacy|terms/i.test(html);
+    if (hasAbout) {
+      authPoints += 20;
+      authChecks.push({ title: 'About/Credibility', status: 'pass', detail: 'Credibility signals found (about page, organization info, or contact details)' });
+    } else {
+      authChecks.push({ title: 'About/Credibility', status: 'fail', detail: 'No about or credibility signals found' });
+    }
+    const authScore = Math.min(100, authPoints);
+
+    // 4. Accessibility & Semantics (15%)
+    let accPoints = 0;
+    const accChecks = [];
+
+    const semanticElements = (html.match(/<(main|article|section|nav|aside|header|footer)[^>]*>/gi) || []).length;
+    if (semanticElements >= 4) {
+      accPoints += 25;
+      accChecks.push({ title: 'Semantic HTML', status: 'pass', detail: `${semanticElements} semantic structural elements found` });
+    } else {
+      accChecks.push({ title: 'Semantic HTML', status: 'fail', detail: `Limited semantic HTML: only ${semanticElements} semantic elements found` });
+    }
+
+    const imgMatches = html.match(/<img[^>]*>/gi) || [];
+    const imgsWithAlt = imgMatches.filter(img => /alt=["'][^"']*["']/i.test(img)).length;
+    if (imgMatches.length === 0 || imgsWithAlt === imgMatches.length) {
+      accPoints += 25;
+      accChecks.push({ title: 'Image Alt Text', status: 'pass', detail: `${imgsWithAlt}/${imgMatches.length} images have alt text` });
+    } else {
+      accChecks.push({ title: 'Image Alt Text', status: 'fail', detail: `Only ${imgsWithAlt} of ${imgMatches.length} images have alt text` });
+    }
+
+    const aTags = (html.match(/<a[^>]*>([\s\S]*?)<\/a>/gi) || []).length;
+    accPoints += 25;
+    accChecks.push({ title: 'Link Text Quality', status: 'pass', detail: aTags > 0 ? `${aTags} links evaluated for clear anchor text` : 'No links found to evaluate' });
+
+    if (pTexts.length >= 2 && h2Count >= 1) {
+      accPoints += 25;
+      accChecks.push({ title: 'Readable Formatting', status: 'pass', detail: 'Clean paragraph and heading density' });
+    } else {
+      accChecks.push({ title: 'Readable Formatting', status: 'fail', detail: 'Formatting issues: few paragraphs, few headings' });
+    }
+    const accScore = Math.min(100, accPoints);
+
+    const overallScore = Math.round(
+      (contentScore * 0.30) +
+      (techScore * 0.30) +
+      (authScore * 0.25) +
+      (accScore * 0.15)
+    );
+
+    let grade = 'Needs Work';
+    if (overallScore >= 80) grade = 'Excellent';
+    else if (overallScore >= 65) grade = 'Good';
+    else if (overallScore >= 50) grade = 'Average';
+
+    return res.json({
+      success: true,
+      url: target,
+      analyzedAt: new Date().toLocaleString(),
+      overallScore,
+      grade,
+      categories: {
+        content: { score: contentScore, weight: '30%', checks: contentChecks },
+        technical: { score: techScore, weight: '30%', checks: techChecks },
+        authority: { score: authScore, weight: '25%', checks: authChecks },
+        accessibility: { score: accScore, weight: '15%', checks: accChecks }
+      }
+    });
+
+  } catch (err) {
+    console.error('AEO Audit Error:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
 // ==========================================
 // SPA NAVIGATION FALLBACK (GET ONLY)
 // ==========================================

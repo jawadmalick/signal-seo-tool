@@ -1280,3 +1280,155 @@ renderStats();
     }
   }
 </style>
+</head>
+<body style="margin:0; background:#0b1120; color:#e2e8f0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+
+  <div style="max-width:1100px; margin:0 auto; padding:2rem 1rem;">
+    <!-- Header -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; border-bottom:1px solid #1e293b; padding-bottom:1rem;">
+      <div style="font-size:1.4rem; font-weight:800; color:#38bdf8; letter-spacing:0.05em;">SIGNAL SEO // COMMAND DECK</div>
+      <div style="font-size:0.85rem; color:#94a3b8; background:#1e293b; padding:4px 12px; border-radius:99px;">AEO & Organic Research Engine</div>
+    </div>
+
+    <!-- Audit Input Box -->
+    <div style="background:#1e293b; border:1px solid #334155; border-radius:12px; padding:1.5rem; margin-bottom:2rem;">
+      <h2 style="margin:0 0 0.5rem 0; font-size:1.1rem; color:#f8fafc;">Live AEO & GEO Page Audit</h2>
+      <p style="margin:0 0 1rem 0; font-size:0.85rem; color:#94a3b8;">Enter any web page URL to run the weighted 4-category AEO audit (Content 30%, Tech 30%, Authority 25%, Accessibility 15%).</p>
+      
+      <div style="display:flex; gap:0.75rem;">
+        <input type="text" id="aeoInputUrl" placeholder="https://example.com" style="flex:1; background:#0f172a; border:1px solid #334155; border-radius:8px; padding:0.75rem 1rem; color:#fff; font-size:0.95rem; outline:none;" />
+        <button id="btnRunAeoAudit" onclick="runAeoAudit()" style="background:#10b981; color:#fff; border:none; border-radius:8px; padding:0.75rem 1.5rem; font-weight:700; cursor:pointer; font-size:0.95rem;">Run AEO Audit</button>
+      </div>
+      <div id="aeoStatusText" style="margin-top:0.75rem; font-size:0.85rem; color:#38bdf8; display:none;"></div>
+    </div>
+
+    <!-- Results Container -->
+    <div id="aeoResultsContainer"></div>
+  </div>
+
+  <script>
+    async function runAeoAudit() {
+      var urlInput = document.getElementById('aeoInputUrl');
+      var statusText = document.getElementById('aeoStatusText');
+      var container = document.getElementById('aeoResultsContainer');
+      var btn = document.getElementById('btnRunAeoAudit');
+
+      var target = (urlInput.value || '').trim();
+      if (!target) {
+        alert('Please enter a website URL');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = 'Analyzing...';
+      statusText.style.display = 'block';
+      statusText.innerText = 'Crawling live page and running weighted 4-category evaluation...';
+
+      try {
+        var response = await fetch('/api/aeo-audit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: target })
+        });
+        var data = await response.json();
+
+        if (!data.success) {
+          throw new Error(data.error || 'Audit failed');
+        }
+
+        renderAeoReport(data);
+        statusText.style.display = 'none';
+      } catch (err) {
+        statusText.style.color = '#ef4444';
+        statusText.innerText = 'Error: ' + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Run AEO Audit';
+      }
+    }
+
+    function renderAeoReport(data) {
+      var cats = data.categories;
+      var html = '' +
+        '<div style="background:#f4fbf7; border-radius:16px; padding:2rem; color:#0f172a; font-family:inherit;">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">' +
+            '<div>' +
+              '<div style="font-size:0.85rem; color:#059669; font-weight:600;">Single page analysis for:</div>' +
+              '<div style="font-size:1.4rem; font-weight:800; color:#064e3b;">' + data.url + '</div>' +
+              '<div style="font-size:0.8rem; color:#64748b;">Analyzed on ' + data.analyzedAt + '</div>' +
+            '</div>' +
+          '</div>' +
+
+          '<div style="display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:1rem; margin-bottom:2rem;">' +
+            '<div style="background:#ffedd5; border:1px solid #fed7aa; border-radius:12px; padding:1.5rem; text-align:center;">' +
+              '<div style="font-size:0.85rem; color:#9a3412; font-weight:600;">AEO Score</div>' +
+              '<div style="font-size:3.5rem; font-weight:900; color:#ea580c; line-height:1;">' + data.overallScore + '</div>' +
+              '<div style="color:#ea580c; font-weight:700; margin-top:0.5rem;">' + data.grade + '</div>' +
+            '</div>' +
+
+            '<div style="display:flex; flex-direction:column; gap:1rem;">' +
+              '<div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; text-align:center;">' +
+                '<div style="font-size:0.8rem; color:#64748b;">Content (30%)</div>' +
+                '<div style="font-size:1.8rem; font-weight:800; color:#059669;">' + cats.content.score + '%</div>' +
+              '</div>' +
+              '<div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; text-align:center;">' +
+                '<div style="font-size:0.8rem; color:#64748b;">Authority (25%)</div>' +
+                '<div style="font-size:1.8rem; font-weight:800; color:#059669;">' + cats.authority.score + '%</div>' +
+              '</div>' +
+            '</div>' +
+
+            '<div style="display:flex; flex-direction:column; gap:1rem;">' +
+              '<div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; text-align:center;">' +
+                '<div style="font-size:0.8rem; color:#64748b;">Technical (30%)</div>' +
+                '<div style="font-size:1.8rem; font-weight:800; color:#059669;">' + cats.technical.score + '%</div>' +
+              '</div>' +
+              '<div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; text-align:center;">' +
+                '<div style="font-size:0.8rem; color:#64748b;">Accessibility (15%)</div>' +
+                '<div style="font-size:1.8rem; font-weight:800; color:#059669;">' + cats.accessibility.score + '%</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+
+      function renderSection(name, obj) {
+        var barColor = obj.score >= 70 ? '#10b981' : (obj.score >= 40 ? '#f59e0b' : '#ef4444');
+        var s = '<div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">' +
+            '<span style="font-weight:700; font-size:1.05rem;">' + name + '</span>' +
+            '<span style="font-weight:700; color:' + barColor + ';">' + obj.score + '%</span>' +
+          '</div>' +
+          '<div style="height:6px; background:#f1f5f9; border-radius:99px; overflow:hidden; margin-bottom:1.5rem;">' +
+            '<div style="width:' + obj.score + '%; background:' + barColor + '; height:100%;"></div>' +
+          '</div>' +
+          '<div style="display:flex; flex-direction:column; gap:0.75rem;">';
+
+        obj.checks.forEach(function(c) {
+          var isPass = c.status === 'pass';
+          var icon = isPass ? '&#10004;' : '!';
+          var bg = isPass ? '#f0fdf4' : '#fff7ed';
+          var border = isPass ? '#bbf7d0' : '#fed7aa';
+          var textCol = isPass ? '#166534' : '#9a3412';
+
+          s += '<div style="background:' + bg + '; border:1px solid ' + border + '; border-radius:8px; padding:0.85rem 1rem;">' +
+            '<div style="font-weight:700; color:' + textCol + '; font-size:0.9rem; margin-bottom:0.25rem;">' +
+              '<span style="display:inline-block; width:18px; height:18px; line-height:18px; text-align:center; border-radius:50%; background:' + (isPass ? '#10b981' : '#f97316') + '; color:#fff; font-size:0.75rem; margin-right:8px;">' + icon + '</span>' +
+              c.title +
+            '</div>' +
+            '<div style="font-size:0.8rem; color:#475569; padding-left:26px;">' + c.detail + '</div>' +
+          '</div>';
+        });
+
+        s += '</div></div>';
+        return s;
+      }
+
+      html += renderSection('Content Structure', cats.content);
+      html += renderSection('Technical SEO for AI', cats.technical);
+      html += renderSection('Authority Signals', cats.authority);
+      html += renderSection('Accessibility & Semantics', cats.accessibility);
+      html += '</div>';
+
+      document.getElementById('aeoResultsContainer').innerHTML = html;
+    }
+  </script>
+</body>
+</html>
