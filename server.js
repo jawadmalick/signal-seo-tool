@@ -251,6 +251,106 @@ app.post('/ai', handleAi);
 app.post('/api/groq', handleAi);
 
 // ==========================================
+// 100% ORGANIC LIVE GOOGLE SERP DATA
+// ==========================================
+
+// 1. Real Google SERP Rank Tracker
+app.post('/api/rank-check', async (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  try {
+    const { domain, query, gl = 'us' } = req.body;
+    const apiKey = process.env.SERPER_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured in Railway Variables.' });
+    }
+    if (!domain || !query) {
+      return res.status(400).json({ success: false, error: 'Domain and query are required.' });
+    }
+
+    const cleanDomain = domain.replace(/^https?:\/\//i, '').replace(/\/.*$/, '').toLowerCase();
+
+    const response = await fetch('https://google.serper.dev/search', {
+      method: 'POST',
+      headers: {
+        'X-API-KEY': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ q: query, gl: gl, num: 50 })
+    });
+
+    const data = await response.json();
+    const organicResults = data.organic || [];
+
+    let rank = null;
+    let targetResult = null;
+
+    for (let i = 0; i < organicResults.length; i++) {
+      if (organicResults[i].link.toLowerCase().includes(cleanDomain)) {
+        rank = i + 1;
+        targetResult = organicResults[i];
+        break;
+      }
+    }
+
+    return res.json({
+      success: true,
+      query,
+      domain: cleanDomain,
+      rank: rank || '50+ (Not in top 50)',
+      targetResult,
+      topCompetitor: organicResults[0] || null,
+      paaQuestions: data.peopleAlsoAsk || [],
+      totalSearchHits: data.searchInformation?.totalResults || 0
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: `Live SERP fetch failed: ${err.message}` });
+  }
+});
+
+// 2. Real Google Keyword Autocomplete & People Also Ask
+app.post('/api/keyword-data', async (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  try {
+    const { query } = req.body;
+    const apiKey = process.env.SERPER_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured in Railway Variables.' });
+    }
+    if (!query) {
+      return res.status(400).json({ success: false, error: 'Query is required.' });
+    }
+
+    const response = await fetch('https://google.serper.dev/search', {
+      method: 'POST',
+      headers: {
+        'X-API-KEY': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ q: query, gl: 'us' })
+    });
+
+    const data = await response.json();
+
+    return res.json({
+      success: true,
+      query,
+      organicTop10: (data.organic || []).slice(0, 10).map(r => ({
+        title: r.title,
+        link: r.link,
+        snippet: r.snippet,
+        position: r.position
+      })),
+      peopleAlsoAsk: data.peopleAlsoAsk || [],
+      relatedSearches: data.relatedSearches || []
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: `Live keyword fetch failed: ${err.message}` });
+  }
+});
+
+// ==========================================
 // SPA NAVIGATION FALLBACK (GET ONLY)
 // ==========================================
 

@@ -757,18 +757,64 @@ window.generateKeywords = async function(){
   loading.style.display = 'block';
 
   try {
-    var data = await callAiJson('Generate 8 targeted keywords for ' + url + ' (Context: ' + context + '). Return JSON format: {"niche": string, "keywords": [{"phrase": string, "intent": string, "difficulty": number}]}');
-    document.getElementById('kwResultsCard').style.display = 'block';
-    document.getElementById('nicheLabel').textContent = data.niche ? ('(' + data.niche + ')') : '';
-    document.getElementById('kwResultsGrid').innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Keyword Phrase</th><th>Intent</th><th>KD</th><th></th></tr></thead><tbody>' +
-      data.keywords.map(function(k){
-        return '<tr><td style="color:#fff;font-weight:700;">' + escapeHtml(k.phrase) + '</td><td>' + escapeHtml(k.intent) + '</td><td style="font-family:var(--font-mono);font-weight:700;">' + k.difficulty + '/100</td><td><button class="btn ghost small" onclick="saveKeyword(\'' + encodeURIComponent(k.phrase) + '\',\'' + encodeURIComponent(k.intent) + '\',' + k.difficulty + ')">+ Save</button></td></tr>';
-      }).join('') +
-      '</tbody></table></div>';
-  } catch(e){ alert('Error: ' + e.message); }
-  finally { btn.disabled = false; loading.style.display = 'none'; }
-};
+    var query = context ? (url + ' ' + context) : url;
+    var res = await fetch('/api/keyword-data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: query })
+    });
+    var data = await res.json();
+    if (!data.success) throw new Error(data.error);
 
+    document.getElementById('kwResultsCard').style.display = 'block';
+    var nicheEl = document.getElementById('nicheLabel');
+    if (nicheEl) nicheEl.textContent = '(' + data.query + ')';
+
+    var html = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Live Keyword / SERP Entity</th><th>Type / Intent</th><th>SERP Signal</th><th>Action</th></tr></thead><tbody>';
+
+    if (data.peopleAlsoAsk && data.peopleAlsoAsk.length > 0) {
+      data.peopleAlsoAsk.forEach(function(item) {
+        html += '<tr>' +
+          '<td style="color:#fff;font-weight:700;">' + escapeHtml(item.question) + '</td>' +
+          '<td style="color:#8b949e;">Position 0 Question</td>' +
+          '<td style="color:var(--success,#00ffaa);font-family:var(--font-mono);font-weight:700;">PAA</td>' +
+          '<td><button class="btn ghost small" onclick="saveKeyword(\'' + encodeURIComponent(item.question) + '\',\'PAA Question\',85)">+ Save</button></td>' +
+        '</tr>';
+      });
+    }
+
+    if (data.relatedSearches && data.relatedSearches.length > 0) {
+      data.relatedSearches.forEach(function(item) {
+        html += '<tr>' +
+          '<td style="color:#fff;font-weight:700;">' + escapeHtml(item.query) + '</td>' +
+          '<td style="color:#8b949e;">Organic Related</td>' +
+          '<td style="color:var(--warning,#ffd000);font-family:var(--font-mono);font-weight:700;">Related Query</td>' +
+          '<td><button class="btn ghost small" onclick="saveKeyword(\'' + encodeURIComponent(item.query) + '\',\'Related\',60)">+ Save</button></td>' +
+        '</tr>';
+      });
+    }
+
+    if (data.organicTop10 && data.organicTop10.length > 0) {
+      data.organicTop10.slice(0, 5).forEach(function(item) {
+        html += '<tr>' +
+          '<td style="color:#fff;font-weight:700;"><a href="' + item.link + '" target="_blank" style="color:var(--accent,#00f0ff);text-decoration:underline;">' + escapeHtml(item.title) + '</a></td>' +
+          '<td style="color:#8b949e;">Top Competitor</td>' +
+          '<td style="color:#fff;font-family:var(--font-mono);font-weight:700;">Rank #' + item.position + '</td>' +
+          '<td><button class="btn ghost small" onclick="saveKeyword(\'' + encodeURIComponent(item.title) + '\',\'Top SERP\',' + (item.position * 10) + ')">+ Save</button></td>' +
+        '</tr>';
+      });
+    }
+
+    html += '</tbody></table></div>';
+    document.getElementById('kwResultsGrid').innerHTML = html;
+
+  } catch(e) {
+    alert('Keyword Engine Error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    loading.style.display = 'none';
+  }
+};
 window.saveKeyword = function(p, i, d){
   var phrase = decodeURIComponent(p);
   if(window.state.keywords.some(function(k){ return k.phrase === phrase; })) return;
