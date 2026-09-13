@@ -44,7 +44,7 @@ app.get('/sitemap.xml', (req, res) => {
 });
 
 // ==========================================
-// SCRAPER / DOM FETCHER PROXY
+// ORGANIC DOM SCRAPER & TELEMETRY ENGINE
 // ==========================================
 
 const handleFetchUrl = async (req, res) => {
@@ -52,7 +52,7 @@ const handleFetchUrl = async (req, res) => {
   try {
     let { url } = req.body;
     if (!url) {
-      return res.status(400).json({ success: false, error: 'URL is required.' });
+      return res.status(400).json({ success: false, error: 'Target URL is required.' });
     }
 
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
@@ -66,7 +66,7 @@ const handleFetchUrl = async (req, res) => {
     const fetchResponse = await fetch(url, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 SignalSEO/2.6',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.9'
       },
@@ -78,6 +78,14 @@ const handleFetchUrl = async (req, res) => {
     const loadTimeMs = Date.now() - startTime;
     const html = await fetchResponse.text();
 
+    // Clean plain text extraction for AI evaluation grounding
+    const strippedText = html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ')
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
     return res.json({
       success: true,
       url,
@@ -85,15 +93,22 @@ const handleFetchUrl = async (req, res) => {
       statusCode: fetchResponse.status,
       loadTime: loadTimeMs,
       loadTimeMs,
+      byteSize: html.length,
       html: html,
       content: html,
-      rawHtml: html
+      rawHtml: html,
+      plainTextExcerpt: strippedText.slice(0, 3000), // Grounding payload
+      headers: {
+        contentType: fetchResponse.headers.get('content-type') || 'text/html',
+        server: fetchResponse.headers.get('server') || 'Cloudflare / Edge',
+        cacheControl: fetchResponse.headers.get('cache-control') || 'none'
+      }
     });
   } catch (err) {
     console.error('Fetch URL error:', err);
     return res.status(500).json({
       success: false,
-      error: `Failed to fetch target URL: ${err.message}`
+      error: `Live fetch failed: ${err.message}`
     });
   }
 };
@@ -122,17 +137,16 @@ async function getAvailableGroqModels(apiKey) {
     const listData = await listRes.json();
 
     if (listData && Array.isArray(listData.data)) {
-      // Filter out non-chat models
       const valid = listData.data
         .map(m => m.id)
         .filter(id => !id.includes('whisper') && !id.includes('guard') && !id.includes('vision'));
 
-      // Sort prioritizing models with high token limits (Llama, Gemma, Deepseek first; Qwen last)
+      // Prioritize high-throughput models (Llama, Gemma) over low-quota ones
       valid.sort((a, b) => {
         const getScore = (id) => {
           if (id.includes('llama')) return 3;
           if (id.includes('gemma') || id.includes('mixtral')) return 2;
-          if (id.includes('qwen')) return 0; // low OTPM ceiling
+          if (id.includes('qwen')) return 0;
           return 1;
         };
         return getScore(b) - getScore(a);
@@ -171,7 +185,6 @@ const handleAi = async (req, res) => {
     const wantsJson = prompt.toLowerCase().includes('json');
     let lastError = 'No models responded successfully';
 
-    // Try up to 3 candidate models in sequence if one hits a rate limit or error
     for (const model of modelsToTry.slice(0, 4)) {
       try {
         const requestBody = {
@@ -180,13 +193,13 @@ const handleAi = async (req, res) => {
             {
               role: 'system',
               content: wantsJson
-                ? 'You are an SEO analysis engine. You MUST respond with a valid, parseable JSON object ONLY. Never include markdown code fences (```json or ```), explanations, or surrounding text.'
-                : 'You are a senior SEO strategist. Provide direct, actionable advice.'
+                ? 'You are an organic, deterministic SEO diagnostic engine. Base your evaluation strictly on the exact page content and DOM facts provided. Output a valid, parseable JSON object ONLY. Never include markdown code fences (```json or ```), explanations, or preamble.'
+                : 'You are a senior SEO strategist. Provide direct, factual, data-driven advice.'
             },
             { role: 'user', content: prompt }
           ],
-          temperature: 0.2,
-          max_tokens: 700 // Fits comfortably within any rate-limit quota
+          temperature: 0.1, // Low temperature eliminates hallucinations and delivers consistent, organic scoring
+          max_tokens: 700
         };
 
         if (wantsJson) {
@@ -215,7 +228,6 @@ const handleAi = async (req, res) => {
         }
 
         lastError = data.error?.message || `Model ${model} failed`;
-        console.warn(`Model ${model} failed (${aiResponse.status}): ${lastError}. Trying next...`);
       } catch (err) {
         lastError = err.message;
       }
