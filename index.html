@@ -747,74 +747,82 @@ window.runAudit = async function(){
   }
 };
 
-window.generateKeywords = async function(){
+window.generateKeywords = async function() {
   var url = document.getElementById('seedUrl').value.trim();
   var context = document.getElementById('seedContext').value.trim();
-  if(!url){ alert('Please enter a target domain or URL'); return; }
+  if (!url && !context) {
+    alert('Please enter a website URL or focus niche topic.');
+    return;
+  }
+
   var btn = document.getElementById('genKwBtn');
   var loading = document.getElementById('kwLoading');
-  btn.disabled = true;
-  loading.style.display = 'block';
+  if (btn) btn.disabled = true;
+  if (loading) loading.style.display = 'block';
 
   try {
-    var query = context ? (url + ' ' + context) : url;
     var res = await fetch('/api/keyword-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: query })
+      body: JSON.stringify({ url: url, context: context, country: 'us' })
     });
     var data = await res.json();
     if (!data.success) throw new Error(data.error);
 
-    document.getElementById('kwResultsCard').style.display = 'block';
+    var card = document.getElementById('kwResultsCard');
+    if (card) card.style.display = 'block';
+
     var nicheEl = document.getElementById('nicheLabel');
-    if (nicheEl) nicheEl.textContent = '(' + data.query + ')';
+    if (nicheEl) nicheEl.textContent = '(' + (data.query || url) + ' — ' + (data.totalFound || data.keywords.length) + ' Keywords)';
 
-    var html = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Live Keyword / SERP Entity</th><th>Type / Intent</th><th>SERP Signal</th><th>Action</th></tr></thead><tbody>';
+    var outHtml = '';
 
-    if (data.peopleAlsoAsk && data.peopleAlsoAsk.length > 0) {
-      data.peopleAlsoAsk.forEach(function(item) {
-        html += '<tr>' +
-          '<td style="color:#fff;font-weight:700;">' + escapeHtml(item.question) + '</td>' +
-          '<td style="color:#8b949e;">Position 0 Question</td>' +
-          '<td style="color:var(--success,#00ffaa);font-family:var(--font-mono);font-weight:700;">PAA</td>' +
-          '<td><button class="btn ghost small" onclick="saveKeyword(\'' + encodeURIComponent(item.question) + '\',\'PAA Question\',85)">+ Save</button></td>' +
+    // 1. Live Organic Competitors Top 10
+    if (data.competitors && data.competitors.length > 0) {
+      outHtml += '<div style="margin-bottom:1.5rem;">';
+      outHtml += '<h4 style="color:var(--accent,#00f0ff); margin-bottom:0.75rem; font-size:0.95rem; text-transform:uppercase; letter-spacing:0.05em;">Organic Competitors in Google Top 10</h4>';
+      outHtml += '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Position</th><th>Competitor Domain & Title</th><th>Snippet Preview</th></tr></thead><tbody>';
+      data.competitors.forEach(function(comp) {
+        outHtml += '<tr>' +
+          '<td style="color:#fff;font-family:var(--font-mono);font-weight:700;">Rank #' + comp.position + '</td>' +
+          '<td><a href="' + comp.link + '" target="_blank" style="color:var(--accent,#00f0ff);font-weight:600;text-decoration:underline;">' + escapeHtml(comp.title) + '</a><br><span style="font-size:0.75rem;color:#8b949e;">' + escapeHtml(comp.link) + '</span></td>' +
+          '<td style="color:#8b949e;font-size:0.8rem;">' + escapeHtml(comp.snippet) + '</td>' +
         '</tr>';
       });
+      outHtml += '</tbody></table></div></div>';
     }
 
-    if (data.relatedSearches && data.relatedSearches.length > 0) {
-      data.relatedSearches.forEach(function(item) {
-        html += '<tr>' +
-          '<td style="color:#fff;font-weight:700;">' + escapeHtml(item.query) + '</td>' +
-          '<td style="color:#8b949e;">Organic Related</td>' +
-          '<td style="color:var(--warning,#ffd000);font-family:var(--font-mono);font-weight:700;">Related Query</td>' +
-          '<td><button class="btn ghost small" onclick="saveKeyword(\'' + encodeURIComponent(item.query) + '\',\'Related\',60)">+ Save</button></td>' +
-        '</tr>';
-      });
-    }
+    // 2. 50+ Keywords Matrix (Density, Difficulty, Country Demand)
+    outHtml += '<div>';
+    outHtml += '<h4 style="color:var(--accent,#00f0ff); margin-bottom:0.75rem; font-size:0.95rem; text-transform:uppercase; letter-spacing:0.05em;">Niche Keywords Matrix (50+ Keywords, Density & KD)</h4>';
+    outHtml += '<div class="table-wrap"><table class="checks-table"><thead><tr><th>#</th><th>Target Keyword Phrase</th><th>Intent</th><th>On-Page Density</th><th>KD</th><th>Top Country Demand</th><th>Action</th></tr></thead><tbody>';
 
-    if (data.organicTop10 && data.organicTop10.length > 0) {
-      data.organicTop10.slice(0, 5).forEach(function(item) {
-        html += '<tr>' +
-          '<td style="color:#fff;font-weight:700;"><a href="' + item.link + '" target="_blank" style="color:var(--accent,#00f0ff);text-decoration:underline;">' + escapeHtml(item.title) + '</a></td>' +
-          '<td style="color:#8b949e;">Top Competitor</td>' +
-          '<td style="color:#fff;font-family:var(--font-mono);font-weight:700;">Rank #' + item.position + '</td>' +
-          '<td><button class="btn ghost small" onclick="saveKeyword(\'' + encodeURIComponent(item.title) + '\',\'Top SERP\',' + (item.position * 10) + ')">+ Save</button></td>' +
-        '</tr>';
-      });
-    }
+    (data.keywords || []).forEach(function(k, idx) {
+      var kdColor = k.difficulty > 65 ? '#ff4d4d' : (k.difficulty > 40 ? '#ffd000' : '#00ffaa');
+      outHtml += '<tr>' +
+        '<td style="color:#8b949e;font-size:0.8rem;">' + (idx + 1) + '</td>' +
+        '<td style="color:#fff;font-weight:700;">' + escapeHtml(k.keyword) + '</td>' +
+        '<td><span style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;font-size:0.75rem;">' + escapeHtml(k.intent) + '</span></td>' +
+        '<td style="font-family:var(--font-mono);color:' + (k.occurrences > 0 ? '#00ffaa' : '#8b949e') + ';">' + k.density + ' (' + k.occurrences + 'x)</td>' +
+        '<td style="font-family:var(--font-mono);font-weight:700;color:' + kdColor + ';">' + k.difficulty + '/100</td>' +
+        '<td style="color:#cbd5e1;font-size:0.8rem;">' + escapeHtml(k.topCountry) + '</td>' +
+        '<td><button class="btn ghost small" onclick="saveKeyword(\'' + encodeURIComponent(k.keyword) + '\',\'' + encodeURIComponent(k.intent) + '\',' + k.difficulty + ')">+ Save</button></td>' +
+      '</tr>';
+    });
 
-    html += '</tbody></table></div>';
-    document.getElementById('kwResultsGrid').innerHTML = html;
+    outHtml += '</tbody></table></div></div>';
+
+    var container = document.getElementById('kwResultsGrid');
+    if (container) container.innerHTML = outHtml;
 
   } catch(e) {
     alert('Keyword Engine Error: ' + e.message);
   } finally {
-    btn.disabled = false;
-    loading.style.display = 'none';
+    if (btn) btn.disabled = false;
+    if (loading) loading.style.display = 'none';
   }
 };
+
 window.saveKeyword = function(p, i, d){
   var phrase = decodeURIComponent(p);
   if(window.state.keywords.some(function(k){ return k.phrase === phrase; })) return;
