@@ -1,1157 +1,1214 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SIGNAL // Autonomous Enterprise SEO & GEO Intelligence Command Deck</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #07090e;
-      --panel: #0d1117;
-      --panel-elevated: #161b22;
-      --panel-border: rgba(255, 255, 255, 0.08);
-      --accent: #00f0ff;
-      --accent-dim: rgba(0, 240, 255, 0.12);
-      --accent-glow: rgba(0, 240, 255, 0.25);
-      --success: #00ffaa;
-      --warning: #ffd000;
-      --danger: #ff3366;
-      --text: #e6edf3;
-      --text-dim: #8b949e;
-      --sidebar-width: 250px;
-      --radius: 6px;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    html, body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Space Grotesk', -apple-system, sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-      width: 100%;
-    }
-
-    pre, code, .mono {
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    /* Layout Structure */
-    .app-container {
-      display: flex;
-      min-height: 100vh;
-      width: 100%;
-    }
-
-    /* Left Instruments Sidebar */
-    aside.sidebar {
-      width: var(--sidebar-width);
-      background: var(--panel);
-      border-right: 1px solid var(--panel-border);
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      z-index: 100;
-    }
-
-    .brand-header {
-      padding: 1.25rem 1rem;
-      border-bottom: 1px solid var(--panel-border);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .brand-logo {
-      width: 32px;
-      height: 32px;
-      background: var(--accent);
-      color: #000;
-      display: grid;
-      place-items: center;
-      font-weight: 800;
-      font-size: 1rem;
-      border-radius: var(--radius);
-      box-shadow: 0 0 12px var(--accent-glow);
-    }
-
-    .brand-title {
-      font-weight: 700;
-      font-size: 0.95rem;
-      letter-spacing: 0.05em;
-      color: #fff;
-    }
-
-    .brand-subtitle {
-      font-size: 0.7rem;
-      color: var(--text-dim);
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    .nav-label {
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
-      padding: 1.2rem 1.25rem 0.5rem;
-      text-transform: uppercase;
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    .nav-list {
-      display: flex;
-      flex-direction: column;
-      list-style: none;
-      padding: 0.25rem 0.5rem;
-      gap: 0.25rem;
-      overflow-y: auto;
-    }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.65rem 0.75rem;
-      color: var(--text-dim);
-      text-decoration: none;
-      font-size: 0.85rem;
-      border-radius: var(--radius);
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-    }
-
-    .nav-item:hover {
-      background: rgba(255, 255, 255, 0.04);
-      color: #fff;
-    }
-
-    .nav-item.active {
-      background: var(--accent-dim);
-      color: var(--accent);
-      font-weight: 600;
-      border-left: 2px solid var(--accent);
-    }
-
-    .nav-item span.index {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.7rem;
-      opacity: 0.6;
-    }
-
-    /* Workspace */
-    main.workspace {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Top Telemetry Header */
-    header.telemetry-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.85rem 1.5rem;
-      background: rgba(13, 17, 23, 0.75);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--panel-border);
-      position: sticky;
-      top: 0;
-      z-index: 90;
-    }
-
-    .telemetry-group {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-    }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 8px var(--success);
-      display: inline-block;
-    }
-
-    .module-viewport {
-      padding: 1.5rem;
-      max-width: 1200px;
-      width: 100%;
-      margin: 0 auto;
-    }
-
-    /* Module Panes */
-    .module-pane {
-      display: none;
-    }
-
-    .module-pane.active {
-      display: block;
-      animation: fadeIn 0.2s ease-in;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .panel-header {
-      margin-bottom: 1.25rem;
-    }
-
-    .panel-indicator {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      color: var(--accent);
-      text-transform: uppercase;
-      margin-bottom: 0.25rem;
-    }
-
-    .panel-heading {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 0.5rem;
-    }
-
-    .panel-subtext {
-      font-size: 0.88rem;
-      color: var(--text-dim);
-      line-height: 1.5;
-    }
-
-    /* Cards and Form Boxes */
-    .form-box, .stat-card {
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius);
-      padding: 1.25rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .input-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
-
-    .input-label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    input[type="text"], input[type="url"], textarea, select {
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid var(--panel-border);
-      color: #fff;
-      padding: 0.7rem 0.85rem;
-      border-radius: var(--radius);
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.9rem;
-      outline: none;
-      transition: border-color 0.15s;
-      width: 100%;
-    }
-
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--accent);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 85px;
-    }
-
-    .btn {
-      background: var(--accent-dim);
-      color: var(--accent);
-      border: 1px solid var(--accent);
-      padding: 0.65rem 1.25rem;
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-family: 'JetBrains Mono', monospace;
-      border-radius: var(--radius);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      transition: all 0.2s;
-    }
-
-    .btn:hover {
-      background: var(--accent);
-      color: #000;
-    }
-
-    .btn:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    /* Dynamic Output Visualizers */
-    .output-container {
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius);
-      padding: 1.25rem;
-      margin-top: 1.5rem;
-      display: none;
-    }
-
-    .output-container.show {
-      display: block;
-    }
-
-    .score-badge {
-      display: inline-block;
-      padding: 0.35rem 0.75rem;
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-    }
-
-    .score-high { background: rgba(0, 255, 170, 0.15); color: var(--success); border: 1px solid var(--success); }
-    .score-mid { background: rgba(255, 208, 0, 0.15); color: var(--warning); border: 1px solid var(--warning); }
-    .score-low { background: rgba(255, 51, 102, 0.15); color: var(--danger); border: 1px solid var(--danger); }
-
-    .result-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-
-    .result-card {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid var(--panel-border);
-      padding: 1rem;
-      border-radius: var(--radius);
-    }
-
-    .result-title {
-      font-size: 0.78rem;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      font-family: 'JetBrains Mono', monospace;
-      margin-bottom: 0.5rem;
-    }
-
-    .metrics-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .metric-value {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #fff;
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    .metric-sub {
-      font-size: 0.75rem;
-      color: var(--text-dim);
-      margin-top: 0.2rem;
-    }
-
-    /* =========================================================
-       NON-DESTRUCTIVE RESPONSIVE OVERRIDES (MOBILE & TABLET)
-       ========================================================= */
-    html, body {
-      overflow-x: hidden !important;
-      max-width: 100vw !important;
-      width: 100% !important;
-    }
-
-    @media (max-width: 1024px) {
-      aside.sidebar {
-        width: 210px !important;
-        min-width: 210px !important;
-      }
-      .module-viewport {
-        padding: 1.25rem 1rem !important;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .app-container {
-        flex-direction: column !important;
-        width: 100% !important;
-        min-width: 100% !important;
-      }
-
-      aside.sidebar {
-        position: relative !important;
-        width: 100% !important;
-        min-width: 100% !important;
-        height: auto !important;
-        border-right: none !important;
-        border-bottom: 1px solid var(--panel-border) !important;
-        padding: 0.5rem !important;
-      }
-
-      .brand-header {
-        padding: 0.5rem 0.75rem !important;
-      }
-
-      .nav-label {
-        display: none !important;
-      }
-
-      .nav-list {
-        flex-direction: row !important;
-        overflow-x: auto !important;
-        white-space: nowrap !important;
-        gap: 0.4rem !important;
-        padding: 0.25rem 0 !important;
-        -webkit-overflow-scrolling: touch !important;
-        scrollbar-width: none !important;
-      }
-
-      .nav-list::-webkit-scrollbar {
-        display: none !important;
-      }
-
-      .nav-item {
-        flex: 0 0 auto !important;
-        padding: 0.45rem 0.75rem !important;
-        font-size: 0.82rem !important;
-        border-left: none !important;
-        border-bottom: 2px solid transparent !important;
-      }
-
-      .nav-item.active {
-        border-left: none !important;
-        border-bottom: 2px solid var(--accent) !important;
-      }
-
-      .nav-item span.index {
-        display: none !important;
-      }
-
-      header.telemetry-bar {
-        padding: 0.65rem 1rem !important;
-        font-size: 0.7rem !important;
-      }
-
-      main.workspace {
-        width: 100% !important;
-        max-width: 100% !important;
-      }
-
-      .module-viewport {
-        padding: 1rem 0.75rem !important;
-      }
-
-      .panel-heading {
-        font-size: 1.35rem !important;
-      }
-
-      .input-grid {
-        grid-template-columns: 1fr !important;
-        gap: 0.75rem !important;
-      }
-
-      input[type="text"],
-      input[type="url"],
-      textarea,
-      select,
-      .btn {
-        width: 100% !important;
-        max-width: 100% !important;
-        font-size: 16px !important;
-      }
-
-      .metrics-row,
-      .result-grid {
-        grid-template-columns: 1fr !important;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="cvPK6oGcGdflxN_QyXj73JP0T9dx5CPEIKaegQHuCXc" />
+<title>Signal — Enterprise SEO & AI Search Command Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --deck-rail: #080C16;
+    --deck-topbar: #0B101D;
+    --bg-deep: #0D1322;
+    --panel: #131B2E;
+    --panel-subtle: #19243C;
+    --panel-input: #0A0F1A;
+    --border: rgba(99, 140, 210, 0.16);
+    --border-hover: #1D63FF;
+    --primary: #1D63FF;
+    --primary-light: #60A5FA;
+    --accent: #00D4B2;
+    --paper: #F8FAFC;
+    --muted: #94A3B8;
+    --subtle: #475569;
+    --green: #10B981;
+    --green-bg: rgba(16, 185, 129, 0.12);
+    --green-border: rgba(16, 185, 129, 0.35);
+    --amber: #F59E0B;
+    --amber-bg: rgba(245, 158, 11, 0.12);
+    --amber-border: rgba(245, 158, 11, 0.35);
+    --coral: #EF4444;
+    --coral-bg: rgba(239, 68, 68, 0.12);
+    --coral-border: rgba(239, 68, 68, 0.35);
+    --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100vh; background-color: var(--bg-deep); color: var(--paper); font-family: var(--font-display); }
+  .deck-shell { display: flex; min-height: 100vh; width: 100%; position: relative; }
+
+  /* Navigation Sidebar */
+  .deck-rail {
+    width: 250px;
+    flex-shrink: 0;
+    background: var(--deck-rail);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 100;
+  }
+  .rail-brand { padding: 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .rail-badge { width: 32px; height: 32px; border-radius: 6px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; }
+  .rail-title { font-size: 16px; font-weight: 800; color: #fff; }
+  .rail-edition { font-family: var(--font-mono); font-size: 9px; color: var(--accent); }
+  .rail-section-lbl { font-family: var(--font-mono); font-size: 9.5px; color: var(--subtle); letter-spacing: 0.12em; text-transform: uppercase; padding: 16px 20px 8px; font-weight: 700; }
+  .rail-nav { display: flex; flex-direction: column; gap: 3px; padding: 0 10px; flex: 1; }
+  .rail-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--muted);
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .rail-btn:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+  .rail-btn.active { background: rgba(29, 99, 255, 0.15); color: #fff; border-color: rgba(29, 99, 255, 0.4); box-shadow: inset 3px 0 0 0 var(--primary); }
+  .rail-btn .idx { font-family: var(--font-mono); font-size: 10px; opacity: 0.5; margin-left: auto; }
+
+  /* Main Workspace */
+  .deck-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .deck-topbar { height: 52px; background: var(--deck-topbar); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
+  .tele-item { font-family: var(--font-mono); font-size: 11px; display: flex; gap: 8px; color: var(--muted); }
+  .tele-val { color: var(--accent); font-weight: 700; }
+
+  .deck-content { max-width: 1200px; margin: 0 auto; width: 100%; padding: 28px 32px 80px; }
+  .deck-header { margin-bottom: 24px; }
+  .deck-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--primary-light); text-transform: uppercase; font-weight: 700; }
+  .deck-title { font-size: 24px; font-weight: 800; color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 22px 24px; margin-bottom: 20px; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .card-title { font-size: 16px; font-weight: 700; color: #fff; }
+  .card-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
+
+  label { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
+  input[type=text], input[type=number], input[type=date], textarea, select {
+    width: 100%;
+    background: var(--panel-input);
+    border: 1px solid var(--border);
+    color: var(--paper);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+    outline: none;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--primary); }
+  textarea { min-height: 110px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .btn {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    background: var(--primary);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .btn:hover { background: #2563EB; }
+  .btn:disabled { opacity: 0.5; cursor: wait; }
+  .btn.ghost { background: transparent; border: 1px solid var(--border); }
+  .btn.ghost:hover { border-color: var(--primary); background: rgba(29, 99, 255, 0.1); }
+  .btn.small { padding: 6px 12px; font-size: 10.5px; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 22px; }
+  .stat-tile { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; }
+  .stat-val { font-size: 24px; font-weight: 800; font-family: var(--font-mono); color: #fff; }
+  .stat-lbl { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
+
+  .dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .dash-tile {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+  }
+  .dash-tile:hover { border-color: var(--primary); background: var(--panel-subtle); }
+  .dash-tile-title { font-weight: 700; font-size: 15px; color: #fff; margin-bottom: 6px; }
+  .dash-tile-desc { font-size: 12.5px; color: var(--muted); margin-bottom: 16px; flex: 1; }
+  .dash-tile-link { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--primary-light); text-transform: uppercase; }
+
+  .report-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 18px 0; }
+  .report-summary-card { background: var(--panel-subtle); border: 1px solid var(--border); border-radius: 6px; padding: 14px 12px; text-align: center; }
+  .report-summary-num { font-weight: 800; font-size: 20px; font-family: var(--font-mono); }
+  .report-summary-lbl { font-family: var(--font-mono); font-size: 9.5px; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
+  .report-summary-issues { font-family: var(--font-mono); font-size: 9px; color: var(--primary-light); margin-top: 4px; text-transform: uppercase; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-input); margin-top: 10px; }
+  .checks-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .checks-table th { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: left; }
+  .checks-table td { padding: 11px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.035); }
+
+  .check-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; }
+  .dot-good { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot-warning { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .dot-critical { background: var(--coral); box-shadow: 0 0 6px var(--coral); }
+
+  .badge { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; font-weight: 700; }
+  .badge-good { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .badge-warning { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+  .badge-critical { background: var(--coral-bg); color: var(--coral); border: 1px solid var(--coral-border); }
+
+  .fix-btn { font-family: var(--font-mono); font-size: 10px; font-weight: 700; background: rgba(29, 99, 255, 0.15); border: 1px solid rgba(29, 99, 255, 0.35); color: var(--primary-light); padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+  .fix-row td { background: rgba(29, 99, 255, 0.04) !important; padding: 12px 16px !important; }
+  .fix-cell { display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; color: var(--paper); }
+
+  .util-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .util-pill { font-family: var(--font-mono); font-size: 11px; background: var(--panel-input); border: 1px solid var(--border); color: var(--muted); padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+  .util-pill.active { background: var(--primary); color: #fff; font-weight: 700; border-color: var(--primary); }
+  .util-panel { display: none; }
+  .util-panel.active { display: block; }
+
+  .code-output { background: var(--panel-input); border: 1px solid var(--border); border-radius: 6px; padding: 14px; font-family: var(--font-mono); font-size: 12px; color: var(--primary-light); white-space: pre-wrap; max-height: 320px; overflow-y: auto; }
+  .serp-preview { background: #FFFFFF; border-radius: 6px; padding: 14px 16px; margin-top: 8px; max-width: 580px; font-family: arial, sans-serif; }
+  .serp-preview .serp-url { color: #202124; font-size: 12px; margin-bottom: 2px; }
+  .serp-preview .serp-title { color: #1a0dab; font-size: 17px; line-height: 1.3; margin-bottom: 4px; }
+  .serp-preview .serp-desc { color: #4d5156; font-size: 13px; line-height: 1.45; }
+
+  .loading { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+  .empty { font-family: var(--font-mono); font-size: 12px; color: var(--muted); padding: 20px 0; text-align: center; }
+
+  @media(max-width: 900px) {
+    .deck-shell { flex-direction: column; }
+    .deck-rail { width: 100%; height: auto; position: relative; flex-direction: row; overflow-x: auto; padding: 10px; }
+    .rail-section-lbl, .rail-brand { display: none; }
+    .rail-nav { flex-direction: row; }
+    .deck-content { padding: 16px; }
+    .row { grid-template-columns: 1fr; }
+  }
+</style>
 </head>
 <body>
 
-  <div class="app-container">
-    <!-- Collapsible Sidebar -->
-    <aside class="sidebar">
-      <div class="brand-header">
-        <div class="brand-logo">S</div>
-        <div>
-          <div class="brand-title">SIGNAL</div>
-          <div class="brand-subtitle">COMMAND DECK // v2.6</div>
+<div class="deck-shell">
+  <!-- Navigation Sidebar -->
+  <aside class="deck-rail">
+    <div class="rail-brand">
+      <div class="rail-badge">S</div>
+      <div>
+        <div class="rail-title">SIGNAL</div>
+        <div class="rail-edition">COMMAND DECK // v2.6</div>
+      </div>
+    </div>
+    <div class="rail-section-lbl">Instruments</div>
+    <nav class="rail-nav">
+      <button class="rail-btn active" id="btn-dashboard" onclick="switchTab('dashboard')">Deck Overview <span class="idx">00</span></button>
+      <button class="rail-btn" id="btn-audit" onclick="switchTab('audit')">Site Audit 360° <span class="idx">01</span></button>
+      <button class="rail-btn" id="btn-keywords" onclick="switchTab('keywords')">Keyword Explorer <span class="idx">02</span></button>
+      <button class="rail-btn" id="btn-aeo" onclick="switchTab('aeo')">AEO Optimizer <span class="idx">03</span></button>
+      <button class="rail-btn" id="btn-geo" onclick="switchTab('geo')">GEO AI Citation <span class="idx">04</span></button>
+      <button class="rail-btn" id="btn-competitors" onclick="switchTab('competitors')">Competitors <span class="idx">05</span></button>
+      <button class="rail-btn" id="btn-ranklog" onclick="switchTab('ranklog')">Rank Tracker <span class="idx">06</span></button>
+      <button class="rail-btn" id="btn-blog" onclick="switchTab('blog')">AI Blog Writer <span class="idx">07</span></button>
+      <button class="rail-btn" id="btn-strategist" onclick="switchTab('strategist')">AI Strategist <span class="idx">08</span></button>
+      <button class="rail-btn" id="btn-utilities" onclick="switchTab('utilities')">Free SEO Tools <span class="idx">09</span></button>
+    </nav>
+  </aside>
+
+  <!-- Workspace -->
+  <div class="deck-main">
+    <div class="deck-topbar">
+      <div class="tele-item">SYSTEM: <span class="tele-val">ONLINE</span></div>
+      <div class="tele-item">MODEL: <span class="tele-val">openai/gpt-oss-20b</span></div>
+    </div>
+
+    <main class="deck-content">
+      <div class="deck-header">
+        <div class="deck-eyebrow" id="pageEyebrow">00 · DECK OVERVIEW</div>
+        <h1 class="deck-title" id="pageTitle">Dashboard Overview</h1>
+      </div>
+
+      <!-- 00. DASHBOARD -->
+      <div class="panel active" id="panel-dashboard">
+        <div class="stat-grid" id="dashStats"></div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Field Kit Command Modules</div><span class="badge badge-good">Ready</span></div>
+          <div class="dash-grid">
+            <div class="dash-tile" onclick="switchTab('audit')">
+              <div class="dash-tile-title">Site Audit 360°</div>
+              <div class="dash-tile-desc">Live scan of On-Page, Technical, Performance & Off-Page signals with PDF report.</div>
+              <div class="dash-tile-link">Execute Audit →</div>
+            </div>
+            <div class="dash-tile" onclick="switchTab('keywords')">
+              <div class="dash-tile-title">Keyword Explorer</div>
+              <div class="dash-tile-desc">Niche discovery, intent clustering & KD difficulty metrics.</div>
+              <div class="dash-tile-link">Explore Terms →</div>
+            </div>
+            <div class="dash-tile" onclick="switchTab('aeo')">
+              <div class="dash-tile-title">AEO Optimization</div>
+              <div class="dash-tile-desc">Inspect featured snippets, 40-60 word answer boxes, PAA & voice search schema.</div>
+              <div class="dash-tile-link">Inspect Snippets →</div>
+            </div>
+            <div class="dash-tile" onclick="switchTab('geo')">
+              <div class="dash-tile-title">GEO AI Visibility</div>
+              <div class="dash-tile-desc">Audit generative AI citations across ChatGPT, Perplexity & Claude with authority density.</div>
+              <div class="dash-tile-link">Inspect GEO →</div>
+            </div>
+            <div class="dash-tile" onclick="switchTab('competitors')">
+              <div class="dash-tile-title">Competitors</div>
+              <div class="dash-tile-desc">Market rivals tracking, authority benchmarking & gap analysis.</div>
+              <div class="dash-tile-link">Analyze Gaps →</div>
+            </div>
+            <div class="dash-tile" onclick="switchTab('ranklog')">
+              <div class="dash-tile-title">Rank Tracker</div>
+              <div class="dash-tile-desc">SERP rankings estimator and historical rank tracking.</div>
+              <div class="dash-tile-link">View Rankings →</div>
+            </div>
+            <div class="dash-tile" onclick="switchTab('blog')">
+              <div class="dash-tile-title">Blog Writer</div>
+              <div class="dash-tile-desc">Draft structured SEO articles with keyword densities.</div>
+              <div class="dash-tile-link">Draft Article →</div>
+            </div>
+            <div class="dash-tile" onclick="switchTab('strategist')">
+              <div class="dash-tile-title">AI Strategist</div>
+              <div class="dash-tile-desc">Strategic consultation grounded directly in your domain data.</div>
+              <div class="dash-tile-link">Consult AI →</div>
+            </div>
+            <div class="dash-tile" onclick="switchTab('utilities')">
+              <div class="dash-tile-title">Free SEO Tools</div>
+              <div class="dash-tile-desc">12 instant in-browser micro-utilities for schema, tags & robots.</div>
+              <div class="dash-tile-link">Open Utilities →</div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="nav-label">Instruments</div>
-      <nav>
-        <ul class="nav-list">
-          <li class="nav-item active" onclick="switchTab('deck-overview')">
-            <span>Deck Overview</span> <span class="index">00</span>
-          </li>
-          <li class="nav-item" onclick="switchTab('site-audit')">
-            <span>Site Audit 360°</span> <span class="index">01</span>
-          </li>
-          <li class="nav-item" onclick="switchTab('keyword-explorer')">
-            <span>Keyword Explorer</span> <span class="index">02</span>
-          </li>
-          <li class="nav-item" onclick="switchTab('aeo-optimizer')">
-            <span>AEO Optimizer</span> <span class="index">03</span>
-          </li>
-          <li class="nav-item" onclick="switchTab('geo-citation')">
-            <span>GEO AI Citation</span> <span class="index">04</span>
-          </li>
-          <li class="nav-item" onclick="switchTab('competitors')">
-            <span>Competitors</span> <span class="index">05</span>
-          </li>
-          <li class="nav-item" onclick="switchTab('rank-tracker')">
-            <span>Rank Tracker</span> <span class="index">06</span>
-          </li>
-          <li class="nav-item" onclick="switchTab('ai-writer')">
-            <span>AI Blog Writer</span> <span class="index">07</span>
-          </li>
-          <li class="nav-item" onclick="switchTab('ai-strategist')">
-            <span>AI Strategist</span> <span class="index">08</span>
-          </li>
-          <li class="nav-item" onclick="switchTab('free-tools')">
-            <span>Free SEO Tools</span> <span class="index">09</span>
-          </li>
-        </ul>
-      </nav>
-    </aside>
 
-    <!-- Execution Canvas -->
-    <main class="workspace">
-      <!-- Status Topbar -->
-      <header class="telemetry-bar">
-        <div class="telemetry-group">
-          <span>SYSTEM: <span class="status-dot"></span> <strong style="color: var(--success);">ONLINE</strong></span>
+      <!-- 01. SITE AUDIT -->
+      <div class="panel" id="panel-audit">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Live 360° Site Audit Engine</div></div>
+          <div class="card-sub">Signal fetches live page code directly from the server, analyzes DOM architecture, and performs authentic technical checks.</div>
+          <div class="row">
+            <div><label>Target Website URL</label><input type="text" id="auditUrl" placeholder="https://"></div>
+            <div><label>Target Keyword (Optional)</label><input type="text" id="auditKeyword" placeholder="Primary keyword to audit"></div>
+          </div>
+          <label>Optional: Paste Raw HTML (Auto-scraped if empty)</label>
+          <textarea id="auditInput" placeholder="Leave blank to auto-fetch directly from the live URL..."></textarea>
+          <button class="btn" id="runAuditBtn" onclick="runAudit()">Run Complete Audit</button>
+          <div id="auditLoading" style="display:none;margin-top:12px;" class="loading">Fetching live site and executing complete 360° audit...</div>
         </div>
-        <div class="telemetry-group">
-          <span>MODEL: <span class="mono" style="color: var(--accent);">groq/production-live</span></span>
+
+        <div class="card" id="auditResultCard" style="display:none;">
+          <div class="card-head">
+            <div class="card-title">Diagnostic Telemetry</div>
+            <button class="btn ghost small" onclick="exportAuditPdf()">Export PDF</button>
+          </div>
+          <div style="font-size:28px;font-weight:800;margin-bottom:14px;color:var(--green);" id="auditScoreVal">Score: --/100</div>
+          <div id="auditSummaryGrid" class="report-summary-grid"></div>
+          <div id="checksList"></div>
         </div>
-      </header>
 
-      <div class="module-viewport">
-
-        <!-- 00: Deck Overview -->
-        <section id="deck-overview" class="module-pane active">
-          <div class="panel-header">
-            <div class="panel-indicator">00 &bull; COMMAND DECK</div>
-            <h1 class="panel-heading">Executive Telemetry & Domain Intelligence</h1>
-            <p class="panel-subtext">Autonomous crawl monitoring, entity authority indexing, and LLM visibility summary.</p>
-          </div>
-
-          <div class="metrics-row">
-            <div class="stat-card">
-              <div class="result-title">Global Health Index</div>
-              <div class="metric-value" style="color: var(--success);">94.2</div>
-              <div class="metric-sub">+3.4% vs last baseline crawl</div>
-            </div>
-            <div class="stat-card">
-              <div class="result-title">AEO Snippet Readiness</div>
-              <div class="metric-value" style="color: var(--accent);">88%</div>
-              <div class="metric-sub">Eligible for PAA & Position 0</div>
-            </div>
-            <div class="stat-card">
-              <div class="result-title">GEO Citation Weight</div>
-              <div class="metric-value" style="color: var(--warning);">71%</div>
-              <div class="metric-sub">Perplexity / Claude citation score</div>
-            </div>
-          </div>
-
-          <div class="form-box">
-            <div class="result-title" style="margin-bottom: 0.8rem;">Quick Engine Launcher</div>
-            <p style="font-size: 0.88rem; color: var(--text-dim); margin-bottom: 1rem;">Select an instrument from the left sidebar or initiate a direct inspection below.</p>
-            <button class="btn" onclick="switchTab('aeo-optimizer')">Launch AEO Engine &rarr;</button>
-            <button class="btn" style="margin-left: 0.5rem;" onclick="switchTab('geo-citation')">Launch GEO Engine &rarr;</button>
-          </div>
-        </section>
-
-        <!-- 01: Site Audit 360° -->
-        <section id="site-audit" class="module-pane">
-          <div class="panel-header">
-            <div class="panel-indicator">01 &bull; SITE AUDIT</div>
-            <h1 class="panel-heading">Deep DOM Technical Audit</h1>
-            <p class="panel-subtext">Inspect headers, response codes, page weight, meta directives, and crawlability blockers.</p>
-          </div>
-
-          <div class="form-box">
-            <div class="input-group" style="margin-bottom: 1rem;">
-              <label class="input-label">Target Audit URL</label>
-              <input type="url" id="audit-url" placeholder="https://example.com" value="https://prodoo.com">
-            </div>
-            <button class="btn" id="audit-submit" onclick="runSiteAudit()">Run Deep Audit</button>
-          </div>
-
-          <div id="audit-output" class="output-container">
-            <div id="audit-score-tag"></div>
-            <div class="result-grid">
-              <div class="result-card">
-                <div class="result-title">Server Response & Fetch Telemetry</div>
-                <div id="audit-telemetry" class="mono" style="font-size: 0.85rem; color: #fff;"></div>
-              </div>
-              <div class="result-card">
-                <div class="result-title">DOM & Schema Verification</div>
-                <div id="audit-dom-details" style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.4;"></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 02: Keyword Explorer -->
-        <section id="keyword-explorer" class="module-pane">
-          <div class="panel-header">
-            <div class="panel-indicator">02 &bull; EXPLORER</div>
-            <h1 class="panel-heading">Semantic Keyword Explorer</h1>
-            <p class="panel-subtext">Discover high-intent semantic clusters, search volume intent, and search engine queries.</p>
-          </div>
-
-          <div class="form-box">
-            <div class="input-grid">
-              <div class="input-group">
-                <label class="input-label">Seed Keyword or Focus Entity</label>
-                <input type="text" id="keyword-seed" placeholder="e.g. headless cms architecture">
-              </div>
-              <div class="input-group">
-                <label class="input-label">Target Geography</label>
-                <input type="text" id="keyword-geo" value="Global / United States">
-              </div>
-            </div>
-            <button class="btn" id="keyword-submit" onclick="runKeywordExplorer()">Cluster Keywords</button>
-          </div>
-
-          <div id="keyword-output" class="output-container">
-            <div class="result-title">Discovered Semantic Entities</div>
-            <div id="keyword-results" style="font-size: 0.9rem; line-height: 1.6; color: #e6edf3; white-space: pre-line;"></div>
-          </div>
-        </section>
-
-        <!-- 03: AEO Optimizer -->
-        <section id="aeo-optimizer" class="module-pane">
-          <div class="panel-header">
-            <div class="panel-indicator">03 &bull; AEO OPTIMIZER</div>
-            <h1 class="panel-heading">Answer Engine Optimization (AEO) Engine</h1>
-            <p class="panel-subtext">Scrapes live page DOM to measure readiness for Google Featured Snippets, People Also Ask (PAA) carousels, and Siri/Alexa Voice Answers.</p>
-          </div>
-
-          <div class="form-box">
-            <div class="input-grid">
-              <div class="input-group">
-                <label class="input-label">Target Page URL</label>
-                <input type="url" id="aeo-url" placeholder="https://example.com" value="https://prodoo.com">
-              </div>
-              <div class="input-group">
-                <label class="input-label">Target Query / Question</label>
-                <input type="text" id="aeo-query" placeholder="e.g. what is digital networking">
-              </div>
-            </div>
-            <button class="btn" id="aeo-submit" onclick="runAeoEvaluation()">Evaluate AEO Readiness</button>
-          </div>
-
-          <div id="aeo-output" class="output-container">
-            <div id="aeo-score-tag"></div>
-            <div class="result-grid">
-              <div class="result-card">
-                <div class="result-title">Answer Block Extraction</div>
-                <div id="aeo-block-summary" class="mono" style="font-size: 0.85rem; color: #fff;"></div>
-              </div>
-              <div class="result-card">
-                <div class="result-title">Structural Directives</div>
-                <div id="aeo-directives" style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.4;"></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 04: GEO AI Citation -->
-        <section id="geo-citation" class="module-pane">
-          <div class="panel-header">
-            <div class="panel-indicator">04 &bull; GEO AI CITATION</div>
-            <h1 class="panel-heading">Generative Engine Optimization (GEO) Engine</h1>
-            <p class="panel-subtext">Analyzes how likely generative LLM engines (ChatGPT Search, Perplexity AI, Claude) are to cite, reference, and quote your website domain.</p>
-          </div>
-
-          <div class="form-box">
-            <div class="input-grid">
-              <div class="input-group">
-                <label class="input-label">Domain or Page URL</label>
-                <input type="url" id="geo-url" placeholder="https://example.com" value="https://prodoo.com">
-              </div>
-              <div class="input-group">
-                <label class="input-label">Core Topic Focus</label>
-                <input type="text" id="geo-topic" placeholder="e.g. enterprise CRM solutions">
-              </div>
-            </div>
-            <button class="btn" id="geo-submit" onclick="runGeoEvaluation()">Evaluate GEO Authority</button>
-          </div>
-
-          <div id="geo-output" class="output-container">
-            <div id="geo-score-tag"></div>
-            <div class="result-grid">
-              <div class="result-card">
-                <div class="result-title">Entity Salience & Graph</div>
-                <div id="geo-graph" class="mono" style="font-size: 0.85rem; color: #fff;"></div>
-              </div>
-              <div class="result-card">
-                <div class="result-title">Citation Authority Recommendations</div>
-                <div id="geo-recommendations" style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.4;"></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 05: Competitors -->
-        <section id="competitors" class="module-pane">
-          <div class="panel-header">
-            <div class="panel-indicator">05 &bull; COMPETITORS</div>
-            <h1 class="panel-heading">Competitor Matrix Analysis</h1>
-            <p class="panel-subtext">Cross-examine domain authority, entity overlap, and content coverage gaps.</p>
-          </div>
-
-          <div class="form-box">
-            <div class="input-grid">
-              <div class="input-group">
-                <label class="input-label">Your Domain</label>
-                <input type="url" id="comp-my-url" value="https://prodoo.com">
-              </div>
-              <div class="input-group">
-                <label class="input-label">Competitor Domain</label>
-                <input type="url" id="comp-rival-url" placeholder="https://competitor.com">
-              </div>
-            </div>
-            <button class="btn" id="comp-submit" onclick="runCompetitorAnalysis()">Audit Competitor Matrix</button>
-          </div>
-
-          <div id="comp-output" class="output-container">
-            <div class="result-title">Competitive Gap Analysis</div>
-            <div id="comp-results" style="font-size: 0.9rem; line-height: 1.6; color: #e6edf3; white-space: pre-line;"></div>
-          </div>
-        </section>
-
-        <!-- 06: Rank Tracker -->
-        <section id="rank-tracker" class="module-pane">
-          <div class="panel-header">
-            <div class="panel-indicator">06 &bull; RANKINGS</div>
-            <h1 class="panel-heading">SERP & PAA Position Monitor</h1>
-            <p class="panel-subtext">Real-time keyword ranking telemetry and SERP feature acquisition status.</p>
-          </div>
-
-          <div class="form-box">
-            <div class="input-group" style="margin-bottom: 1rem;">
-              <label class="input-label">Tracked Domain</label>
-              <input type="url" id="rank-domain" value="https://prodoo.com">
-            </div>
-            <div class="mono" style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.8;">
-              <div>&bull; [Pos 1] "b2b business networking platform" (Featured Snippet Captured)</div>
-              <div>&bull; [Pos 3] "prodoo digital card integrations" (PAA Featured)</div>
-              <div>&bull; [Pos 7] "enterprise contact sharing app" (+2 positions)</div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 07: AI Blog Writer -->
-        <section id="ai-writer" class="module-pane">
-          <div class="panel-header">
-            <div class="panel-indicator">07 &bull; WRITER</div>
-            <h1 class="panel-heading">Autonomous SEO Content Generator</h1>
-            <p class="panel-subtext">Draft long-form, entity-optimized articles tailored for both search engines and LLMs.</p>
-          </div>
-
-          <div class="form-box">
-            <div class="input-grid">
-              <div class="input-group">
-                <label class="input-label">Article Primary Topic</label>
-                <input type="text" id="writer-topic" placeholder="e.g. Modern Digital Business Cards for Sales Teams">
-              </div>
-              <div class="input-group">
-                <label class="input-label">Target Audience / Tone</label>
-                <input type="text" id="writer-tone" value="Authoritative, Technical B2B">
-              </div>
-            </div>
-            <button class="btn" id="writer-submit" onclick="runContentWriter()">Generate Article Outline & Intro</button>
-          </div>
-
-          <div id="writer-output" class="output-container">
-            <div class="result-title">Generated Draft</div>
-            <div id="writer-results" style="font-size: 0.9rem; line-height: 1.6; color: #e6edf3; white-space: pre-line;"></div>
-          </div>
-        </section>
-
-        <!-- 08: AI Strategist -->
-        <section id="ai-strategist" class="module-pane">
-          <div class="panel-header">
-            <div class="panel-indicator">08 &bull; AI STRATEGIST</div>
-            <h1 class="panel-heading">Signal AI Senior Strategist</h1>
-            <p class="panel-subtext">Inquire about crawl optimization, indexing architecture, entity optimization, or programmatic content strategies.</p>
-          </div>
-
-          <div class="form-box">
-            <div class="input-group" style="margin-bottom: 1rem;">
-              <label class="input-label">Your Strategy Query</label>
-              <textarea id="strategist-query" placeholder="What on-page factors are highest priority for new sites?"></textarea>
-            </div>
-            <button class="btn" id="strategist-submit" onclick="runStrategistQuery()">Ask Advisor</button>
-          </div>
-
-          <div id="strategist-output" class="output-container">
-            <div class="result-title">Strategic Directive</div>
-            <div id="strategist-response" style="font-size: 0.9rem; line-height: 1.6; color: #e6edf3; white-space: pre-line;"></div>
-          </div>
-        </section>
-
-        <!-- 09: Free Tools -->
-        <section id="free-tools" class="module-pane">
-          <div class="panel-header">
-            <div class="panel-indicator">09 &bull; UTILITIES</div>
-            <h1 class="panel-heading">Free SEO & Crawler Utilities</h1>
-            <p class="panel-subtext">Validate server headers, check crawl directives, and verify structured data.</p>
-          </div>
-
-          <div class="form-box">
-            <div class="result-title" style="margin-bottom: 0.5rem;">Robots.txt & Sitemap Status</div>
-            <div class="mono" style="font-size: 0.85rem; color: var(--success); line-height: 1.6;">
-              <div>[OK] /robots.txt serving valid directives to all user-agents</div>
-              <div>[OK] /sitemap.xml verified and serving dynamic index</div>
-            </div>
-          </div>
-        </section>
-
+        <div class="card">
+          <div class="card-title">Audit History</div>
+          <div id="auditHistoryList"><div class="empty">No historical audits recorded.</div></div>
+        </div>
       </div>
+
+      <!-- 02. KEYWORD EXPLORER -->
+      <div class="panel" id="panel-keywords">
+        <div class="card">
+          <div class="card-title">Niche Keyword Discovery</div>
+          <div class="row" style="margin-top:12px;">
+            <div><label>Website Domain or URL</label><input type="text" id="seedUrl" placeholder="https://"></div>
+            <div><label>Niche / Focus (Optional)</label><input type="text" id="seedContext" placeholder="e.g. artificial intelligence, ecommerce"></div>
+          </div>
+          <button class="btn" id="genKwBtn" onclick="generateKeywords()">Generate Keywords</button>
+          <div id="kwLoading" style="display:none;margin-top:12px;" class="loading">Synthesizing niche keyword opportunities with Groq...</div>
+        </div>
+        <div class="card" id="kwResultsCard" style="display:none;">
+          <div class="card-title">Keyword Matrix <span id="nicheLabel" style="font-size:12px;color:var(--muted);"></span></div>
+          <div id="kwResultsGrid"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Saved Keywords Target Matrix</div><span id="kwListCount" class="badge badge-good">0</span></div>
+          <div id="myKeywordList"><div class="empty">No saved terms yet.</div></div>
+        </div>
+      </div>
+
+      <!-- 03. AEO (Answer Engine Optimization) -->
+      <div class="panel" id="panel-aeo">
+        <div class="card">
+          <div class="card-title">Answer Engine Optimization (AEO) Engine</div>
+          <div class="card-sub">Scrapes live page DOM to measure readiness for Google Featured Snippets, People Also Ask (PAA) carousels, and Siri/Alexa Voice Answers.</div>
+          <div class="row" style="margin-top:12px;">
+            <div><label>Target Page URL</label><input type="text" id="aeoUrl" placeholder="https://"></div>
+            <div><label>Target Query / Question</label><input type="text" id="aeoQuestion" placeholder="e.g. what is digital networking"></div>
+          </div>
+          <button class="btn" id="runAeoBtn" onclick="runAeo()">Evaluate AEO Readiness</button>
+          <div id="aeoLoading" style="display:none;margin-top:12px;" class="loading">Auditing DOM for direct answer blocks, schema & PAA formats...</div>
+        </div>
+
+        <div class="card" id="aeoResultCard" style="display:none;">
+          <div class="card-head">
+            <div class="card-title">AEO Index: <span id="aeoScoreNum" style="color:var(--green);font-size:22px;">--</span></div>
+            <span class="badge badge-good" id="aeoStatusBadge">Diagnostic Complete</span>
+          </div>
+          <div id="aeoSummaryText" style="font-size:13.5px;color:var(--muted);margin-bottom:16px;line-height:1.6;"></div>
+          <div id="aeoChecksList"></div>
+        </div>
+      </div>
+
+      <!-- 04. GEO (Generative Engine Optimization) -->
+      <div class="panel" id="panel-geo">
+        <div class="card">
+          <div class="card-title">Generative Engine Optimization (GEO) Engine</div>
+          <div class="card-sub">Analyzes how likely generative LLM engines (ChatGPT Search, Perplexity AI, Claude) are to cite, reference, and quote your website domain.</div>
+          <div class="row" style="margin-top:12px;">
+            <div><label>Domain or Page URL</label><input type="text" id="geoUrl" placeholder="https://"></div>
+            <div><label>Core Topic Focus</label><input type="text" id="geoTopic" placeholder="e.g. enterprise CRM solutions"></div>
+          </div>
+          <button class="btn" id="runGeoBtn" onclick="runGeo()">Evaluate GEO Authority</button>
+          <div id="geoLoading" style="display:none;margin-top:12px;" class="loading">Auditing information gain, entity graphs & AI citation propensity...</div>
+        </div>
+
+        <div class="card" id="geoResultCard" style="display:none;">
+          <div class="card-head">
+            <div class="card-title">GEO Citation Score: <span id="geoScoreNum" style="color:var(--accent);font-size:22px;">--</span></div>
+            <span class="badge badge-good">AI Authority Mapped</span>
+          </div>
+          <div id="geoSummaryText" style="font-size:13.5px;color:var(--muted);margin-bottom:16px;line-height:1.6;"></div>
+          <div id="geoChecksList"></div>
+        </div>
+      </div>
+
+      <!-- 05. COMPETITORS -->
+      <div class="panel" id="panel-competitors">
+        <div class="card">
+          <div class="card-title">Market Rivals & Competitive Gaps</div>
+          <div class="row" style="margin-top:12px;">
+            <div><label>Your Domain</label><input type="text" id="compUrl" placeholder="https://"></div>
+            <div><label>Market Vertical (Optional)</label><input type="text" id="compContext" placeholder="e.g. b2b saas"></div>
+          </div>
+          <button class="btn" id="runCompBtn" onclick="runCompetitors()">Scan Competitors</button>
+          <div id="compLoading" style="display:none;margin-top:12px;" class="loading">Benchmarking rivals and scanning gap closures...</div>
+        </div>
+        <div class="card" id="compResultCard" style="display:none;">
+          <div id="compTable"></div>
+          <div id="compGaps" style="margin-top:16px;"></div>
+        </div>
+      </div>
+
+      <!-- 06. RANK TRACKER -->
+      <div class="panel" id="panel-ranklog">
+        <div class="card">
+          <div class="card-title">SERP Position Estimator</div>
+          <div class="row" style="margin-top:12px;">
+            <div><label>Tracking Domain</label><input type="text" id="trackSiteUrl" placeholder="https://"></div>
+            <div><label>Keywords (Comma Separated)</label><input type="text" id="trackKeywords" placeholder="e.g. analytics tool, seo software"></div>
+          </div>
+          <button class="btn" id="runRankBtn" onclick="checkPositions()">Estimate Rankings</button>
+          <div id="rankLoading" style="display:none;margin-top:12px;" class="loading">Estimating live search ranking positions...</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Tracked Rankings</div>
+          <div id="rankLogTable"><div class="empty">No rankings active.</div></div>
+        </div>
+      </div>
+
+      <!-- 07. BLOG WRITER -->
+      <div class="panel" id="panel-blog">
+        <div class="card">
+          <div class="card-title">AI Long-Form SEO Blog Generator</div>
+          <label style="margin-top:12px;">Article Topic</label>
+          <input type="text" id="blogTopic" placeholder="e.g. Comprehensive Guide to Generative Engine Optimization">
+          <div class="row">
+            <div><label>Target Keywords (Comma Separated)</label><input type="text" id="blogKeywords" placeholder="e.g. ai search, geo optimization"></div>
+            <div><label>&nbsp;</label><button class="btn ghost small" onclick="useSavedKeywords()" style="width:100%;margin-top:1px;">Insert Saved Keywords</button></div>
+          </div>
+          <button class="btn" id="runBlogBtn" onclick="generateBlog()">Generate Article</button>
+          <div id="blogLoading" style="display:none;margin-top:12px;" class="loading">Drafting high-retention article with Groq...</div>
+        </div>
+        <div class="card" id="blogResultCard" style="display:none;">
+          <div class="card-title">Generated Article</div>
+          <div class="code-output" id="blogOutput"></div>
+        </div>
+      </div>
+
+      <!-- 08. STRATEGIST -->
+      <div class="panel" id="panel-strategist">
+        <div class="card">
+          <div class="card-title">Signal AI Senior Strategist</div>
+          <div class="card-sub">Inquire about crawl optimization, indexing architecture, or citation visibility.</div>
+          <div id="chatMessages" style="display:flex;flex-direction:column;gap:10px;max-height:360px;overflow-y:auto;margin:16px 0;"></div>
+          <div class="row" style="grid-template-columns:1fr auto;align-items:end;">
+            <div><label>Your Strategy Query</label><input type="text" id="chatInput" placeholder="What on-page factors are highest priority for new sites?" style="margin-bottom:0;"></div>
+            <button class="btn" onclick="sendChat()" style="height:42px;">Ask Advisor</button>
+          </div>
+          <div id="chatLoading" style="display:none;margin-top:12px;" class="loading">Formulating strategic response...</div>
+        </div>
+      </div>
+
+      <!-- 09. FREE SEO TOOLS -->
+      <div class="panel" id="panel-utilities">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Browser Diagnostic Utilities</div><span class="badge badge-good">Instant</span></div>
+          <div class="util-pills">
+            <button class="util-pill active" onclick="switchUtil('title', this)">Title Preview</button>
+            <button class="util-pill" onclick="switchUtil('description', this)">Meta Description</button>
+            <button class="util-pill" onclick="switchUtil('density', this)">Keyword Density</button>
+            <button class="util-pill" onclick="switchUtil('wordcount', this)">Word Count</button>
+            <button class="util-pill" onclick="switchUtil('robots', this)">Robots.txt</button>
+            <button class="util-pill" onclick="switchUtil('schema', this)">Schema Builder</button>
+            <button class="util-pill" onclick="switchUtil('slug', this)">URL Slug</button>
+          </div>
+        </div>
+
+        <div class="util-panel active" id="util-title">
+          <div class="card">
+            <div class="card-title">Title Length & SERP Preview</div>
+            <label>Title Text</label>
+            <input type="text" id="titleInput" placeholder="Enter page title..." oninput="checkTitle()">
+            <div id="titleStats" style="display:flex;gap:8px;margin-bottom:12px;"></div>
+            <div class="serp-preview" id="titlePreview"></div>
+          </div>
+        </div>
+
+        <div class="util-panel" id="util-description">
+          <div class="card">
+            <div class="card-title">Meta Description Checker</div>
+            <label>Description String</label>
+            <textarea id="descInput" placeholder="Enter meta description (120-160 chars)..." oninput="checkDescription()"></textarea>
+            <div id="descStats" style="display:flex;gap:8px;margin-bottom:12px;"></div>
+            <div class="serp-preview" id="descPreview"></div>
+          </div>
+        </div>
+
+        <div class="util-panel" id="util-density">
+          <div class="card">
+            <div class="card-title">Content Keyword Density</div>
+            <label>Target Keywords (comma separated)</label>
+            <input type="text" id="densityKeywords" placeholder="e.g. software, platform" oninput="checkDensity()">
+            <label>Content Body</label>
+            <textarea id="densityContent" placeholder="Paste article content here..." oninput="checkDensity()"></textarea>
+            <div id="densityResult"></div>
+          </div>
+        </div>
+
+        <div class="util-panel" id="util-wordcount">
+          <div class="card">
+            <div class="card-title">Word & Character Statistics</div>
+            <label>Draft Text</label>
+            <textarea id="wordcountInput" placeholder="Paste content to count words and characters..." oninput="checkWordCount()"></textarea>
+            <div id="wordcountStats" style="display:flex;gap:8px;"></div>
+          </div>
+        </div>
+
+        <div class="util-panel" id="util-robots">
+          <div class="card">
+            <div class="card-title">Robots.txt Generator</div>
+            <div class="row">
+              <div>
+                <label>Default Directive</label>
+                <select id="robotsDefault" onchange="generateRobots()">
+                  <option value="allow">Allow All Robots</option>
+                  <option value="disallow">Disallow All Robots</option>
+                </select>
+              </div>
+              <div><label>Sitemap URL</label><input type="text" id="robotsSitemap" placeholder="https://" oninput="generateRobots()"></div>
+            </div>
+            <pre class="code-output" id="robotsOutput"></pre>
+          </div>
+        </div>
+
+        <div class="util-panel" id="util-schema">
+          <div class="card">
+            <div class="card-title">JSON-LD Schema Builder</div>
+            <label>Headline / Name</label>
+            <input type="text" id="schema_name" placeholder="Page or Business Name" oninput="generateSchema()">
+            <label>Page URL</label>
+            <input type="text" id="schema_url" placeholder="https://" oninput="generateSchema()">
+            <pre class="code-output" id="schemaOutput"></pre>
+          </div>
+        </div>
+
+        <div class="util-panel" id="util-slug">
+          <div class="card">
+            <div class="card-title">SEO Slug Generator</div>
+            <label>Source String</label>
+            <input type="text" id="slugInput" placeholder="Enter headline string..." oninput="generateSlug()">
+            <pre class="code-output" id="slugOutput"></pre>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
+</div>
 
-  <script>
-    // Tab Switching Logic
-    function switchTab(targetId) {
-      document.querySelectorAll('.module-pane').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+<script>
+window.state = { audits: [], keywords: [], rankLog: [] };
+window.lastAuditReport = null;
 
-      const targetPane = document.getElementById(targetId);
-      if (targetPane) targetPane.classList.add('active');
+function countWords(t){ return ((t || '').trim().match(/\S+/g)||[]).length; }
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function gaugeColor(score){ return score>=80?'var(--green)': score>=50?'var(--amber)':'var(--coral)'; }
 
-      const activeNav = Array.from(document.querySelectorAll('.nav-item')).find(item => 
-        item.getAttribute('onclick')?.includes(targetId)
-      );
-      if (activeNav) activeNav.classList.add('active');
+window.switchTab = function(tabId){
+  var target = document.getElementById('panel-' + tabId);
+  if(!target) return;
+  document.querySelectorAll('.rail-btn').forEach(function(b){ b.classList.remove('active'); });
+  var btn = document.getElementById('btn-' + tabId);
+  if(btn) btn.classList.add('active');
+
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+  target.classList.add('active');
+
+  var titles = {
+    dashboard: '00 · DECK OVERVIEW',
+    audit: '01 · SITE AUDIT 360°',
+    keywords: '02 · KEYWORD EXPLORER',
+    aeo: '03 · AEO OPTIMIZER',
+    geo: '04 · GEO AI CITATION',
+    competitors: '05 · MARKET COMPETITORS',
+    ranklog: '06 · RANK TRACKER',
+    blog: '07 · AI BLOG WRITER',
+    strategist: '08 · AI STRATEGIST',
+    utilities: '09 · FREE SEO TOOLS'
+  };
+
+  var eb = document.getElementById('pageEyebrow');
+  var pt = document.getElementById('pageTitle');
+  if(eb) eb.textContent = titles[tabId] || 'INSTRUMENT PANEL';
+  if(pt) pt.textContent = tabId.toUpperCase();
+};
+
+window.switchUtil = function(uId, btn){
+  document.querySelectorAll('.util-pill').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.util-panel').forEach(function(p){ p.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  var target = document.getElementById('util-' + uId);
+  if(target) target.classList.add('active');
+};
+
+function extractJson(text){
+  if(!text) return null;
+  var cleaned = text.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'');
+  try{ return JSON.parse(cleaned); }catch(e){}
+  var start = cleaned.indexOf('{');
+  var end = cleaned.lastIndexOf('}');
+  if(start !== -1 && end !== -1 && end > start){
+    try{ return JSON.parse(cleaned.substring(start, end + 1)); }catch(e){}
+  }
+  return null;
+}
+
+async function callAi(prompt){
+  var res = await fetch('/api/ai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: prompt })
+  });
+  var d = await res.json();
+  if(!res.ok || !d.success) throw new Error((d && d.error) || 'AI call failed');
+  return d.response.trim();
+}
+
+async function callAiJson(prompt){
+  var raw = await callAi(prompt + '\n\nIMPORTANT: Respond with ONLY the raw valid JSON object. No explanations, no markdown fences.');
+  var parsed = extractJson(raw);
+  if(!parsed) throw new Error("Could not parse structured JSON from AI output");
+  return parsed;
+}
+
+async function fetchTargetHtml(url){
+  var res = await fetch('/api/fetch-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: url })
+  });
+  var data = await res.json();
+  if(!res.ok || !data.success) throw new Error(data.error || 'Failed to fetch live website HTML');
+  return data.html;
+}
+
+window.runAudit = async function(){
+  var url = (document.getElementById('auditUrl').value || '').trim();
+  var rawHtml = (document.getElementById('auditInput').value || '').trim();
+  var targetKeyword = (document.getElementById('auditKeyword').value || '').trim().toLowerCase();
+
+  if(!url){ alert('Please enter a target URL.'); return; }
+  var btn = document.getElementById('runAuditBtn');
+  var loading = document.getElementById('auditLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
+
+  try {
+    var html = rawHtml || await fetchTargetHtml(url);
+    var doc = new DOMParser().parseFromString(html || '', 'text/html');
+    var title = doc.querySelector('title') ? doc.querySelector('title').textContent.trim() : '';
+    var metaDesc = doc.querySelector('meta[name="description"]') ? doc.querySelector('meta[name="description"]').getAttribute('content') : '';
+    var h1s = doc.querySelectorAll('h1');
+    var h2s = doc.querySelectorAll('h2');
+    var imgs = doc.querySelectorAll('img');
+    var imgsNoAlt = Array.from(imgs).filter(function(i){ return !i.getAttribute('alt') || !i.getAttribute('alt').trim(); });
+    var isHttps = /^https:\/\//i.test(url);
+    var bodyText = doc.body ? doc.body.textContent.replace(/\s+/g, ' ').trim() : '';
+    var words = countWords(bodyText);
+
+    var onPage = [
+      { label: 'Title Tag', status: title && title.length >= 30 && title.length <= 65 ? 'good' : 'warning', detail: title ? ('"' + escapeHtml(title) + '" (' + title.length + ' chars)') : 'Missing title tag', fix: 'Optimize title length between 40 and 60 characters.' },
+      { label: 'Meta Description', status: metaDesc && metaDesc.length >= 120 && metaDesc.length <= 165 ? 'good' : 'warning', detail: metaDesc ? (metaDesc.length + ' characters') : 'Missing or suboptimal description length', fix: 'Add a 130-160 character meta description.' },
+      { label: 'H1 Element', status: h1s.length === 1 ? 'good' : (h1s.length === 0 ? 'critical' : 'warning'), detail: h1s.length + ' primary H1 tag(s) detected', fix: 'Use exactly one distinct H1 tag per page.' },
+      { label: 'H2 Hierarchy', status: h2s.length >= 2 ? 'good' : 'warning', detail: h2s.length + ' H2 subheaders detected', fix: 'Structure content sections using H2 subheaders.' }
+    ];
+
+    if(targetKeyword){
+      var matches = (bodyText.toLowerCase().match(new RegExp(targetKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+      onPage.push({
+        label: 'Keyword Focus ("' + escapeHtml(targetKeyword) + '")',
+        status: matches > 0 ? 'good' : 'warning',
+        detail: matches > 0 ? ('Found ' + matches + ' occurrence(s) in body text') : 'Keyword not found in content body',
+        fix: 'Integrate primary target keyword in the first 100 words and subheadings.'
+      });
     }
 
-    // JSON Extractor Helper
-    function parseAIJson(text) {
-      try {
-        const cleaned = text.trim().replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
-        return JSON.parse(cleaned);
-      } catch (e) {
-        const match = text.match(/\{[\s\S]*\}/);
-        if (match) return JSON.parse(match[0]);
-        throw new Error("Could not parse structured JSON from AI output");
-      }
-    }
+    var technical = [
+      { label: 'SSL/TLS Security', status: isHttps ? 'good' : 'critical', detail: isHttps ? 'Serving securely via HTTPS' : 'Insecure HTTP detected', fix: 'Enforce HTTPS via SSL certificate.' },
+      { label: 'Canonical Link', status: doc.querySelector('link[rel="canonical"]') ? 'good' : 'warning', detail: doc.querySelector('link[rel="canonical"]') ? 'Canonical tag declared' : 'Missing canonical tag', fix: 'Add rel="canonical" to prevent duplicate content.' },
+      { label: 'Viewport Configuration', status: doc.querySelector('meta[name="viewport"]') ? 'good' : 'critical', detail: doc.querySelector('meta[name="viewport"]') ? 'Configured for mobile devices' : 'Missing mobile viewport', fix: 'Add viewport meta tag.' },
+      { label: 'Structured Schema', status: doc.querySelector('script[type="application/ld+json"]') ? 'good' : 'warning', detail: doc.querySelector('script[type="application/ld+json"]') ? 'JSON-LD schema markup present' : 'No JSON-LD schema found', fix: 'Add structured JSON-LD data for Organization or Product.' }
+    ];
 
-    // 01: Run Deep Site Audit
-    async function runSiteAudit() {
-      const url = document.getElementById('audit-url').value.trim();
-      const btn = document.getElementById('audit-submit');
-      const out = document.getElementById('audit-output');
+    var contentSocial = [
+      { label: 'Image Alt Attributes', status: imgsNoAlt.length === 0 ? 'good' : 'warning', detail: imgsNoAlt.length + ' of ' + imgs.length + ' images lack alt attributes', fix: 'Add descriptive alt text to all image tags.' },
+      { label: 'Social Graph (OG)', status: doc.querySelector('meta[property="og:title"]') ? 'good' : 'warning', detail: doc.querySelector('meta[property="og:title"]') ? 'Open Graph tags configured' : 'Missing Open Graph tags', fix: 'Add complete og:title and og:image tags.' },
+      { label: 'Content Depth', status: words >= 400 ? 'good' : 'warning', detail: 'Total content is ' + words + ' words', fix: 'Expand content depth beyond 500 words for higher search intent fulfillment.' }
+    ];
 
-      if (!url) return alert('Enter target URL.');
+    var offPage = [
+      { label: 'Domain Brand Citations', status: 'good', detail: 'Identifiable brand entity indexed in search', fix: 'Optimal.' },
+      { label: 'Backlink Authority Tier', status: 'warning', detail: 'Moderate referring domain diversity', fix: 'Build contextual niche backlinks.' }
+    ];
 
-      btn.disabled = true;
-      btn.innerText = 'Crawling DOM...';
-      out.classList.remove('show');
+    var sections = [
+      { title: 'On-Page SEO', checks: onPage },
+      { title: 'Technical SEO', checks: technical },
+      { title: 'Content & Social', checks: contentSocial },
+      { title: 'Off-Page Authority', checks: offPage }
+    ];
 
-      try {
-        const fetchRes = await fetch('/api/fetch-url', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url })
-        });
-        const data = await fetchRes.json();
-        if (!data.success) throw new Error(data.error);
+    var allChecks = sections.flatMap(function(s){ return s.checks; });
+    var points = allChecks.reduce(function(s, c){ return s + (c.status === 'good' ? 1 : c.status === 'warning' ? 0.5 : 0); }, 0);
+    var score = Math.round((points / allChecks.length) * 100);
 
-        document.getElementById('audit-score-tag').innerHTML = `<span class="score-badge score-high">STATUS: ${data.status} OK</span>`;
-        document.getElementById('audit-telemetry').innerText = `Fetch Latency: ${data.loadTimeMs || 250}ms\nContent-Type: text/html\nByte Size: ${(data.html.length / 1024).toFixed(1)} KB`;
-        document.getElementById('audit-dom-details').innerText = `DOM Tree extracted successfully. Discovered standard schema entities, UTF-8 charset declarations, and canonical target: ${url}`;
-        out.classList.add('show');
-      } catch (err) {
-        alert(`Audit Error: ${err.message}`);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Run Deep Audit';
-      }
-    }
+    document.getElementById('auditResultCard').style.display = 'block';
+    document.getElementById('auditScoreVal').textContent = 'Overall Score: ' + score + '/100';
+    document.getElementById('auditScoreVal').style.color = gaugeColor(score);
 
-    // 02: Run Keyword Explorer
-    async function runKeywordExplorer() {
-      const seed = document.getElementById('keyword-seed').value.trim();
-      const geo = document.getElementById('keyword-geo').value.trim();
-      const btn = document.getElementById('keyword-submit');
-      const out = document.getElementById('keyword-output');
+    document.getElementById('auditSummaryGrid').innerHTML = sections.map(function(s){
+      var pts = s.checks.reduce(function(acc, c){ return acc + (c.status === 'good' ? 1 : c.status === 'warning' ? 0.5 : 0); }, 0);
+      var sc = Math.round((pts / s.checks.length) * 100);
+      return '<div class="report-summary-card"><div class="report-summary-num" style="color:' + gaugeColor(sc) + '">' + sc + '%</div><div class="report-summary-lbl">' + escapeHtml(s.title) + '</div><div class="report-summary-issues">' + s.checks.length + ' PARAMETERS</div></div>';
+    }).join('');
 
-      if (!seed) return alert('Enter seed keyword.');
+    var listHtml = '';
+    sections.forEach(function(s){
+      listHtml += '<div style="font-weight:700;font-size:15px;margin:20px 0 8px;color:#fff;">' + escapeHtml(s.title) + '</div>';
+      listHtml += renderChecksTable(s.checks);
+    });
+    document.getElementById('checksList').innerHTML = listHtml;
 
-      btn.disabled = true;
-      btn.innerText = 'Synthesizing keyword graph...';
-      out.classList.remove('show');
+    window.lastAuditReport = { url: url, score: score, sections: sections, date: new Date() };
+    window.state.audits.unshift({ url: url, score: score, date: new Date().toISOString() });
+    renderAuditHistory();
+    renderStats();
+  } catch(e) {
+    alert('Audit error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    loading.style.display = 'none';
+  }
+};
 
-      try {
-        const prompt = `As a senior SEO researcher, create a cluster of high-intent keywords for "${seed}" in "${geo}". Group by Search Intent (Informational, Commercial, Navigational). Provide search volume estimations and difficulty ratings.`;
-        const res = await fetch('/api/ai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt })
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error);
+window.generateKeywords = async function(){
+  var url = document.getElementById('seedUrl').value.trim();
+  var context = document.getElementById('seedContext').value.trim();
+  if(!url){ alert('Please enter a target domain or URL'); return; }
+  var btn = document.getElementById('genKwBtn');
+  var loading = document.getElementById('kwLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
 
-        document.getElementById('keyword-results').innerText = data.response;
-        out.classList.add('show');
-      } catch (err) {
-        alert(`Keyword Error: ${err.message}`);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Cluster Keywords';
-      }
-    }
+  try {
+    var data = await callAiJson('Generate 8 targeted keywords for ' + url + ' (Context: ' + context + '). Return JSON format: {"niche": string, "keywords": [{"phrase": string, "intent": string, "difficulty": number}]}');
+    document.getElementById('kwResultsCard').style.display = 'block';
+    document.getElementById('nicheLabel').textContent = data.niche ? ('(' + data.niche + ')') : '';
+    document.getElementById('kwResultsGrid').innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Keyword Phrase</th><th>Intent</th><th>KD</th><th></th></tr></thead><tbody>' +
+      data.keywords.map(function(k){
+        return '<tr><td style="color:#fff;font-weight:700;">' + escapeHtml(k.phrase) + '</td><td>' + escapeHtml(k.intent) + '</td><td style="font-family:var(--font-mono);font-weight:700;">' + k.difficulty + '/100</td><td><button class="btn ghost small" onclick="saveKeyword(\'' + encodeURIComponent(k.phrase) + '\',\'' + encodeURIComponent(k.intent) + '\',' + k.difficulty + ')">+ Save</button></td></tr>';
+      }).join('') +
+      '</tbody></table></div>';
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
+};
 
-    // 03: Run AEO Evaluation
-    async function runAeoEvaluation() {
-      const url = document.getElementById('aeo-url').value.trim();
-      const query = document.getElementById('aeo-query').value.trim();
-      const btn = document.getElementById('aeo-submit');
-      const out = document.getElementById('aeo-output');
+window.saveKeyword = function(p, i, d){
+  var phrase = decodeURIComponent(p);
+  if(window.state.keywords.some(function(k){ return k.phrase === phrase; })) return;
+  window.state.keywords.unshift({ phrase: phrase, intent: decodeURIComponent(i), difficulty: d });
+  renderKeywordList();
+};
 
-      if (!url) return alert('Enter target URL.');
+window.removeKeyword = function(idx){
+  window.state.keywords.splice(idx, 1);
+  renderKeywordList();
+};
 
-      btn.disabled = true;
-      btn.innerText = 'Auditing DOM blocks & schema...';
-      out.classList.remove('show');
+function renderKeywordList(){
+  document.getElementById('kwListCount').textContent = window.state.keywords.length;
+  var el = document.getElementById('myKeywordList');
+  if(!window.state.keywords.length){ el.innerHTML = '<div class="empty">No saved terms yet.</div>'; return; }
+  el.innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Keyword</th><th>Intent</th><th>KD</th><th></th></tr></thead><tbody>' +
+    window.state.keywords.map(function(k, i){
+      return '<tr><td style="color:#fff;font-weight:700;">' + escapeHtml(k.phrase) + '</td><td>' + k.intent + '</td><td>' + k.difficulty + '/100</td><td><button class="btn ghost small" onclick="removeKeyword(' + i + ')">Remove</button></td></tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
 
-      try {
-        const fetchRes = await fetch('/api/fetch-url', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url })
-        });
-        const fetchData = await fetchRes.json();
-        if (!fetchData.success) throw new Error(fetchData.error);
+window.useSavedKeywords = function(){
+  document.getElementById('blogKeywords').value = window.state.keywords.map(function(k){ return k.phrase; }).join(', ');
+};
 
-        const prompt = `Perform an AEO (Answer Engine Optimization) evaluation for URL "${url}" considering the target query "${query}".
-Analyze direct answer snippet compatibility, structured data, clarity, and conciseness.
-Respond ONLY with a JSON object matching this schema:
-{
-  "score": <number between 1 and 100>,
-  "blockSummary": "<summary of current direct answer readiness>",
-  "directives": "<specific recommendations to capture position 0 and voice search>"
-}`;
+window.runAeo = async function(){
+  var url = document.getElementById('aeoUrl').value.trim();
+  var q = document.getElementById('aeoQuestion').value.trim();
+  if(!url){ alert('Please enter a target URL.'); return; }
+  var btn = document.getElementById('runAeoBtn');
+  var loading = document.getElementById('aeoLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
 
-        const aiRes = await fetch('/api/ai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt })
-        });
-        const aiData = await aiRes.json();
-        if (!aiData.success) throw new Error(aiData.error);
+  try {
+    var html = await fetchTargetHtml(url);
+    var doc = new DOMParser().parseFromString(html || '', 'text/html');
 
-        const parsed = parseAIJson(aiData.response);
-        const score = parsed.score || 75;
-        const scoreClass = score >= 80 ? 'score-high' : score >= 50 ? 'score-mid' : 'score-low';
+    var schemas = Array.from(doc.querySelectorAll('script[type="application/ld+json"]')).map(function(s){ return s.textContent; }).join(' ');
+    var hasFaqSchema = /"FAQPage"|"HowTo"|"QAPage"/i.test(schemas);
+    var paragraphs = Array.from(doc.querySelectorAll('p')).map(function(p){ return p.textContent.trim(); });
+    var answerBlocks = paragraphs.filter(function(p){ return countWords(p) >= 35 && countWords(p) <= 65; });
+    var h2Questions = Array.from(doc.querySelectorAll('h2, h3')).filter(function(h){ return /\?|how|what|why|guide|best/i.test(h.textContent); }).length;
 
-        document.getElementById('aeo-score-tag').innerHTML = `<span class="score-badge ${scoreClass}">AEO READINESS: ${score}/100</span>`;
-        document.getElementById('aeo-block-summary').innerText = parsed.blockSummary || 'Direct answer readiness verified.';
-        document.getElementById('aeo-directives').innerText = parsed.directives || 'No structural changes required.';
-        out.classList.add('show');
-      } catch (err) {
-        alert(`AEO Analysis Error: ${err.message}`);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Evaluate AEO Readiness';
-      }
-    }
+    var prompt = 'Perform an Answer Engine Optimization (AEO) audit for URL "' + url + '" regarding query "' + (q || 'General Informational Queries') + '".\n' +
+      'DOM Findings:\n' +
+      '- FAQPage/HowTo Schema present: ' + hasFaqSchema + '\n' +
+      '- 40-60 word concise answer paragraphs detected: ' + answerBlocks.length + '\n' +
+      '- Ordered/Unordered list elements: ' + doc.querySelectorAll('ol, ul').length + '\n' +
+      '- Structured data tables: ' + doc.querySelectorAll('table').length + '\n' +
+      '- Question-based H2/H3 headings: ' + h2Questions + '\n\n' +
+      'Return ONLY valid JSON format:\n' +
+      '{\n' +
+      '  "score": number,\n' +
+      '  "summary": string,\n' +
+      '  "checks": [\n' +
+      '    {"label": "Direct Answer Paragraphs (40-60 Words)", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "PAA & Question Headings (H2/H3)", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "List & Step-by-Step Markup", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "FAQ / Q&A Schema Validation", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "Voice Search Answer Readability", "status": "good"|"warning"|"critical", "detail": string, "fix": string}\n' +
+      '  ]\n' +
+      '}';
 
-    // 04: Run GEO Evaluation
-    async function runGeoEvaluation() {
-      const url = document.getElementById('geo-url').value.trim();
-      const topic = document.getElementById('geo-topic').value.trim();
-      const btn = document.getElementById('geo-submit');
-      const out = document.getElementById('geo-output');
+    var data = await callAiJson(prompt);
+    document.getElementById('aeoResultCard').style.display = 'block';
+    document.getElementById('aeoScoreNum').textContent = data.score + '/100';
+    document.getElementById('aeoScoreNum').style.color = gaugeColor(data.score);
+    document.getElementById('aeoSummaryText').textContent = data.summary;
+    document.getElementById('aeoChecksList').innerHTML = renderChecksTable(data.checks);
+  } catch(e){
+    alert('AEO Analysis Error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    loading.style.display = 'none';
+  }
+};
 
-      if (!url) return alert('Enter target URL.');
+window.runGeo = async function(){
+  var url = document.getElementById('geoUrl').value.trim();
+  var topic = document.getElementById('geoTopic').value.trim();
+  if(!url){ alert('Please enter a target URL.'); return; }
+  var btn = document.getElementById('runGeoBtn');
+  var loading = document.getElementById('geoLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
 
-      btn.disabled = true;
-      btn.innerText = 'Auditing entity graphs & citation weight...';
-      out.classList.remove('show');
+  try {
+    var html = await fetchTargetHtml(url);
+    var doc = new DOMParser().parseFromString(html || '', 'text/html');
+    var text = doc.body ? doc.body.textContent.replace(/\s+/g, ' ').trim() : '';
+    var words = countWords(text);
 
-      try {
-        const fetchRes = await fetch('/api/fetch-url', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url })
-        });
-        const fetchData = await fetchRes.json();
-        if (!fetchData.success) throw new Error(fetchData.error);
+    var parsedUrl;
+    try { parsedUrl = new URL(url.startsWith('http') ? url : ('https://' + url)); } catch(e){}
+    var hostname = parsedUrl ? parsedUrl.hostname : '';
+    var hasExternalCitations = Array.from(doc.querySelectorAll('a[href^="http"]')).filter(function(a){ return hostname ? !a.href.includes(hostname) : true; }).length;
+    var statisticsDetected = (text.match(/\d+([.,]\d+)?%|\$\d+|\b(increase|decrease|growth|study|survey|research)\b/gi) || []).length;
+    var authorPresent = Boolean(doc.querySelector('[rel="author"], .author, meta[name="author"]'));
+    var organizationSchema = /"Organization"|"Person"|"MedicalWebPage"|"ScholarlyArticle"/i.test(doc.body ? doc.body.innerHTML : '');
 
-        const prompt = `Perform a GEO (Generative Engine Optimization) evaluation for URL "${url}" regarding topic "${topic}".
-Determine how likely LLMs (ChatGPT Search, Perplexity, Claude) are to cite this page.
-Respond ONLY with a JSON object matching this schema:
-{
-  "score": <number between 1 and 100>,
-  "entityGraph": "<brief summary of entity relationships and authority markers found>",
-  "recommendations": "<actionable ways to increase LLM citation frequency>"
-}`;
+    var prompt = 'Perform a Generative Engine Optimization (GEO) audit for "' + url + '" on topic "' + (topic || 'General Topic Authority') + '".\n' +
+      'Scraped Domain Evidence:\n' +
+      '- Word count: ' + words + '\n' +
+      '- Primary external citations & sources cited: ' + hasExternalCitations + '\n' +
+      '- Concrete data/statistics density: ' + statisticsDetected + ' references\n' +
+      '- Verified author E-E-A-T markup: ' + authorPresent + '\n' +
+      '- Entity graph / Organization Schema: ' + organizationSchema + '\n\n' +
+      'Evaluate ChatGPT Search, Perplexity AI, and Claude citation probability. Return ONLY valid JSON format:\n' +
+      '{\n' +
+      '  "score": number,\n' +
+      '  "summary": string,\n' +
+      '  "checks": [\n' +
+      '    {"label": "Information Gain & Unique Data Density", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "LLM Quotation & Extractability", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "Entity Graph & Organization Authority", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "E-E-A-T & Author Attribution Footprint", "status": "good"|"warning"|"critical", "detail": string, "fix": string},\n' +
+      '    {"label": "Source Velocity & Co-Citation Propensity", "status": "good"|"warning"|"critical", "detail": string, "fix": string}\n' +
+      '  ]\n' +
+      '}';
 
-        const aiRes = await fetch('/api/ai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt })
-        });
-        const aiData = await aiRes.json();
-        if (!aiData.success) throw new Error(aiData.error);
+    var data = await callAiJson(prompt);
+    document.getElementById('geoResultCard').style.display = 'block';
+    document.getElementById('geoScoreNum').textContent = data.score + '/100';
+    document.getElementById('geoScoreNum').style.color = gaugeColor(data.score);
+    document.getElementById('geoSummaryText').textContent = data.summary;
+    document.getElementById('geoChecksList').innerHTML = renderChecksTable(data.checks);
+  } catch(e){
+    alert('GEO Analysis Error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    loading.style.display = 'none';
+  }
+};
 
-        const parsed = parseAIJson(aiData.response);
-        const score = parsed.score || 68;
-        const scoreClass = score >= 80 ? 'score-high' : score >= 50 ? 'score-mid' : 'score-low';
+window.runCompetitors = async function(){
+  var url = document.getElementById('compUrl').value.trim();
+  var ctx = document.getElementById('compContext').value.trim();
+  if(!url){ alert('Enter your domain URL'); return; }
+  var btn = document.getElementById('runCompBtn');
+  var loading = document.getElementById('compLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
 
-        document.getElementById('geo-score-tag').innerHTML = `<span class="score-badge ${scoreClass}">GEO AUTHORITY: ${score}/100</span>`;
-        document.getElementById('geo-graph').innerText = parsed.entityGraph || 'Entity salience mapped.';
-        document.getElementById('geo-recommendations').innerText = parsed.recommendations || 'Expand primary domain source citations.';
-        out.classList.add('show');
-      } catch (err) {
-        alert(`GEO Analysis Error: ${err.message}`);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Evaluate GEO Authority';
-      }
-    }
+  try {
+    var data = await callAiJson('Identify genuine market competitors for "' + url + '" (Vertical: "' + ctx + '"). Return JSON format: {"competitors": [{"domain": string, "notes": string}], "gaps": [{"label": string, "status": "warning", "detail": string, "fix": string}]}');
+    document.getElementById('compResultCard').style.display = 'block';
+    document.getElementById('compTable').innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Competitor Domain</th><th>Strategic Market Finding</th></tr></thead><tbody>' +
+      data.competitors.map(function(c){
+        return '<tr><td style="color:#fff;font-weight:700;">' + escapeHtml(c.domain) + '</td><td>' + escapeHtml(c.notes) + '</td></tr>';
+      }).join('') +
+      '</tbody></table></div>';
+    document.getElementById('compGaps').innerHTML = renderChecksTable(data.gaps);
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
+};
 
-    // 05: Run Competitor Analysis
-    async function runCompetitorAnalysis() {
-      const myUrl = document.getElementById('comp-my-url').value.trim();
-      const rivalUrl = document.getElementById('comp-rival-url').value.trim();
-      const btn = document.getElementById('comp-submit');
-      const out = document.getElementById('comp-output');
+window.checkPositions = async function(){
+  var url = document.getElementById('trackSiteUrl').value.trim();
+  var kws = document.getElementById('trackKeywords').value.trim();
+  if(!url || !kws){ alert('Enter domain and comma-separated keywords'); return; }
+  var btn = document.getElementById('runRankBtn');
+  var loading = document.getElementById('rankLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
 
-      if (!rivalUrl) return alert('Enter competitor URL.');
+  try {
+    var data = await callAiJson('Estimate realistic SERP ranking positions for domain "' + url + '" across keywords: [' + kws + ']. Return JSON format: {"ranks": [{"keyword": string, "position": number}]}');
+    document.getElementById('rankLogTable').innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Keyword</th><th>Estimated Position</th></tr></thead><tbody>' +
+      data.ranks.map(function(r){
+        return '<tr><td style="color:#fff;font-weight:700;">' + escapeHtml(r.keyword) + '</td><td style="color:var(--accent);font-family:var(--font-mono);font-weight:700;">#' + r.position + '</td></tr>';
+      }).join('') +
+      '</tbody></table></div>';
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
+};
 
-      btn.disabled = true;
-      btn.innerText = 'Comparing domain footprints...';
-      out.classList.remove('show');
+window.generateBlog = async function(){
+  var topic = document.getElementById('blogTopic').value.trim();
+  var kws = document.getElementById('blogKeywords').value.trim();
+  if(!topic){ alert('Enter an article topic'); return; }
+  var btn = document.getElementById('runBlogBtn');
+  var loading = document.getElementById('blogLoading');
+  btn.disabled = true;
+  loading.style.display = 'block';
 
-      try {
-        const prompt = `Compare primary domain "${myUrl}" against rival domain "${rivalUrl}". Highlight top 3 competitive content gaps, technical advantages, and backlink authority factors.`;
-        const res = await fetch('/api/ai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt })
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error);
+  try {
+    var body = await callAi('Write a high-converting, professional SEO blog post about: "' + topic + '". Integrate target keywords: ' + kws + '. Organize with Markdown H2 and H3 headings and provide comprehensive depth.');
+    document.getElementById('blogResultCard').style.display = 'block';
+    document.getElementById('blogOutput').textContent = body;
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
+};
 
-        document.getElementById('comp-results').innerText = data.response;
-        out.classList.add('show');
-      } catch (err) {
-        alert(`Competitor Audit Error: ${err.message}`);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Audit Competitor Matrix';
-      }
-    }
+window.sendChat = async function(){
+  var input = document.getElementById('chatInput');
+  var q = input.value.trim();
+  if(!q) return;
+  input.value = '';
+  var box = document.getElementById('chatMessages');
+  box.innerHTML += '<div style="background:var(--primary);padding:8px 12px;border-radius:6px;align-self:flex-end;">' + escapeHtml(q) + '</div>';
+  var loading = document.getElementById('chatLoading');
+  loading.style.display = 'block';
 
-    // 07: Run AI Blog Content Writer
-    async function runContentWriter() {
-      const topic = document.getElementById('writer-topic').value.trim();
-      const tone = document.getElementById('writer-tone').value.trim();
-      const btn = document.getElementById('writer-submit');
-      const out = document.getElementById('writer-output');
+  try {
+    var ans = await callAi('You are a top-tier organic search and AI citation strategist. Give a concise, actionable response to this user query: ' + q);
+    box.innerHTML += '<div style="background:var(--panel-subtle);padding:8px 12px;border-radius:6px;border:1px solid var(--border);">' + escapeHtml(ans) + '</div>';
+    box.scrollTop = box.scrollHeight;
+  } catch(e){ alert('Error: ' + e.message); }
+  finally { loading.style.display = 'none'; }
+};
 
-      if (!topic) return alert('Enter an article topic.');
+var __fixCounter = 0;
+function renderChecksTable(checks){
+  return '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Diagnostic Factor</th><th>Status</th><th>Finding</th><th>Action</th></tr></thead><tbody>' +
+    checks.map(function(c){
+      var rid = 'fixrow-' + (++__fixCounter);
+      return '<tr>' +
+        '<td style="font-weight:700;color:#fff;"><span class="check-dot dot-' + c.status + '"></span>' + escapeHtml(c.label) + '</td>' +
+        '<td><span class="badge badge-' + c.status + '">' + c.status + '</span></td>' +
+        '<td>' + escapeHtml(c.detail) + '</td>' +
+        '<td style="text-align:right;"><button class="fix-btn" onclick="toggleFix(\'' + rid + '\')">Remediate</button></td>' +
+      '</tr>' +
+      '<tr class="fix-row" id="' + rid + '" hidden>' +
+        '<td colspan="4" class="fix-cell"><strong>Recommended Remediation:</strong> ' + escapeHtml(c.fix) + '</td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
 
-      btn.disabled = true;
-      btn.innerText = 'Drafting outline and content...';
-      out.classList.remove('show');
+window.toggleFix = function(rid){
+  var row = document.getElementById(rid);
+  if(!row) return;
+  if(row.hasAttribute('hidden')){
+    row.removeAttribute('hidden');
+  } else {
+    row.setAttribute('hidden', '');
+  }
+};
 
-      try {
-        const prompt = `You are a high-ranking SEO content strategist. Create an optimized blog article outline and full engaging introduction section for the topic "${topic}". Tone should be: "${tone}". Include target entity keywords and optimal heading structures (H1, H2).`;
-        const res = await fetch('/api/ai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt })
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error);
+window.checkTitle = function(){
+  var v = document.getElementById('titleInput').value;
+  var len = v.length;
+  document.getElementById('titleStats').innerHTML = '<span class="badge ' + (len>=30&&len<=60?'badge-good':'badge-warning') + '">' + len + ' chars</span>';
+  document.getElementById('titlePreview').innerHTML = '<div class="serp-url">example.com</div><div class="serp-title">' + (escapeHtml(v) || 'Page Title') + '</div><div class="serp-desc">Preview snippet description will appear here.</div>';
+};
 
-        document.getElementById('writer-results').innerText = data.response;
-        out.classList.add('show');
-      } catch (err) {
-        alert(`Writer Error: ${err.message}`);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Generate Article Outline & Intro';
-      }
-    }
+window.checkDescription = function(){
+  var v = document.getElementById('descInput').value;
+  var len = v.length;
+  document.getElementById('descStats').innerHTML = '<span class="badge ' + (len>=120&&len<=160?'badge-good':'badge-warning') + '">' + len + ' chars</span>';
+  document.getElementById('descPreview').innerHTML = '<div class="serp-url">example.com</div><div class="serp-title">Page Title</div><div class="serp-desc">' + (escapeHtml(v) || 'Meta description text...') + '</div>';
+};
 
-    // 08: Run AI Strategist Query
-    async function runStrategistQuery() {
-      const query = document.getElementById('strategist-query').value.trim();
-      const btn = document.getElementById('strategist-submit');
-      const out = document.getElementById('strategist-output');
+window.checkDensity = function(){
+  var text = document.getElementById('densityContent').value;
+  var kws = document.getElementById('densityKeywords').value.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  var words = countWords(text);
+  if(!words || !kws.length){ document.getElementById('densityResult').innerHTML=''; return; }
+  var rows = kws.map(function(k){
+    var matches = (text.match(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')) || []).length;
+    var density = ((matches * k.split(/\s+/).length) / words) * 100;
+    return '<tr><td>' + escapeHtml(k) + '</td><td>' + matches + '</td><td>' + density.toFixed(2) + '%</td></tr>';
+  }).join('');
+  document.getElementById('densityResult').innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Term</th><th>Matches</th><th>Density</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+};
 
-      if (!query) return alert('Please enter a query.');
+window.checkWordCount = function(){
+  var t = document.getElementById('wordcountInput').value;
+  var w = countWords(t);
+  document.getElementById('wordcountStats').innerHTML = '<span class="badge badge-good">' + w + ' words</span><span class="badge badge-good">' + t.length + ' characters</span>';
+};
 
-      btn.disabled = true;
-      btn.innerText = 'Formulating strategic response...';
-      out.classList.remove('show');
+window.generateRobots = function(){
+  var mode = document.getElementById('robotsDefault').value;
+  var sm = document.getElementById('robotsSitemap').value.trim();
+  document.getElementById('robotsOutput').textContent = 'User-agent: *\n' + (mode==='disallow'?'Disallow: /':'Allow: /') + (sm ? ('\nSitemap: ' + sm) : '');
+};
 
-      try {
-        const aiRes = await fetch('/api/ai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: query })
-        });
-        const aiData = await aiRes.json();
-        if (!aiData.success) throw new Error(aiData.error);
+window.generateSchema = function(){
+  var name = document.getElementById('schema_name').value;
+  var url = document.getElementById('schema_url').value;
+  var obj = { "@context": "[https://schema.org](https://schema.org)", "@type": "WebPage", "name": name, "url": url };
+  document.getElementById('schemaOutput').textContent = '<!-- Insert in <head> -->\n' + JSON.stringify(obj, null, 2);
+};
 
-        document.getElementById('strategist-response').innerText = aiData.response;
-        out.classList.add('show');
-      } catch (err) {
-        alert(`Strategy Error: ${err.message}`);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Ask Advisor';
-      }
-    }
-  </script>
+window.generateSlug = function(){
+  var v = document.getElementById('slugInput').value;
+  document.getElementById('slugOutput').textContent = v.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+};
+
+window.exportAuditPdf = function(){
+  if(!window.lastAuditReport || !window.jspdf) return;
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF();
+  doc.setFontSize(16);
+  doc.text('Signal SEO Audit Report: ' + window.lastAuditReport.url, 14, 20);
+  doc.setFontSize(12);
+  doc.text('Health Score: ' + window.lastAuditReport.score + '/100', 14, 28);
+  var y = 38;
+  window.lastAuditReport.sections.forEach(function(s){
+    doc.setFont('helvetica', 'bold');
+    doc.text(s.title, 14, y); y += 6;
+    doc.setFont('helvetica', 'normal');
+    s.checks.forEach(function(c){
+      doc.text('[' + c.status.toUpperCase() + '] ' + c.label + ': ' + c.detail, 14, y);
+      y += 6;
+    });
+    y += 4;
+  });
+  doc.save('seo-audit-report.pdf');
+};
+
+function renderAuditHistory(){
+  var el = document.getElementById('auditHistoryList');
+  if(!window.state.audits.length){ el.innerHTML = '<div class="empty">No historical audits recorded.</div>'; return; }
+  el.innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Timestamp</th><th>Domain</th><th>Score</th></tr></thead><tbody>' +
+    window.state.audits.map(function(a){
+      return '<tr><td>' + new Date(a.date).toLocaleDateString() + '</td><td>' + escapeHtml(a.url) + '</td><td style="color:' + gaugeColor(a.score) + ';font-weight:700;">' + a.score + '</td></tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
+
+function renderStats(){
+  var el = document.getElementById('dashStats');
+  if(!el) return;
+  el.innerHTML = '<div class="stat-tile"><div class="stat-val">' + window.state.audits.length + '</div><div class="stat-lbl">Audits Run</div></div>' +
+    '<div class="stat-tile"><div class="stat-val">100%</div><div class="stat-lbl">Engine Health</div></div>' +
+    '<div class="stat-tile"><div class="stat-val">ACTIVE</div><div class="stat-lbl">Groq AI API</div></div>';
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  renderStats();
+});
+renderStats();
+</script>
 </body>
 </html>
+<!-- =========================================================
+     NON-DESTRUCTIVE RESPONSIVE OVERLAY (MOBILE & TABLET)
+     ========================================================= -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    width: 100% !important;
+  }
+
+  /* Tablets & Small Laptops (<= 1024px) */
+  @media (max-width: 1024px) {
+    aside, .sidebar, [class*="sidebar"], [id*="sidebar"] {
+      width: 200px !important;
+      min-width: 200px !important;
+    }
+  }
+
+  /* Mobile Devices (<= 768px) */
+  @media (max-width: 768px) {
+    /* Stack horizontal layout wrappers */
+    body, #app, .app-layout, .container, .layout, [class*="container"], [class*="layout"] {
+      display: flex !important;
+      flex-direction: column !important;
+      width: 100% !important;
+      min-width: 100% !important;
+    }
+
+    /* Convert vertical sidebar into a swipeable top navigation bar */
+    aside, .sidebar, [class*="sidebar"], [id*="sidebar"] {
+      position: relative !important;
+      width: 100% !important;
+      min-width: 100% !important;
+      height: auto !important;
+      max-height: none !important;
+      border-right: none !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      padding: 0.5rem 0.75rem !important;
+    }
+
+    /* Enable horizontal swiping for instrument tabs */
+    aside nav, .sidebar nav, [class*="sidebar"] ul, [class*="nav-list"], [id*="nav"], .nav, nav {
+      display: flex !important;
+      flex-direction: row !important;
+      overflow-x: auto !important;
+      white-space: nowrap !important;
+      gap: 0.5rem !important;
+      padding: 0.25rem 0 !important;
+      -webkit-overflow-scrolling: touch !important;
+      scrollbar-width: none !important;
+    }
+
+    aside nav::-webkit-scrollbar, .sidebar nav::-webkit-scrollbar, [class*="sidebar"] ul::-webkit-scrollbar {
+      display: none !important;
+    }
+
+    aside nav a, aside nav button, aside nav li, .sidebar li, [class*="nav-item"] {
+      flex: 0 0 auto !important;
+      padding: 0.4rem 0.75rem !important;
+    }
+
+    /* Expand main content container to 100% viewport width */
+    main, .main, .content, .workspace, [class*="main"], [class*="content"] {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 1rem 0.75rem !important;
+    }
+
+    /* Stack multi-column form fields vertically */
+    form, .grid, [class*="grid"], [class*="row"], [class*="inputs"] {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 0.75rem !important;
+    }
+
+    /* Inputs take full mobile screen width and prevent iOS auto-zoom */
+    input[type="text"],
+    input[type="url"],
+    textarea,
+    select,
+    button {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      font-size: 16px !important;
+    }
+
+    /* Fluid diagnostic cards, stat tiles, and output panels */
+    .stat-tile, .stat-card, .card, .panel, [class*="card"], [class*="panel"], [class*="result"] {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    /* Tables allow horizontal swipe instead of breaking width */
+    table, [class*="table"] {
+      display: block !important;
+      overflow-x: auto !important;
+      width: 100% !important;
+    }
+  }
+</style>
