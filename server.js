@@ -103,16 +103,16 @@ app.post('/fetch-url', handleFetchUrl);
 app.post('/api/audit', handleFetchUrl);
 
 // ==========================================
-// DYNAMIC AI PROXY (/api/ai) WITH STRICT JSON ENFORCEMENT
+// RESILIENT AI PROXY (/api/ai)
 // ==========================================
 
-let cachedActiveModel = null;
-let lastModelFetchTime = 0;
+let availableModels = [];
+let lastModelsFetch = 0;
 
-async function getLiveGroqModel(apiKey) {
+async function getAvailableGroqModels(apiKey) {
   const oneHour = 60 * 60 * 1000;
-  if (cachedActiveModel && (Date.now() - lastModelFetchTime < oneHour)) {
-    return cachedActiveModel;
+  if (availableModels.length > 0 && (Date.now() - lastModelsFetch < oneHour)) {
+    return availableModels;
   }
 
   try {
@@ -121,26 +121,34 @@ async function getLiveGroqModel(apiKey) {
     });
     const listData = await listRes.json();
 
-    if (listData && Array.isArray(listData.data) && listData.data.length > 0) {
-      // Prioritize active chat models (Llama and Mistral first, then Qwen)
-      const validModels = listData.data
+    if (listData && Array.isArray(listData.data)) {
+      // Filter out non-chat models
+      const valid = listData.data
         .map(m => m.id)
         .filter(id => !id.includes('whisper') && !id.includes('guard') && !id.includes('vision'));
 
-      const preferred = validModels.find(id => id.includes('llama')) || validModels[0];
+      // Sort prioritizing models with high token limits (Llama, Gemma, Deepseek first; Qwen last)
+      valid.sort((a, b) => {
+        const getScore = (id) => {
+          if (id.includes('llama')) return 3;
+          if (id.includes('gemma') || id.includes('mixtral')) return 2;
+          if (id.includes('qwen')) return 0; // low OTPM ceiling
+          return 1;
+        };
+        return getScore(b) - getScore(a);
+      });
 
-      if (preferred) {
-        cachedActiveModel = preferred;
-        lastModelFetchTime = Date.now();
-        console.log(`Groq model selected: ${cachedActiveModel}`);
-        return cachedActiveModel;
+      if (valid.length > 0) {
+        availableModels = valid;
+        lastModelsFetch = Date.now();
+        return availableModels;
       }
     }
   } catch (err) {
-    console.warn('Could not auto-fetch live models list:', err.message);
+    console.warn('Could not query Groq models:', err.message);
   }
 
-  return 'llama3-8b-8192';
+  return ['llama-3.3-70b-specdec', 'llama3-70b-8192', 'llama3-8b-8192', 'gemma2-9b-it'];
 }
 
 const handleAi = async (req, res) => {
@@ -159,55 +167,63 @@ const handleAi = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Prompt is required.' });
     }
 
-    const activeModel = await getLiveGroqModel(apiKey);
+    const modelsToTry = await getAvailableGroqModels(apiKey);
     const wantsJson = prompt.toLowerCase().includes('json');
+    let lastError = 'No models responded successfully';
 
-    const requestBody = {
-      model: activeModel,
-      messages: [
-        {
-          role: 'system',
-          content: wantsJson
-            ? 'You are an SEO analysis engine. You MUST respond with a valid, parseable JSON object ONLY. Never include markdown code fences (```json or ```), explanations, or surrounding text.'
-            : 'You are an SEO analysis engine. Provide direct, factual responses.'
-        },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.1,
-      max_tokens: 950 // Stays below Groq's 1000 OTPM ceiling
-    };
+    // Try up to 3 candidate models in sequence if one hits a rate limit or error
+    for (const model of modelsToTry.slice(0, 4)) {
+      try {
+        const requestBody = {
+          model: model,
+          messages: [
+            {
+              role: 'system',
+              content: wantsJson
+                ? 'You are an SEO analysis engine. You MUST respond with a valid, parseable JSON object ONLY. Never include markdown code fences (```json or ```), explanations, or surrounding text.'
+                : 'You are a senior SEO strategist. Provide direct, actionable advice.'
+            },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.2,
+          max_tokens: 700 // Fits comfortably within any rate-limit quota
+        };
 
-    if (wantsJson) {
-      requestBody.response_format = { type: 'json_object' };
+        if (wantsJson) {
+          requestBody.response_format = { type: 'json_object' };
+        }
+
+        const aiResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        const data = await aiResponse.json();
+
+        if (aiResponse.ok && data.choices?.[0]?.message?.content) {
+          let aiContent = data.choices[0].message.content.trim();
+          aiContent = aiContent.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
+
+          return res.json({
+            success: true,
+            response: aiContent
+          });
+        }
+
+        lastError = data.error?.message || `Model ${model} failed`;
+        console.warn(`Model ${model} failed (${aiResponse.status}): ${lastError}. Trying next...`);
+      } catch (err) {
+        lastError = err.message;
+      }
     }
 
-    const aiResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    });
-
-    const data = await aiResponse.json();
-
-    if (!aiResponse.ok) {
-      cachedActiveModel = null;
-      return res.status(aiResponse.status).json({
-        success: false,
-        error: data.error?.message || 'AI provider request failed'
-      });
-    }
-
-    let aiContent = data.choices?.[0]?.message?.content || '{}';
-
-    // Strip any accidental markdown formatting
-    aiContent = aiContent.trim().replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
-
-    return res.json({
-      success: true,
-      response: aiContent
+    return res.status(500).json({
+      success: false,
+      error: `AI provider rate-limit or quota error: ${lastError}`
     });
   } catch (err) {
     console.error('AI Proxy Error:', err);
