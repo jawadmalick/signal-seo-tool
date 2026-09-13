@@ -103,14 +103,13 @@ app.post('/fetch-url', handleFetchUrl);
 app.post('/api/audit', handleFetchUrl);
 
 // ==========================================
-// DYNAMIC AI EVALUATION PROXY (/api/ai)
+// DYNAMIC AI PROXY (/api/ai) WITH STRICT JSON ENFORCEMENT
 // ==========================================
 
 let cachedActiveModel = null;
 let lastModelFetchTime = 0;
 
 async function getLiveGroqModel(apiKey) {
-  // Cache the working model for 1 hour to avoid extra network lookups
   const oneHour = 60 * 60 * 1000;
   if (cachedActiveModel && (Date.now() - lastModelFetchTime < oneHour)) {
     return cachedActiveModel;
@@ -123,15 +122,17 @@ async function getLiveGroqModel(apiKey) {
     const listData = await listRes.json();
 
     if (listData && Array.isArray(listData.data) && listData.data.length > 0) {
-      // Filter out audio/whisper/guard models, prioritize text chat models
-      const textModels = listData.data
+      // Prioritize active chat models (Llama and Mistral first, then Qwen)
+      const validModels = listData.data
         .map(m => m.id)
-        .filter(id => !id.includes('whisper') && !id.includes('guard') && !id.includes('vision') && m_active(id));
+        .filter(id => !id.includes('whisper') && !id.includes('guard') && !id.includes('vision'));
 
-      if (textModels.length > 0) {
-        cachedActiveModel = textModels[0];
+      const preferred = validModels.find(id => id.includes('llama')) || validModels[0];
+
+      if (preferred) {
+        cachedActiveModel = preferred;
         lastModelFetchTime = Date.now();
-        console.log(`Using live active Groq model: ${cachedActiveModel}`);
+        console.log(`Groq model selected: ${cachedActiveModel}`);
         return cachedActiveModel;
       }
     }
@@ -139,11 +140,7 @@ async function getLiveGroqModel(apiKey) {
     console.warn('Could not auto-fetch live models list:', err.message);
   }
 
-  return 'llama-3.3-70b-versatile';
-}
-
-function m_active(id) {
-  return id.startsWith('llama') || id.startsWith('mixtral') || id.startsWith('gemma') || id.startsWith('deepseek') || id.startsWith('qwen');
+  return 'llama3-8b-8192';
 }
 
 const handleAi = async (req, res) => {
@@ -163,6 +160,26 @@ const handleAi = async (req, res) => {
     }
 
     const activeModel = await getLiveGroqModel(apiKey);
+    const wantsJson = prompt.toLowerCase().includes('json');
+
+    const requestBody = {
+      model: activeModel,
+      messages: [
+        {
+          role: 'system',
+          content: wantsJson
+            ? 'You are an SEO analysis engine. You MUST respond with a valid, parseable JSON object ONLY. Never include markdown code fences (```json or ```), explanations, or surrounding text.'
+            : 'You are an SEO analysis engine. Provide direct, factual responses.'
+        },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.1,
+      max_tokens: 950 // Stays below Groq's 1000 OTPM ceiling
+    };
+
+    if (wantsJson) {
+      requestBody.response_format = { type: 'json_object' };
+    }
 
     const aiResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -170,18 +187,12 @@ const handleAi = async (req, res) => {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        model: activeModel,
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.2,
-        max_tokens: 2048
-      })
+      body: JSON.stringify(requestBody)
     });
 
     const data = await aiResponse.json();
 
     if (!aiResponse.ok) {
-      // Clear cache if the model failed
       cachedActiveModel = null;
       return res.status(aiResponse.status).json({
         success: false,
@@ -189,7 +200,10 @@ const handleAi = async (req, res) => {
       });
     }
 
-    const aiContent = data.choices?.[0]?.message?.content || '';
+    let aiContent = data.choices?.[0]?.message?.content || '{}';
+
+    // Strip any accidental markdown formatting
+    aiContent = aiContent.trim().replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
 
     return res.json({
       success: true,
