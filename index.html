@@ -353,50 +353,40 @@
       </div>
 
       <!-- 03. AEO (Answer Engine Optimization) -->
-      <div class="panel" id="panel-aeo">
-        <div class="card">
-          <div class="card-title">Answer Engine Optimization (AEO) Engine</div>
-          <div class="card-sub">Scrapes live page DOM to measure readiness for Google Featured Snippets, People Also Ask (PAA) carousels, and Siri/Alexa Voice Answers.</div>
-          <div class="row" style="margin-top:12px;">
-            <div><label>Target Page URL</label><input type="text" id="aeoUrl" placeholder="https://"></div>
-            <div><label>Target Query / Question</label><input type="text" id="aeoQuestion" placeholder="e.g. what is digital networking"></div>
-          </div>
-          <button class="btn" id="runAeoBtn" onclick="runAeo()">Evaluate AEO Readiness</button>
-          <div id="aeoLoading" style="display:none;margin-top:12px;" class="loading">Auditing DOM for direct answer blocks, schema & PAA formats...</div>
-        </div>
-
-        <div class="card" id="aeoResultCard" style="display:none;">
-          <div class="card-head">
-            <div class="card-title">AEO Index: <span id="aeoScoreNum" style="color:var(--green);font-size:22px;">--</span></div>
-            <span class="badge badge-good" id="aeoStatusBadge">Diagnostic Complete</span>
-          </div>
-          <div id="aeoSummaryText" style="font-size:13.5px;color:var(--muted);margin-bottom:16px;line-height:1.6;"></div>
-          <div id="aeoChecksList"></div>
-        </div>
-      </div>
+<div class="panel" id="panel-aeo">
+  <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2rem; margin-bottom:1.5rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+      <h2 style="margin:0; font-size:1.25rem; color:#f8fafc; font-weight:700;">AEO Analyzer (Answer Engine Optimization)</h2>
+      <span style="background:#0284c7; color:#fff; font-size:0.7rem; font-weight:800; padding:3px 10px; border-radius:99px;">AEO ONLY</span>
+    </div>
+    <p style="margin:0 0 1.25rem 0; font-size:0.85rem; color:#94a3b8;">Evaluates direct-answer extraction readiness: quotable statements, heading hierarchy, and Schema JSON-LD.</p>
+    
+    <div style="display:flex; gap:0.75rem;">
+      <input type="text" id="aeoInputUrl" placeholder="https://prodoo.com" value="https://prodoo.com" style="flex:1; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:0.85rem 1.1rem; color:#fff; font-size:0.95rem; outline:none;" />
+      <button id="btnRunAeoAudit" onclick="runAeoAuditOnly()" style="background:#10b981; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">Run AEO Audit</button>
+    </div>
+    <div id="aeoStatusText" style="margin-top:1rem; font-size:0.88rem; color:#38bdf8; display:none;"></div>
+    <div id="aeoResultsContainer" style="margin-top:1.5rem;"></div>
+  </div>
+</div>
 
       <!-- 04. GEO (Generative Engine Optimization) -->
-      <div class="panel" id="panel-geo">
-        <div class="card">
-          <div class="card-title">Generative Engine Optimization (GEO) Engine</div>
-          <div class="card-sub">Analyzes how likely generative LLM engines (ChatGPT Search, Perplexity AI, Claude) are to cite, reference, and quote your website domain.</div>
-          <div class="row" style="margin-top:12px;">
-            <div><label>Domain or Page URL</label><input type="text" id="geoUrl" placeholder="https://"></div>
-            <div><label>Core Topic Focus</label><input type="text" id="geoTopic" placeholder="e.g. enterprise CRM solutions"></div>
-          </div>
-          <button class="btn" id="runGeoBtn" onclick="runGeo()">Evaluate GEO Authority</button>
-          <div id="geoLoading" style="display:none;margin-top:12px;" class="loading">Auditing information gain, entity graphs & AI citation propensity...</div>
-        </div>
-
-        <div class="card" id="geoResultCard" style="display:none;">
-          <div class="card-head">
-            <div class="card-title">GEO Citation Score: <span id="geoScoreNum" style="color:var(--accent);font-size:22px;">--</span></div>
-            <span class="badge badge-good">AI Authority Mapped</span>
-          </div>
-          <div id="geoSummaryText" style="font-size:13.5px;color:var(--muted);margin-bottom:16px;line-height:1.6;"></div>
-          <div id="geoChecksList"></div>
-        </div>
-      </div>
+<div class="panel" id="panel-geo">
+  <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2rem; margin-bottom:1.5rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+      <h2 style="margin:0; font-size:1.25rem; color:#f8fafc; font-weight:700;">GEO Analyzer (Generative Engine Optimization)</h2>
+      <span style="background:#7c3aed; color:#fff; font-size:0.7rem; font-weight:800; padding:3px 10px; border-radius:99px;">GEO ONLY</span>
+    </div>
+    <p style="margin:0 0 1.25rem 0; font-size:0.85rem; color:#94a3b8;">Evaluates AI crawler permissions: GPTBot, ClaudeBot, PerplexityBot in robots.txt and security headers.</p>
+    
+    <div style="display:flex; gap:0.75rem;">
+      <input type="text" id="geoInputUrl" placeholder="https://prodoo.com" value="https://prodoo.com" style="flex:1; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:0.85rem 1.1rem; color:#fff; font-size:0.95rem; outline:none;" />
+      <button id="btnRunGeoAudit" onclick="runGeoAuditOnly()" style="background:#8b5cf6; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">Run GEO Audit</button>
+    </div>
+    <div id="geoStatusText" style="margin-top:1rem; font-size:0.88rem; color:#c084fc; display:none;"></div>
+    <div id="geoResultsContainer" style="margin-top:1.5rem;"></div>
+  </div>
+</div>
 
       <!-- 05. COMPETITORS -->
       <div class="panel" id="panel-competitors">
@@ -1525,5 +1515,157 @@ renderStats();
       targetContainer.innerHTML = html;
     }
   </script>
+<script>
+  function formatInlineCode(text) {
+    if (!text) return '';
+    return text.replace(/`([^`]+)`/g, '<code style="background:#e2e8f0; color:#334155; padding:2px 6px; border-radius:4px; font-family:monospace; font-size:0.85em;">$1</code>');
+  }
+
+  function toggleOutrunDrawer(id) {
+    var el = document.getElementById(id);
+    var arrow = document.getElementById('arrow-' + id);
+    if (!el) return;
+    if (el.style.display === 'none' || el.style.display === '') {
+      el.style.display = 'block';
+      if (arrow) arrow.style.transform = 'rotate(180deg)';
+    } else {
+      el.style.display = 'none';
+      if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+  }
+
+  async function runAeoAuditOnly() {
+    var input = document.getElementById('aeoInputUrl');
+    var status = document.getElementById('aeoStatusText');
+    var btn = document.getElementById('btnRunAeoAudit');
+    var container = document.getElementById('aeoResultsContainer');
+    var target = (input.value || '').trim();
+    if (!target) return alert('Enter a URL');
+
+    btn.disabled = true;
+    btn.innerText = 'Analyzing...';
+    status.style.display = 'block';
+    status.innerText = 'Scanning quotable statements, heading hierarchy, and Schema...';
+    container.innerHTML = '';
+
+    try {
+      var res = await fetch('/api/aeo-audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: target })
+      });
+      var data = await res.json();
+      if (!data.success) throw new Error(data.error || 'AEO Audit failed');
+      var mod = data.modules.find(m => m.id === 'aeo_content') || data.modules[0];
+      renderOutrunDrawer(mod, container);
+      status.style.display = 'none';
+    } catch (e) {
+      status.innerText = 'Error: ' + e.message;
+    } finally {
+      btn.disabled = false;
+      btn.innerText = 'Run AEO Audit';
+    }
+  }
+
+  async function runGeoAuditOnly() {
+    var input = document.getElementById('geoInputUrl');
+    var status = document.getElementById('geoStatusText');
+    var btn = document.getElementById('btnRunGeoAudit');
+    var container = document.getElementById('geoResultsContainer');
+    var target = (input.value || '').trim();
+    if (!target) return alert('Enter a URL');
+
+    btn.disabled = true;
+    btn.innerText = 'Analyzing...';
+    status.style.display = 'block';
+    status.innerText = 'Scanning robots.txt AI bot directives and security headers...';
+    container.innerHTML = '';
+
+    try {
+      var res = await fetch('/api/geo-audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: target })
+      });
+      var data = await res.json();
+      if (!data.success) throw new Error(data.error || 'GEO Audit failed');
+      var mod = data.modules.find(m => m.id === 'geo_bots') || data.modules[0];
+      renderOutrunDrawer(mod, container);
+      status.style.display = 'none';
+    } catch (e) {
+      status.innerText = 'Error: ' + e.message;
+    } finally {
+      btn.disabled = false;
+      btn.innerText = 'Run GEO Audit';
+    }
+  }
+
+  function renderOutrunDrawer(singleModule, targetContainer) {
+    var isPass = singleModule.badge === 'PASS';
+    var badgeBg = isPass ? '#dcfce7' : '#fee2e2';
+    var badgeCol = isPass ? '#166534' : '#991b1b';
+
+    var html = `
+      <div style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1.5rem; color:#1e293b; box-shadow:0 4px 15px -3px rgba(0,0,0,0.05);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid #f1f5f9; padding-bottom:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <div style="width:34px; height:34px; line-height:34px; text-align:center; border-radius:50%; border:2px solid ${badgeCol}; font-weight:800; font-size:0.85rem; color:${badgeCol};">
+              ${singleModule.score}
+            </div>
+            <span style="font-weight:700; font-size:1rem; color:#0f172a;">${singleModule.title}</span>
+          </div>
+          <span style="background:${badgeBg}; color:${badgeCol}; font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:4px;">
+            ${singleModule.badge}
+          </span>
+        </div>
+
+        <div style="display:flex; flex-direction:column;">
+          ${singleModule.checks.map((c, i) => {
+            var p = (c.status === 'pass');
+            var drawerId = 'outrun-drw-' + singleModule.id + '-' + i;
+            return `
+              <div style="border-bottom:1px solid #f1f5f9;">
+                <div onclick="toggleOutrunDrawer('${drawerId}')" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; padding:0.75rem 0.2rem;">
+                  <span style="font-size:0.88rem; color:#1e293b; font-weight:500;">${formatInlineCode(c.title)}</span>
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <span style="background:#f1f5f9; color:#64748b; font-size:0.65rem; font-weight:700; padding:2px 6px; border-radius:4px;">${c.severity}</span>
+                    <span style="background:${p ? '#dcfce7' : '#fee2e2'}; color:${p ? '#166534' : '#991b1b'}; font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:4px;">
+                      ${p ? 'PASS' : 'FAIL'}
+                    </span>
+                    <span id="arrow-${drawerId}" style="font-size:0.65rem; color:#94a3b8; transition:transform 0.2s; display:inline-block;">▼</span>
+                  </div>
+                </div>
+
+                <div id="${drawerId}" style="display:none; padding:1.1rem 1.25rem; background:#f8fafc; border-top:1px solid #edf2f7; border-bottom:1px solid #edf2f7; margin-bottom:0.4rem; font-size:0.85rem; line-height:1.55;">
+                  <div style="margin-bottom:0.75rem;">
+                    <div style="font-size:0.68rem; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:0.2rem;">WHAT IS IT?</div>
+                    <div style="color:#334155;">${formatInlineCode(c.whatIsIt)}</div>
+                  </div>
+                  <div style="margin-bottom:0.75rem;">
+                    <div style="font-size:0.68rem; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:0.2rem;">WHY IT MATTERS</div>
+                    <div style="color:#334155;">${formatInlineCode(c.whyItMatters)}</div>
+                  </div>
+                  <div style="margin-bottom:0.85rem;">
+                    <div style="font-size:0.68rem; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:0.2rem;">HOW TO FIX</div>
+                    <div style="color:#334155; white-space:pre-wrap;">${formatInlineCode(c.howToFix)}</div>
+                  </div>
+                  ${c.docTitle ? `
+                    <div>
+                      <div style="font-size:0.68rem; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:0.3rem;">DOCUMENTATION</div>
+                      <a href="${c.docUrl}" target="_blank" style="display:inline-block; background:#ecfdf5; border:1px solid #a7f3d0; color:#065f46; font-size:0.78rem; font-weight:600; padding:4px 10px; border-radius:5px; text-decoration:none;">
+                        ${c.docTitle}
+                      </a>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+    targetContainer.innerHTML = html;
+  }
+</script>
 </body>
 </html>
