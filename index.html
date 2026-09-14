@@ -1283,52 +1283,104 @@ renderStats();
 </head>
 <body style="margin:0; background:#0b1120; color:#e2e8f0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
 
-  <div style="max-width:1050px; margin:0 auto; padding:2rem 1rem;">
-    <!-- Title -->
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2.5rem; border-bottom:1px solid #1e293b; padding-bottom:1rem;">
-      <div style="font-size:1.35rem; font-weight:800; color:#38bdf8; letter-spacing:0.04em;">SIGNAL SEO // COMMAND DECK</div>
-      <div style="font-size:0.8rem; color:#94a3b8; background:#1e293b; padding:4px 12px; border-radius:99px;">Dedicated Engines</div>
-    </div>
-
-    <!-- ==================== CARD 1: AEO ANALYZER ONLY ==================== -->
-    <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2rem; margin-bottom:2.5rem; box-shadow:0 10px 25px -5px rgba(0,0,0,0.3); overflow:hidden;">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
-        <h2 style="margin:0; font-size:1.25rem; color:#f8fafc; font-weight:700;">AEO Analyzer (Answer Engine Optimization)</h2>
-        <span style="background:#0284c7; color:#fff; font-size:0.7rem; font-weight:800; padding:3px 10px; border-radius:99px;">AEO ONLY</span>
+  <div style="display:flex; min-height:100vh;">
+    
+    <!-- Left Navigation Rail / Sidebar -->
+    <aside style="width:260px; background:#070d19; border-right:1px solid #1e293b; padding:1.5rem 1rem; display:flex; flex-direction:column; gap:0.5rem; flex-shrink:0;">
+      <div style="font-size:1.1rem; font-weight:800; color:#38bdf8; margin-bottom:1.5rem; padding-left:0.5rem;">
+        SIGNAL SEO // COMMAND DECK
       </div>
-      <p style="margin:0 0 1.25rem 0; font-size:0.85rem; color:#94a3b8;">Evaluates direct-answer extraction readiness: 20–60 word quotable paragraphs, heading hierarchy for chunking, and JSON-LD answer schemas.</p>
       
-      <div style="display:flex; gap:0.75rem;">
-        <input type="text" id="aeoInputUrl" placeholder="https://prodoo.com" value="https://prodoo.com" style="flex:1; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:0.85rem 1.1rem; color:#fff; font-size:0.95rem; outline:none;" />
-        <button id="btnRunAeoAudit" onclick="runAudit('aeo')" style="background:#10b981; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">Run AEO Audit</button>
+      <button onclick="switchTab('aeo-tab')" id="nav-aeo-tab" class="nav-pill active-nav" style="width:100%; text-align:left; background:#1e293b; border:none; color:#38bdf8; font-weight:700; padding:10px 14px; border-radius:8px; cursor:pointer; font-size:0.9rem; margin-bottom:4px;">
+        01 // AEO Analyzer
+      </button>
+
+      <button onclick="switchTab('geo-tab')" id="nav-geo-tab" class="nav-pill" style="width:100%; text-align:left; background:transparent; border:none; color:#94a3b8; font-weight:600; padding:10px 14px; border-radius:8px; cursor:pointer; font-size:0.9rem; margin-bottom:4px;">
+        02 // GEO Analyzer
+      </button>
+
+      <button onclick="switchTab('other-tab')" id="nav-other-tab" class="nav-pill" style="width:100%; text-align:left; background:transparent; border:none; color:#94a3b8; font-weight:600; padding:10px 14px; border-radius:8px; cursor:pointer; font-size:0.9rem; margin-bottom:4px;">
+        03 // Free SEO Tools
+      </button>
+    </aside>
+
+    <!-- Main Workspace Content Area -->
+    <main style="flex:1; padding:2rem 2.5rem; overflow-y:auto; max-width:1100px;">
+
+      <!-- ==================== TAB 1: ONLY AEO PAGE ==================== -->
+      <div id="aeo-tab" class="tool-panel">
+        <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2rem; box-shadow:0 10px 25px -5px rgba(0,0,0,0.3);">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+            <h2 style="margin:0; font-size:1.25rem; color:#f8fafc; font-weight:700;">AEO Analyzer (Answer Engine Optimization)</h2>
+            <span style="background:#0284c7; color:#fff; font-size:0.7rem; font-weight:800; padding:3px 10px; border-radius:99px;">AEO ONLY</span>
+          </div>
+          <p style="margin:0 0 1.25rem 0; font-size:0.85rem; color:#94a3b8;">Evaluates direct-answer extraction readiness: 20–60 word quotable paragraphs, heading hierarchy for chunking, and JSON-LD answer schemas.</p>
+          
+          <div style="display:flex; gap:0.75rem;">
+            <input type="text" id="aeoInputUrl" placeholder="https://prodoo.com" value="https://prodoo.com" style="flex:1; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:0.85rem 1.1rem; color:#fff; font-size:0.95rem; outline:none;" />
+            <button id="btnRunAeoAudit" onclick="runAudit('aeo')" style="background:#10b981; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">Run AEO Audit</button>
+          </div>
+          <div id="aeoStatusText" style="margin-top:1rem; font-size:0.88rem; color:#38bdf8; display:none;"></div>
+
+          <!-- AEO REPORT IS ENCLOSED HERE -->
+          <div id="aeoResultsContainer" style="margin-top:1.5rem;"></div>
+        </div>
       </div>
-      <div id="aeoStatusText" style="margin-top:1rem; font-size:0.88rem; color:#38bdf8; display:none;"></div>
 
-      <!-- AEO REPORT EMBEDDED DIRECTLY INSIDE THIS CARD -->
-      <div id="aeoResultsContainer" style="margin-top:1.5rem;"></div>
-    </div>
+      <!-- ==================== TAB 2: ONLY GEO PAGE ==================== -->
+      <div id="geo-tab" class="tool-panel" style="display:none;">
+        <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2rem; box-shadow:0 10px 25px -5px rgba(0,0,0,0.3);">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+            <h2 style="margin:0; font-size:1.25rem; color:#f8fafc; font-weight:700;">GEO Analyzer (Generative Engine Optimization)</h2>
+            <span style="background:#7c3aed; color:#fff; font-size:0.7rem; font-weight:800; padding:3px 10px; border-radius:99px;">GEO ONLY</span>
+          </div>
+          <p style="margin:0 0 1.25rem 0; font-size:0.85rem; color:#94a3b8;">Evaluates AI engine crawler permissions in robots.txt (GPTBot, ClaudeBot, PerplexityBot) and security headers.</p>
+          
+          <div style="display:flex; gap:0.75rem;">
+            <input type="text" id="geoInputUrl" placeholder="https://prodoo.com" value="https://prodoo.com" style="flex:1; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:0.85rem 1.1rem; color:#fff; font-size:0.95rem; outline:none;" />
+            <button id="btnRunGeoAudit" onclick="runAudit('geo')" style="background:#8b5cf6; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">Run GEO Audit</button>
+          </div>
+          <div id="geoStatusText" style="margin-top:1rem; font-size:0.88rem; color:#c084fc; display:none;"></div>
 
-    <!-- ==================== CARD 2: GEO ANALYZER ONLY ==================== -->
-    <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2rem; margin-bottom:2.5rem; box-shadow:0 10px 25px -5px rgba(0,0,0,0.3); overflow:hidden;">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
-        <h2 style="margin:0; font-size:1.25rem; color:#f8fafc; font-weight:700;">GEO Analyzer (Generative Engine Optimization)</h2>
-        <span style="background:#7c3aed; color:#fff; font-size:0.7rem; font-weight:800; padding:3px 10px; border-radius:99px;">GEO ONLY</span>
+          <!-- GEO REPORT IS ENCLOSED HERE -->
+          <div id="geoResultsContainer" style="margin-top:1.5rem;"></div>
+        </div>
       </div>
-      <p style="margin:0 0 1.25rem 0; font-size:0.85rem; color:#94a3b8;">Evaluates AI engine permissions: GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot in robots.txt, HSTS, and Content-Security-Policy.</p>
-      
-      <div style="display:flex; gap:0.75rem;">
-        <input type="text" id="geoInputUrl" placeholder="https://prodoo.com" value="https://prodoo.com" style="flex:1; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:0.85rem 1.1rem; color:#fff; font-size:0.95rem; outline:none;" />
-        <button id="btnRunGeoAudit" onclick="runAudit('geo')" style="background:#8b5cf6; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">Run GEO Audit</button>
+
+      <!-- ==================== TAB 3: OTHER TOOLS (NO AEO/GEO CARDS HERE) ==================== -->
+      <div id="other-tab" class="tool-panel" style="display:none;">
+        <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2rem;">
+          <h2 style="margin:0 0 0.5rem 0; font-size:1.25rem; color:#f8fafc;">Free SEO Tools</h2>
+          <p style="color:#94a3b8; font-size:0.9rem;">General utility workspace. AEO and GEO cards will not render inside this section.</p>
+        </div>
       </div>
-      <div id="geoStatusText" style="margin-top:1rem; font-size:0.88rem; color:#c084fc; display:none;"></div>
 
-      <!-- GEO REPORT EMBEDDED DIRECTLY INSIDE THIS CARD -->
-      <div id="geoResultsContainer" style="margin-top:1.5rem;"></div>
-    </div>
-
+    </main>
   </div>
 
   <script>
+    // Tab Navigation Logic
+    function switchTab(tabId) {
+      document.querySelectorAll('.tool-panel').forEach(function(el) {
+        el.style.display = 'none';
+      });
+      document.querySelectorAll('.nav-pill').forEach(function(btn) {
+        btn.style.background = 'transparent';
+        btn.style.color = '#94a3b8';
+        btn.style.fontWeight = '600';
+      });
+
+      var activePanel = document.getElementById(tabId);
+      if (activePanel) activePanel.style.display = 'block';
+
+      var activeNav = document.getElementById('nav-' + tabId);
+      if (activeNav) {
+        activeNav.style.background = '#1e293b';
+        activeNav.style.color = (tabId === 'geo-tab') ? '#c084fc' : '#38bdf8';
+        activeNav.style.fontWeight = '700';
+      }
+    }
+
     function formatInlineCode(text) {
       if (!text) return '';
       return text.replace(/`([^`]+)`/g, '<code style="background:#e2e8f0; color:#334155; padding:2px 6px; border-radius:4px; font-family:monospace; font-size:0.85em;">$1</code>');
@@ -1388,14 +1440,12 @@ renderStats();
       }
     }
 
-   function renderReport(data, targetContainer) {
-      // Pick strictly the ONE relevant module
+    function renderReport(data, targetContainer) {
+      // Pick strictly ONE matching module
       var singleModule = null;
       if (data.toolType === 'AEO') {
-        // Only Content & Quotation Optimization for AEO
         singleModule = data.modules.find(m => m.id === 'aeo_content') || data.modules[0];
       } else {
-        // Only AI Bot Permissions for GEO
         singleModule = data.modules.find(m => m.id === 'geo_bots') || data.modules[0];
       }
 
@@ -1407,7 +1457,6 @@ renderStats();
       var html = `
         <div style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1.5rem; margin-top:1.5rem; color:#1e293b; box-shadow:0 4px 15px -3px rgba(0,0,0,0.05);">
           
-          <!-- Single Relevant Section Header -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid #f1f5f9; padding-bottom:0.75rem;">
             <div style="display:flex; align-items:center; gap:0.75rem;">
               <div style="width:34px; height:34px; line-height:34px; text-align:center; border-radius:50%; border:2px solid ${badgeCol}; font-weight:800; font-size:0.85rem; color:${badgeCol};">
@@ -1423,7 +1472,6 @@ renderStats();
             </div>
           </div>
 
-          <!-- Relevant Checks with 4-Part Drawer -->
           <div style="display:flex; flex-direction:column;">
             ${singleModule.checks.map((c, i) => {
               var p = (c.status === 'pass');
