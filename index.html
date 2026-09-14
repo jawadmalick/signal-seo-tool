@@ -1280,31 +1280,52 @@ renderStats();
     }
   }
 </style>
-
 </head>
 <body style="margin:0; background:#0b1120; color:#e2e8f0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
 
   <div style="max-width:1050px; margin:0 auto; padding:2rem 1rem;">
-    <!-- Brand Title -->
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; border-bottom:1px solid #1e293b; padding-bottom:1rem;">
-      <div style="font-size:1.3rem; font-weight:800; color:#38bdf8; letter-spacing:0.04em;">SIGNAL SEO // COMMAND DECK</div>
-      <div style="font-size:0.8rem; color:#94a3b8; background:#1e293b; padding:4px 12px; border-radius:99px;">AEO & GEO Audit Engine</div>
+    <!-- Title -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2.5rem; border-bottom:1px solid #1e293b; padding-bottom:1rem;">
+      <div style="font-size:1.35rem; font-weight:800; color:#38bdf8; letter-spacing:0.04em;">SIGNAL SEO // COMMAND DECK</div>
+      <div style="font-size:0.8rem; color:#94a3b8; background:#1e293b; padding:4px 12px; border-radius:99px;">Dedicated Engines</div>
     </div>
 
-    <!-- Live AEO & GEO Page Audit Card -->
-    <div style="background:#131c31; border:1px solid #1e293b; border-radius:16px; padding:2rem; margin-bottom:2.5rem; box-shadow:0 10px 25px -5px rgba(0,0,0,0.3);">
-      <h2 style="margin:0 0 0.5rem 0; font-size:1.25rem; color:#f8fafc; font-weight:700;">Live AEO & GEO Page Audit</h2>
-      <p style="margin:0 0 1.25rem 0; font-size:0.85rem; color:#94a3b8;">Enter any web page URL to inspect AEO citation readiness, GEO AI-crawler permissions, and technical headers.</p>
+    <!-- ==================== CARD 1: AEO ANALYZER ONLY ==================== -->
+    <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2rem; margin-bottom:2.5rem; box-shadow:0 10px 25px -5px rgba(0,0,0,0.3); overflow:hidden;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+        <h2 style="margin:0; font-size:1.25rem; color:#f8fafc; font-weight:700;">AEO Analyzer (Answer Engine Optimization)</h2>
+        <span style="background:#0284c7; color:#fff; font-size:0.7rem; font-weight:800; padding:3px 10px; border-radius:99px;">AEO ONLY</span>
+      </div>
+      <p style="margin:0 0 1.25rem 0; font-size:0.85rem; color:#94a3b8;">Evaluates direct-answer extraction readiness: 20–60 word quotable paragraphs, heading hierarchy for chunking, and JSON-LD answer schemas.</p>
       
       <div style="display:flex; gap:0.75rem;">
         <input type="text" id="aeoInputUrl" placeholder="https://prodoo.com" value="https://prodoo.com" style="flex:1; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:0.85rem 1.1rem; color:#fff; font-size:0.95rem; outline:none;" />
-        <button id="btnRunAeoAudit" onclick="runAeoAudit()" style="background:#10b981; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">Run AEO Audit</button>
+        <button id="btnRunAeoAudit" onclick="runAudit('aeo')" style="background:#10b981; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">Run AEO Audit</button>
       </div>
       <div id="aeoStatusText" style="margin-top:1rem; font-size:0.88rem; color:#38bdf8; display:none;"></div>
+
+      <!-- AEO REPORT EMBEDDED DIRECTLY INSIDE THIS CARD -->
+      <div id="aeoResultsContainer" style="margin-top:1.5rem;"></div>
     </div>
 
-    <!-- Container where the AEO & GEO report appears directly underneath -->
-    <div id="aeoResultsContainer"></div>
+    <!-- ==================== CARD 2: GEO ANALYZER ONLY ==================== -->
+    <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2rem; margin-bottom:2.5rem; box-shadow:0 10px 25px -5px rgba(0,0,0,0.3); overflow:hidden;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+        <h2 style="margin:0; font-size:1.25rem; color:#f8fafc; font-weight:700;">GEO Analyzer (Generative Engine Optimization)</h2>
+        <span style="background:#7c3aed; color:#fff; font-size:0.7rem; font-weight:800; padding:3px 10px; border-radius:99px;">GEO ONLY</span>
+      </div>
+      <p style="margin:0 0 1.25rem 0; font-size:0.85rem; color:#94a3b8;">Evaluates AI engine permissions: GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot in robots.txt, HSTS, and Content-Security-Policy.</p>
+      
+      <div style="display:flex; gap:0.75rem;">
+        <input type="text" id="geoInputUrl" placeholder="https://prodoo.com" value="https://prodoo.com" style="flex:1; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:0.85rem 1.1rem; color:#fff; font-size:0.95rem; outline:none;" />
+        <button id="btnRunGeoAudit" onclick="runAudit('geo')" style="background:#8b5cf6; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">Run GEO Audit</button>
+      </div>
+      <div id="geoStatusText" style="margin-top:1rem; font-size:0.88rem; color:#c084fc; display:none;"></div>
+
+      <!-- GEO REPORT EMBEDDED DIRECTLY INSIDE THIS CARD -->
+      <div id="geoResultsContainer" style="margin-top:1.5rem;"></div>
+    </div>
+
   </div>
 
   <script>
@@ -1319,18 +1340,20 @@ renderStats();
       if (!el) return;
       if (el.style.display === 'none' || el.style.display === '') {
         el.style.display = 'block';
-        if (arrow) arrow.style.transform = 'rotate(90deg)';
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
       } else {
         el.style.display = 'none';
         if (arrow) arrow.style.transform = 'rotate(0deg)';
       }
     }
 
-    async function runAeoAudit() {
-      var urlInput = document.getElementById('aeoInputUrl');
-      var statusText = document.getElementById('aeoStatusText');
-      var btn = document.getElementById('btnRunAeoAudit');
-      var container = document.getElementById('aeoResultsContainer');
+    async function runAudit(type) {
+      var isAeo = (type === 'aeo');
+      var urlInput = document.getElementById(isAeo ? 'aeoInputUrl' : 'geoInputUrl');
+      var statusText = document.getElementById(isAeo ? 'aeoStatusText' : 'geoStatusText');
+      var btn = document.getElementById(isAeo ? 'btnRunAeoAudit' : 'btnRunGeoAudit');
+      var container = document.getElementById(isAeo ? 'aeoResultsContainer' : 'geoResultsContainer');
+      var endpoint = isAeo ? '/api/aeo-audit' : '/api/geo-audit';
 
       var target = (urlInput.value || '').trim();
       if (!target) {
@@ -1341,212 +1364,184 @@ renderStats();
       btn.disabled = true;
       btn.innerText = 'Analyzing...';
       statusText.style.display = 'block';
-      statusText.style.color = '#38bdf8';
-      statusText.innerText = 'Scanning robots.txt, security headers, and AI citations...';
+      statusText.style.color = isAeo ? '#38bdf8' : '#c084fc';
+      statusText.innerText = isAeo ? 'Scanning page for direct quotations, heading trees, and Schema...' : 'Inspecting /robots.txt AI bots, max-snippet tags, and security headers...';
       container.innerHTML = '';
 
       try {
-        var response = await fetch('/api/aeo-audit', {
+        var response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: target })
         });
-        
         var data = await response.json();
-        if (!data.success) {
-          throw new Error(data.error || 'Audit analysis failed');
-        }
+        if (!data.success) throw new Error(data.error || 'Audit failed');
 
-        renderAeoReport(data);
+        renderReport(data, container);
         statusText.style.display = 'none';
       } catch (err) {
         statusText.style.color = '#ef4444';
         statusText.innerText = 'Audit Error: ' + err.message;
       } finally {
         btn.disabled = false;
-        btn.innerText = 'Run AEO Audit';
+        btn.innerText = isAeo ? 'Run AEO Audit' : 'Run GEO Audit';
       }
     }
 
-    function renderAeoReport(data) {
+    function renderReport(data, targetContainer) {
       var ps = data.pagespeed;
       var vit = ps.vitals;
 
       var html = `
-        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:24px; padding:2.5rem; color:#1e293b; margin-bottom:3rem;">
-          
-          <!-- Top Overall Score Header -->
-          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:20px; padding:3rem 2rem; text-align:center; margin-bottom:2rem; box-shadow:0 4px 15px -3px rgba(0,0,0,0.03);">
-            <div style="width:72px; height:72px; line-height:72px; border-radius:50%; background:#fee2e2; color:#991b1b; font-size:2.2rem; font-weight:800; margin:0 auto 1.25rem auto;">
+        <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:16px; padding:1.75rem; color:#1e293b; box-shadow:inset 0 2px 4px rgba(0,0,0,0.02);">
+
+          <!-- Hero Score Header -->
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:2rem 1.5rem; text-align:center; margin-bottom:1.5rem;">
+            <div style="width:64px; height:64px; line-height:64px; border-radius:50%; background:#fee2e2; color:#991b1b; font-size:1.8rem; font-weight:800; margin:0 auto 1rem auto;">
               ${data.grade}
             </div>
-            <h1 style="font-size:2.1rem; font-weight:800; margin:0 0 0.5rem 0; color:#0f172a; letter-spacing:-0.02em;">
-              ${data.overallScore}% SEO & GEO score — ${data.domain}
-            </h1>
-            <p style="color:#64748b; font-size:0.92rem; margin:0 0 1rem 0;">
-              Email & DNS security checks (SPF, DKIM, DMARC, MTA-STS) shown separately · not counted in score
-            </p>
-            <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:1.25rem;">Checked on ${data.analyzedAt}</div>
-            <div style="width:240px; height:6px; background:#0d9488; border-radius:99px; margin:0 auto;"></div>
+            <h2 style="font-size:1.6rem; font-weight:800; margin:0 0 0.35rem 0; color:#0f172a;">
+              ${data.overallScore}% ${data.toolType} score — ${data.domain}
+            </h2>
+            <div style="font-size:0.8rem; color:#64748b; margin-bottom:1rem;">Checked on ${data.analyzedAt}</div>
+            <div style="width:180px; height:5px; background:#0d9488; border-radius:99px; margin:0 auto;"></div>
           </div>
 
-          <!-- PageSpeed Insights Mobile Lab Block -->
-          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:1.75rem; margin-bottom:2rem; box-shadow:0 4px 15px -3px rgba(0,0,0,0.03);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-              <div style="font-weight:700; font-size:1.1rem; color:#0f172a;">
-                PageSpeed Insights <span style="font-size:0.82rem; font-weight:400; color:#64748b; margin-left:6px;">mobile · lab data (simulated)</span>
-              </div>
-              <a href="https://pagespeed.web.dev/" target="_blank" style="font-size:0.82rem; color:#64748b; text-decoration:none;">↗ View full report on PageSpeed Insights</a>
+          <!-- PageSpeed Insights Block -->
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1.5rem; margin-bottom:1.5rem;">
+            <div style="font-weight:700; font-size:1rem; color:#0f172a; margin-bottom:1.25rem;">
+              PageSpeed Insights <span style="font-size:0.8rem; font-weight:400; color:#64748b;">mobile · lab data</span>
             </div>
-
-            <!-- Gauges -->
-            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; text-align:center; margin-bottom:1.75rem;">
+            
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.75rem; text-align:center; margin-bottom:1.25rem;">
               <div>
-                <div style="width:68px; height:68px; line-height:68px; border-radius:50%; border:3px solid #dc2626; color:#dc2626; font-size:1.45rem; font-weight:800; margin:0 auto 0.5rem auto;">${ps.performance}</div>
-                <div style="font-size:0.82rem; color:#475569; font-weight:500;">Performance</div>
+                <div style="width:58px; height:58px; line-height:58px; border-radius:50%; border:3px solid #dc2626; color:#dc2626; font-size:1.3rem; font-weight:800; margin:0 auto 0.4rem auto;">${ps.performance}</div>
+                <div style="font-size:0.75rem; color:#475569;">Performance</div>
               </div>
               <div>
-                <div style="width:68px; height:68px; line-height:68px; border-radius:50%; border:3px solid #0d9488; color:#0d9488; font-size:1.45rem; font-weight:800; margin:0 auto 0.5rem auto;">${ps.accessibility}</div>
-                <div style="font-size:0.82rem; color:#475569; font-weight:500;">Accessibility</div>
+                <div style="width:58px; height:58px; line-height:58px; border-radius:50%; border:3px solid #0d9488; color:#0d9488; font-size:1.3rem; font-weight:800; margin:0 auto 0.4rem auto;">${ps.accessibility}</div>
+                <div style="font-size:0.75rem; color:#475569;">Accessibility</div>
               </div>
               <div>
-                <div style="width:68px; height:68px; line-height:68px; border-radius:50%; border:3px solid #d97706; color:#d97706; font-size:1.45rem; font-weight:800; margin:0 auto 0.5rem auto;">${ps.bestPractices}</div>
-                <div style="font-size:0.82rem; color:#475569; font-weight:500;">Best Practices</div>
+                <div style="width:58px; height:58px; line-height:58px; border-radius:50%; border:3px solid #d97706; color:#d97706; font-size:1.3rem; font-weight:800; margin:0 auto 0.4rem auto;">${ps.bestPractices}</div>
+                <div style="font-size:0.75rem; color:#475569;">Best Practices</div>
               </div>
               <div>
-                <div style="width:68px; height:68px; line-height:68px; border-radius:50%; border:3px solid #0d9488; color:#0d9488; font-size:1.45rem; font-weight:800; margin:0 auto 0.5rem auto;">${ps.seo}</div>
-                <div style="font-size:0.82rem; color:#475569; font-weight:500;">SEO</div>
+                <div style="width:58px; height:58px; line-height:58px; border-radius:50%; border:3px solid #0d9488; color:#0d9488; font-size:1.3rem; font-weight:800; margin:0 auto 0.4rem auto;">${ps.seo}</div>
+                <div style="font-size:0.75rem; color:#475569;">SEO</div>
               </div>
             </div>
 
-            <div style="font-size:0.82rem; color:#64748b; margin-bottom:0.75rem;">Vitals: no real-user data — showing simulated Lighthouse results.</div>
-            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.75rem;">
-              <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:12px; padding:1rem;">
-                <div style="font-size:0.72rem; color:#64748b; font-weight:600;">LCP</div>
-                <div style="font-size:1.5rem; font-weight:800; color:#dc2626; margin:3px 0;">${vit.lcp}</div>
-                <div style="font-size:0.72rem; font-weight:800; color:#dc2626;">• SLOW</div>
+            <!-- Vitals -->
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.6rem;">
+              <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:10px; padding:0.75rem;">
+                <div style="font-size:0.7rem; color:#64748b;">LCP</div>
+                <div style="font-size:1.25rem; font-weight:800; color:#dc2626;">${vit.lcp}</div>
+                <div style="font-size:0.65rem; font-weight:700; color:#dc2626;">• SLOW</div>
               </div>
-              <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:12px; padding:1rem;">
-                <div style="font-size:0.72rem; color:#64748b; font-weight:600;">CLS</div>
-                <div style="font-size:1.5rem; font-weight:800; color:#0d9488; margin:3px 0;">${vit.cls}</div>
-                <div style="font-size:0.72rem; font-weight:800; color:#0d9488;">• FAST</div>
+              <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:10px; padding:0.75rem;">
+                <div style="font-size:0.7rem; color:#64748b;">CLS</div>
+                <div style="font-size:1.25rem; font-weight:800; color:#0d9488;">${vit.cls}</div>
+                <div style="font-size:0.65rem; font-weight:700; color:#0d9488;">• FAST</div>
               </div>
-              <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:12px; padding:1rem;">
-                <div style="font-size:0.72rem; color:#64748b; font-weight:600;">FCP</div>
-                <div style="font-size:1.5rem; font-weight:800; color:#dc2626; margin:3px 0;">${vit.fcp}</div>
-                <div style="font-size:0.72rem; font-weight:800; color:#dc2626;">• SLOW</div>
+              <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:10px; padding:0.75rem;">
+                <div style="font-size:0.7rem; color:#64748b;">FCP</div>
+                <div style="font-size:1.25rem; font-weight:800; color:#dc2626;">${vit.fcp}</div>
+                <div style="font-size:0.65rem; font-weight:700; color:#dc2626;">• SLOW</div>
               </div>
-              <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:12px; padding:1rem;">
-                <div style="font-size:0.72rem; color:#64748b; font-weight:600;">TTFB</div>
-                <div style="font-size:1.5rem; font-weight:800; color:#0d9488; margin:3px 0;">${vit.ttfb}</div>
-                <div style="font-size:0.72rem; font-weight:800; color:#0d9488;">• FAST</div>
+              <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:10px; padding:0.75rem;">
+                <div style="font-size:0.7rem; color:#64748b;">TTFB</div>
+                <div style="font-size:1.25rem; font-weight:800; color:#0d9488;">${vit.ttfb}</div>
+                <div style="font-size:0.65rem; font-weight:700; color:#0d9488;">• FAST</div>
               </div>
             </div>
           </div>
 
-          <!-- Priority Fixes List -->
-          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:1.75rem; margin-bottom:2rem; box-shadow:0 4px 15px -3px rgba(0,0,0,0.03);">
-            <div style="font-weight:800; font-size:0.92rem; letter-spacing:0.04em; color:#0f172a; margin-bottom:1.25rem;">
+          <!-- Priority Fixes -->
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1.5rem; margin-bottom:1.5rem;">
+            <div style="font-weight:800; font-size:0.85rem; letter-spacing:0.04em; color:#0f172a; margin-bottom:1rem;">
               PRIORITY FIXES FOR ${data.domain.toUpperCase()}
             </div>
             <div style="display:flex; flex-direction:column;">
               ${data.priorityFixes.map((f, i) => `
-                <div style="display:flex; align-items:center; gap:0.85rem; padding:0.65rem 0; border-bottom:1px solid #f8fafc;">
-                  <span style="color:#94a3b8; font-size:0.82rem; width:20px;">${i + 1}</span>
-                  <span style="background:#fee2e2; color:#991b1b; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:4px;">${f.severity}</span>
-                  <span style="color:#334155; font-size:0.88rem; font-weight:500;">${formatInlineCode(f.title)}</span>
+                <div style="display:flex; align-items:center; gap:0.75rem; padding:0.55rem 0; border-bottom:1px solid #f8fafc;">
+                  <span style="color:#94a3b8; font-size:0.8rem; width:18px;">${i + 1}</span>
+                  <span style="background:#fee2e2; color:#991b1b; font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:4px;">${f.severity}</span>
+                  <span style="color:#334155; font-size:0.85rem; font-weight:500;">${formatInlineCode(f.title)}</span>
                 </div>
               `).join('')}
             </div>
-            <div style="font-size:0.78rem; color:#94a3b8; margin-top:1.25rem;">
-              Informational (not scored): SPF · DKIM · DMARC · MTA-STS · humans.txt
-            </div>
           </div>
 
-          <!-- Interactive Module Cards with Outrun 4-part Drawers -->
-          ${data.modules.map(mod => renderInteractiveModuleCard(mod)).join('')}
+          <!-- Modules with 4-part Drawers -->
+          ${data.modules.map(mod => `
+            <div style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1.5rem; margin-bottom:1.25rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid #f8fafc; padding-bottom:0.75rem;">
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                  <div style="width:34px; height:34px; line-height:34px; text-align:center; border-radius:50%; border:2px solid ${mod.badge === 'PASS' ? '#166534' : '#991b1b'}; font-weight:800; font-size:0.85rem; color:${mod.badge === 'PASS' ? '#166534' : '#991b1b'};">
+                    ${mod.score}
+                  </div>
+                  <span style="font-weight:700; font-size:0.95rem; color:#0f172a;">${mod.title}</span>
+                </div>
+                <span style="background:${mod.badge === 'PASS' ? '#dcfce7' : '#fee2e2'}; color:${mod.badge === 'PASS' ? '#166534' : '#991b1b'}; font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:4px;">
+                  ${mod.badge}
+                </span>
+              </div>
+
+              <div style="display:flex; flex-direction:column;">
+                ${mod.checks.map((c, i) => {
+                  var p = (c.status === 'pass');
+                  var drawerId = 'drw-' + mod.id + '-' + i;
+                  return `
+                    <div style="border-bottom:1px solid #f1f5f9;">
+                      <div onclick="toggleDrawer('${drawerId}')" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; padding:0.75rem 0.2rem;">
+                        <span style="font-size:0.88rem; color:#1e293b; font-weight:500;">${formatInlineCode(c.title)}</span>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                          <span style="background:#f1f5f9; color:#64748b; font-size:0.65rem; font-weight:700; padding:2px 6px; border-radius:4px;">${c.severity}</span>
+                          <span style="background:${p ? '#dcfce7' : '#fee2e2'}; color:${p ? '#166534' : '#991b1b'}; font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:4px;">
+                            ${p ? 'PASS' : 'FAIL'}
+                          </span>
+                          <span id="arrow-${drawerId}" style="font-size:0.65rem; color:#94a3b8; transition:transform 0.2s; display:inline-block;">▼</span>
+                        </div>
+                      </div>
+
+                      <!-- 4-part Drawer matching Outrun style -->
+                      <div id="${drawerId}" style="display:none; padding:1.2rem; background:#f8fafc; border-top:1px solid #edf2f7; border-bottom:1px solid #edf2f7; margin-bottom:0.5rem; font-size:0.85rem; line-height:1.55;">
+                        <div style="margin-bottom:0.75rem;">
+                          <div style="font-size:0.68rem; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:0.2rem;">WHAT IS IT?</div>
+                          <div style="color:#334155;">${formatInlineCode(c.whatIsIt)}</div>
+                        </div>
+
+                        <div style="margin-bottom:0.75rem;">
+                          <div style="font-size:0.68rem; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:0.2rem;">WHY IT MATTERS</div>
+                          <div style="color:#334155;">${formatInlineCode(c.whyItMatters)}</div>
+                        </div>
+
+                        <div style="margin-bottom:0.85rem;">
+                          <div style="font-size:0.68rem; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:0.2rem;">HOW TO FIX</div>
+                          <div style="color:#334155; white-space:pre-wrap;">${formatInlineCode(c.howToFix)}</div>
+                        </div>
+
+                        ${c.docTitle ? `
+                          <div>
+                            <div style="font-size:0.68rem; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:0.3rem;">DOCUMENTATION</div>
+                            <a href="${c.docUrl}" target="_blank" style="display:inline-block; background:#ecfdf5; border:1px solid #a7f3d0; color:#065f46; font-size:0.78rem; font-weight:600; padding:4px 10px; border-radius:5px; text-decoration:none;">
+                              ${c.docTitle}
+                            </a>
+                          </div>
+                        ` : ''}
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          `).join('')}
 
         </div>
       `;
 
-      function renderInteractiveModuleCard(mod) {
-        var isPass = mod.badge === 'PASS';
-        var isWarn = mod.badge === 'WARN';
-        var badgeBg = isPass ? '#dcfce7' : (isWarn ? '#fef3c7' : '#fee2e2');
-        var badgeCol = isPass ? '#166534' : (isWarn ? '#92400e' : '#991b1b');
-
-        return `
-          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:1.75rem; margin-bottom:1.5rem; box-shadow:0 2px 10px -2px rgba(0,0,0,0.02);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid #f8fafc; padding-bottom:1rem;">
-              <div style="display:flex; align-items:center; gap:0.85rem;">
-                <div style="width:36px; height:36px; line-height:36px; text-align:center; border-radius:50%; border:2.5px solid ${badgeCol}; font-weight:800; font-size:0.88rem; color:${badgeCol};">
-                  ${mod.score}
-                </div>
-                <span style="font-weight:700; font-size:1.05rem; color:#0f172a;">${mod.title}</span>
-              </div>
-              <div style="display:flex; align-items:center; gap:0.5rem;">
-                <span style="background:#f8fafc; color:#64748b; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:4px;">${mod.severity}</span>
-                <span style="background:${badgeBg}; color:${badgeCol}; font-size:0.72rem; font-weight:800; padding:2px 10px; border-radius:4px;">
-                  ${isPass ? 'PASS' : (isWarn ? '▲ WARN' : '✕ FAIL')}
-                </span>
-              </div>
-            </div>
-
-            <div style="display:flex; flex-direction:column;">
-              ${mod.checks.map((c, i) => {
-                var p = c.status === 'pass';
-                var drawerId = 'drawer-' + mod.id + '-' + i;
-                return `
-                  <div style="border-bottom:1px solid #f1f5f9;">
-                    <div onclick="toggleDrawer('${drawerId}')" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; padding:0.75rem 0.25rem;">
-                      <div>
-                        <div style="font-size:0.9rem; color:#1e293b; font-weight:500;">${formatInlineCode(c.title)}</div>
-                        ${c.note ? `<div style="font-size:0.78rem; color:#94a3b8; margin-top:2px;">${c.note}</div>` : ''}
-                      </div>
-                      <div style="display:flex; align-items:center; gap:0.5rem;">
-                        <span style="background:#f1f5f9; color:#64748b; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:4px;">${c.severity}</span>
-                        <span style="background:${p ? '#dcfce7' : '#fee2e2'}; color:${p ? '#166534' : '#991b1b'}; font-size:0.72rem; font-weight:800; padding:2px 9px; border-radius:4px;">
-                          ${p ? 'PASS' : 'FAIL'}
-                        </span>
-                        <span id="arrow-${drawerId}" style="font-size:0.65rem; color:#94a3b8; transition:transform 0.2s ease-in-out; display:inline-block; margin-left:4px;">▼</span>
-                      </div>
-                    </div>
-
-                    <!-- 4-part Outrun Drawer -->
-                    <div id="${drawerId}" style="display:none; padding:1.2rem 1.4rem; background:#f8fafc; border-top:1px solid #edf2f7; border-bottom:1px solid #edf2f7; margin-bottom:0.5rem; font-size:0.88rem; line-height:1.6;">
-                      <div style="margin-bottom:0.85rem;">
-                        <div style="font-size:0.7rem; font-weight:800; color:#64748b; letter-spacing:0.05em; margin-bottom:0.2rem; text-transform:uppercase;">WHAT IS IT?</div>
-                        <div style="color:#334155;">${formatInlineCode(c.whatIsIt)}</div>
-                      </div>
-
-                      <div style="margin-bottom:0.85rem;">
-                        <div style="font-size:0.7rem; font-weight:800; color:#64748b; letter-spacing:0.05em; margin-bottom:0.2rem; text-transform:uppercase;">WHY IT MATTERS</div>
-                        <div style="color:#334155;">${formatInlineCode(c.whyItMatters)}</div>
-                      </div>
-
-                      <div style="margin-bottom:1rem;">
-                        <div style="font-size:0.7rem; font-weight:800; color:#64748b; letter-spacing:0.05em; margin-bottom:0.2rem; text-transform:uppercase;">HOW TO FIX</div>
-                        <div style="color:#334155; white-space:pre-wrap;">${formatInlineCode(c.howToFix)}</div>
-                      </div>
-
-                      ${c.docTitle ? `
-                        <div>
-                          <div style="font-size:0.7rem; font-weight:800; color:#64748b; letter-spacing:0.05em; margin-bottom:0.35rem; text-transform:uppercase;">DOCUMENTATION</div>
-                          <a href="${c.docUrl}" target="_blank" style="display:inline-block; background:#ecfdf5; border:1px solid #a7f3d0; color:#065f46; font-size:0.82rem; font-weight:600; padding:5px 12px; border-radius:6px; text-decoration:none;">
-                            ${c.docTitle}
-                          </a>
-                        </div>
-                      ` : ''}
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        `;
-      }
-
-      document.getElementById('aeoResultsContainer').innerHTML = html;
+      targetContainer.innerHTML = html;
     }
   </script>
 </body>
