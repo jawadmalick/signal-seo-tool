@@ -1347,87 +1347,234 @@ renderStats();
       }
     }
 
+    // Formatter for Outrun gray code pills
+    function formatInlineCode(text) {
+      if (!text) return '';
+      return text.replace(/`([^`]+)`/g, '<code style="background:#e2e8f0; color:#334155; padding:2px 6px; border-radius:4px; font-family:monospace; font-size:0.85em;">$1</code>');
+    }
+
+    function toggleDrawer(id) {
+      var el = document.getElementById(id);
+      var arrow = document.getElementById('arrow-' + id);
+      if (!el) return;
+      if (el.style.display === 'none' || el.style.display === '') {
+        el.style.display = 'block';
+        if (arrow) arrow.style.transform = 'rotate(90deg)';
+      } else {
+        el.style.display = 'none';
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+      }
+    }
+
     function renderAeoReport(data) {
-      var cats = data.categories;
-      var html = '' +
-        '<div style="background:#f4fbf7; border-radius:16px; padding:2rem; color:#0f172a; font-family:inherit;">' +
-          '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">' +
-            '<div>' +
-              '<div style="font-size:0.85rem; color:#059669; font-weight:600;">Single page analysis for:</div>' +
-              '<div style="font-size:1.4rem; font-weight:800; color:#064e3b;">' + data.url + '</div>' +
-              '<div style="font-size:0.8rem; color:#64748b;">Analyzed on ' + data.analyzedAt + '</div>' +
-            '</div>' +
-          '</div>' +
+      var ps = data.pagespeed;
+      var vit = ps.vitals;
 
-          '<div style="display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:1rem; margin-bottom:2rem;">' +
-            '<div style="background:#ffedd5; border:1px solid #fed7aa; border-radius:12px; padding:1.5rem; text-align:center;">' +
-              '<div style="font-size:0.85rem; color:#9a3412; font-weight:600;">AEO Score</div>' +
-              '<div style="font-size:3.5rem; font-weight:900; color:#ea580c; line-height:1;">' + data.overallScore + '</div>' +
-              '<div style="color:#ea580c; font-weight:700; margin-top:0.5rem;">' + data.grade + '</div>' +
-            '</div>' +
+      var html = `
+        <div style="max-width:980px; margin:2rem auto; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color:#1e293b;">
 
-            '<div style="display:flex; flex-direction:column; gap:1rem;">' +
-              '<div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; text-align:center;">' +
-                '<div style="font-size:0.8rem; color:#64748b;">Content (30%)</div>' +
-                '<div style="font-size:1.8rem; font-weight:800; color:#059669;">' + cats.content.score + '%</div>' +
-              '</div>' +
-              '<div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; text-align:center;">' +
-                '<div style="font-size:0.8rem; color:#64748b;">Authority (25%)</div>' +
-                '<div style="font-size:1.8rem; font-weight:800; color:#059669;">' + cats.authority.score + '%</div>' +
-              '</div>' +
-            '</div>' +
+          <!-- Top Big Hero Card -->
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:24px; padding:3.5rem 2rem; text-align:center; box-shadow:0 4px 20px -2px rgba(0,0,0,0.03); margin-bottom:2rem;">
+            <div style="width:76px; height:76px; line-height:76px; border-radius:50%; background:#fee2e2; color:#991b1b; font-size:2.3rem; font-weight:800; margin:0 auto 1.5rem auto;">
+              ${data.grade}
+            </div>
+            <h1 style="font-size:2.2rem; font-weight:800; margin:0 0 0.5rem 0; color:#0f172a; letter-spacing:-0.02em;">
+              ${data.overallScore}% SEO & GEO score — ${data.domain}
+            </h1>
+            <p style="color:#64748b; font-size:0.95rem; margin:0 0 1rem 0;">
+              Email & DNS security checks (SPF, DKIM, DMARC, MTA-STS) shown separately · not counted in score
+            </p>
+            <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:1.5rem;">Checked on ${data.analyzedAt}</div>
+            <div style="width:260px; height:6px; background:#0d9488; border-radius:99px; margin:0 auto;"></div>
+          </div>
 
-            '<div style="display:flex; flex-direction:column; gap:1rem;">' +
-              '<div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; text-align:center;">' +
-                '<div style="font-size:0.8rem; color:#64748b;">Technical (30%)</div>' +
-                '<div style="font-size:1.8rem; font-weight:800; color:#059669;">' + cats.technical.score + '%</div>' +
-              '</div>' +
-              '<div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; text-align:center;">' +
-                '<div style="font-size:0.8rem; color:#64748b;">Accessibility (15%)</div>' +
-                '<div style="font-size:1.8rem; font-weight:800; color:#059669;">' + cats.accessibility.score + '%</div>' +
-              '</div>' +
-            '</div>' +
-          '</div>';
+          <!-- PageSpeed Insights Mobile Lab Box -->
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:20px; padding:2rem; box-shadow:0 4px 20px -2px rgba(0,0,0,0.03); margin-bottom:2rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.75rem;">
+              <div style="font-weight:700; font-size:1.15rem; color:#0f172a;">
+                PageSpeed Insights <span style="font-size:0.85rem; font-weight:400; color:#64748b; margin-left:6px;">mobile · lab data (simulated)</span>
+              </div>
+              <a href="https://pagespeed.web.dev/" target="_blank" style="font-size:0.85rem; color:#64748b; text-decoration:none;">↗ View full report on PageSpeed Insights</a>
+            </div>
 
-      function renderSection(name, obj) {
-        var barColor = obj.score >= 70 ? '#10b981' : (obj.score >= 40 ? '#f59e0b' : '#ef4444');
-        var s = '<div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">' +
-          '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">' +
-            '<span style="font-weight:700; font-size:1.05rem;">' + name + '</span>' +
-            '<span style="font-weight:700; color:' + barColor + ';">' + obj.score + '%</span>' +
-          '</div>' +
-          '<div style="height:6px; background:#f1f5f9; border-radius:99px; overflow:hidden; margin-bottom:1.5rem;">' +
-            '<div style="width:' + obj.score + '%; background:' + barColor + '; height:100%;"></div>' +
-          '</div>' +
-          '<div style="display:flex; flex-direction:column; gap:0.75rem;">';
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; text-align:center; margin-bottom:2rem;">
+              <div>
+                <div style="width:72px; height:72px; line-height:72px; border-radius:50%; border:3.5px solid #dc2626; color:#dc2626; font-size:1.5rem; font-weight:800; margin:0 auto 0.6rem auto;">${ps.performance}</div>
+                <div style="font-size:0.85rem; color:#475569; font-weight:500;">Performance</div>
+              </div>
+              <div>
+                <div style="width:72px; height:72px; line-height:72px; border-radius:50%; border:3.5px solid #0d9488; color:#0d9488; font-size:1.5rem; font-weight:800; margin:0 auto 0.6rem auto;">${ps.accessibility}</div>
+                <div style="font-size:0.85rem; color:#475569; font-weight:500;">Accessibility</div>
+              </div>
+              <div>
+                <div style="width:72px; height:72px; line-height:72px; border-radius:50%; border:3.5px solid #d97706; color:#d97706; font-size:1.5rem; font-weight:800; margin:0 auto 0.6rem auto;">${ps.bestPractices}</div>
+                <div style="font-size:0.85rem; color:#475569; font-weight:500;">Best Practices</div>
+              </div>
+              <div>
+                <div style="width:72px; height:72px; line-height:72px; border-radius:50%; border:3.5px solid #0d9488; color:#0d9488; font-size:1.5rem; font-weight:800; margin:0 auto 0.6rem auto;">${ps.seo}</div>
+                <div style="font-size:0.85rem; color:#475569; font-weight:500;">SEO</div>
+              </div>
+            </div>
 
-        obj.checks.forEach(function(c) {
-          var isPass = c.status === 'pass';
-          var icon = isPass ? '&#10004;' : '!';
-          var bg = isPass ? '#f0fdf4' : '#fff7ed';
-          var border = isPass ? '#bbf7d0' : '#fed7aa';
-          var textCol = isPass ? '#166534' : '#9a3412';
+            <div style="font-size:0.85rem; color:#64748b; margin-bottom:1rem;">Vitals: no real-user data — showing simulated Lighthouse results.</div>
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem;">
+              <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:14px; padding:1.1rem;">
+                <div style="font-size:0.75rem; color:#64748b; font-weight:600;">LCP</div>
+                <div style="font-size:1.6rem; font-weight:800; color:#dc2626; margin:4px 0;">${vit.lcp}</div>
+                <div style="font-size:0.75rem; font-weight:800; color:#dc2626;">• SLOW</div>
+              </div>
+              <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:14px; padding:1.1rem;">
+                <div style="font-size:0.75rem; color:#64748b; font-weight:600;">CLS</div>
+                <div style="font-size:1.6rem; font-weight:800; color:#0d9488; margin:4px 0;">${vit.cls}</div>
+                <div style="font-size:0.75rem; font-weight:800; color:#0d9488;">• FAST</div>
+              </div>
+              <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:14px; padding:1.1rem;">
+                <div style="font-size:0.75rem; color:#64748b; font-weight:600;">FCP</div>
+                <div style="font-size:1.6rem; font-weight:800; color:#dc2626; margin:4px 0;">${vit.fcp}</div>
+                <div style="font-size:0.75rem; font-weight:800; color:#dc2626;">• SLOW</div>
+              </div>
+              <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:14px; padding:1.1rem;">
+                <div style="font-size:0.75rem; color:#64748b; font-weight:600;">TTFB</div>
+                <div style="font-size:1.6rem; font-weight:800; color:#0d9488; margin:4px 0;">${vit.ttfb}</div>
+                <div style="font-size:0.75rem; font-weight:800; color:#0d9488;">• FAST</div>
+              </div>
+            </div>
+          </div>
 
-          s += '<div style="background:' + bg + '; border:1px solid ' + border + '; border-radius:8px; padding:0.85rem 1rem;">' +
-            '<div style="font-weight:700; color:' + textCol + '; font-size:0.9rem; margin-bottom:0.25rem;">' +
-              '<span style="display:inline-block; width:18px; height:18px; line-height:18px; text-align:center; border-radius:50%; background:' + (isPass ? '#10b981' : '#f97316') + '; color:#fff; font-size:0.75rem; margin-right:8px;">' + icon + '</span>' +
-              c.title +
-            '</div>' +
-            '<div style="font-size:0.8rem; color:#475569; padding-left:26px;">' + c.detail + '</div>' +
-          '</div>';
-        });
+          <!-- Priority Fixes List -->
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:20px; padding:2rem; box-shadow:0 4px 20px -2px rgba(0,0,0,0.03); margin-bottom:2rem;">
+            <div style="font-weight:800; font-size:0.95rem; letter-spacing:0.05em; color:#0f172a; margin-bottom:1.5rem;">
+              PRIORITY FIXES FOR ${data.domain.toUpperCase()}
+            </div>
+            <div style="display:flex; flex-direction:column;">
+              ${data.priorityFixes.map((f, i) => `
+                <div style="display:flex; align-items:center; gap:1rem; padding:0.75rem 0; border-bottom:1px solid #f8fafc;">
+                  <span style="color:#94a3b8; font-size:0.85rem; width:22px;">${i + 1}</span>
+                  <span style="background:#fee2e2; color:#991b1b; font-size:0.65rem; font-weight:800; padding:3px 8px; border-radius:4px;">${f.severity}</span>
+                  <span style="color:#334155; font-size:0.9rem; font-weight:500;">${formatInlineCode(f.title)}</span>
+                </div>
+              `).join('')}
+            </div>
+            <div style="font-size:0.8rem; color:#94a3b8; margin-top:1.5rem;">
+              Informational (not scored): SPF · DKIM · DMARC · MTA-STS · humans.txt
+            </div>
+          </div>
 
-        s += '</div></div>';
-        return s;
+          <!-- Filter Navigation Tabs -->
+          <div style="display:flex; gap:0.6rem; margin-bottom:1.75rem; overflow-x:auto;">
+            <button style="background:#0d9488; color:#fff; border:none; padding:7px 16px; border-radius:99px; font-weight:600; font-size:0.85rem; cursor:pointer;">All</button>
+            <button style="background:#fff; border:1px solid #e2e8f0; color:#475569; padding:7px 16px; border-radius:99px; font-weight:600; font-size:0.85rem; cursor:pointer;">🔍 SEO Fundamentals 6/11</button>
+            <button style="background:#fff; border:1px solid #e2e8f0; color:#475569; padding:7px 16px; border-radius:99px; font-weight:600; font-size:0.85rem; cursor:pointer;">🤖 GEO & AI Readiness 1/6</button>
+            <button style="background:#fff; border:1px solid #e2e8f0; color:#475569; padding:7px 16px; border-radius:99px; font-weight:600; font-size:0.85rem; cursor:pointer;">📋 Structured Data 3/5</button>
+            <button style="background:#fff; border:1px solid #e2e8f0; color:#475569; padding:7px 16px; border-radius:99px; font-weight:600; font-size:0.85rem; cursor:pointer;">🔒 Technical & Security 2/13</button>
+          </div>
+
+          <!-- Interactive Module Cards with the 4-part Outrun Drawers -->
+          ${data.modules.map(mod => renderInteractiveModuleCard(mod)).join('')}
+
+        </div>
+      `;
+
+      function renderInteractiveModuleCard(mod) {
+        var isPass = mod.badge === 'PASS';
+        var isWarn = mod.badge === 'WARN';
+        var badgeBg = isPass ? '#dcfce7' : (isWarn ? '#fef3c7' : '#fee2e2');
+        var badgeCol = isPass ? '#166534' : (isWarn ? '#92400e' : '#991b1b');
+
+        return `
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:1.75rem; margin-bottom:1.5rem; box-shadow:0 2px 10px -2px rgba(0,0,0,0.02);">
+            
+            <!-- Category Header -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; border-bottom:1px solid #f8fafc; padding-bottom:1rem;">
+              <div style="display:flex; align-items:center; gap:0.9rem;">
+                <div style="width:38px; height:38px; line-height:38px; text-align:center; border-radius:50%; border:2.5px solid ${badgeCol}; font-weight:800; font-size:0.9rem; color:${badgeCol};">
+                  ${mod.score}
+                </div>
+                <span style="font-weight:700; font-size:1.1rem; color:#0f172a;">${mod.title}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span style="background:#f8fafc; color:#64748b; font-size:0.75rem; font-weight:700; padding:3px 10px; border-radius:4px;">${mod.severity}</span>
+                <span style="background:${badgeBg}; color:${badgeCol}; font-size:0.75rem; font-weight:800; padding:3px 12px; border-radius:4px;">
+                  ${isPass ? 'PASS' : (isWarn ? '▲ WARN' : '✕ FAIL')}
+                </span>
+              </div>
+            </div>
+
+            <!-- Checks Rows -->
+            <div style="display:flex; flex-direction:column;">
+              ${mod.checks.map((c, i) => {
+                var p = c.status === 'pass';
+                var drawerId = 'drawer-' + mod.id + '-' + i;
+                return `
+                  <div style="border-bottom:1px solid #f1f5f9;">
+                    
+                    <!-- Clickable Row Header -->
+                    <div onclick="toggleDrawer('${drawerId}')" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; padding:0.85rem 0.25rem;">
+                      <div>
+                        <div style="font-size:0.92rem; color:#1e293b; font-weight:500;">${formatInlineCode(c.title)}</div>
+                        ${c.note ? `<div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">${c.note}</div>` : ''}
+                      </div>
+                      <div style="display:flex; align-items:center; gap:0.6rem;">
+                        <span style="background:#f1f5f9; color:#64748b; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:4px;">${c.severity}</span>
+                        <span style="background:${p ? '#dcfce7' : '#fee2e2'}; color:${p ? '#166534' : '#991b1b'}; font-size:0.75rem; font-weight:800; padding:2px 10px; border-radius:4px;">
+                          ${p ? 'PASS' : 'FAIL'}
+                        </span>
+                        <span id="arrow-${drawerId}" style="font-size:0.65rem; color:#94a3b8; transition:transform 0.2s ease-in-out; display:inline-block; margin-left:4px;">▼</span>
+                      </div>
+                    </div>
+
+                    <!-- The 4-Section Dropdown Drawer -->
+                    <div id="${drawerId}" style="display:none; padding:1.25rem 1.5rem; background:#f8fafc; border-top:1px solid #edf2f7; border-bottom:1px solid #edf2f7; margin-bottom:0.5rem; font-size:0.9rem; line-height:1.6;">
+                      
+                      <!-- 1. WHAT IS IT? -->
+                      <div style="margin-bottom:1rem;">
+                        <div style="font-size:0.72rem; font-weight:800; color:#64748b; letter-spacing:0.06em; margin-bottom:0.25rem; text-transform:uppercase;">
+                          WHAT IS IT?
+                        </div>
+                        <div style="color:#334155;">${formatInlineCode(c.whatIsIt)}</div>
+                      </div>
+
+                      <!-- 2. WHY IT MATTERS -->
+                      <div style="margin-bottom:1rem;">
+                        <div style="font-size:0.72rem; font-weight:800; color:#64748b; letter-spacing:0.06em; margin-bottom:0.25rem; text-transform:uppercase;">
+                          WHY IT MATTERS
+                        </div>
+                        <div style="color:#334155;">${formatInlineCode(c.whyItMatters)}</div>
+                      </div>
+
+                      <!-- 3. HOW TO FIX -->
+                      <div style="margin-bottom:1.25rem;">
+                        <div style="font-size:0.72rem; font-weight:800; color:#64748b; letter-spacing:0.06em; margin-bottom:0.25rem; text-transform:uppercase;">
+                          HOW TO FIX
+                        </div>
+                        <div style="color:#334155; white-space:pre-wrap;">${formatInlineCode(c.howToFix)}</div>
+                      </div>
+
+                      <!-- 4. DOCUMENTATION BUTTON -->
+                      ${c.docTitle ? `
+                        <div>
+                          <div style="font-size:0.72rem; font-weight:800; color:#64748b; letter-spacing:0.06em; margin-bottom:0.4rem; text-transform:uppercase;">
+                            DOCUMENTATION
+                          </div>
+                          <a href="${c.docUrl}" target="_blank" style="display:inline-block; background:#ecfdf5; border:1px solid #a7f3d0; color:#065f46; font-size:0.85rem; font-weight:600; padding:6px 14px; border-radius:6px; text-decoration:none; cursor:pointer;">
+                            ${c.docTitle}
+                          </a>
+                        </div>
+                      ` : ''}
+
+                    </div>
+
+                  </div>
+                `;
+              }).join('')}
+            </div>
+
+          </div>
+        `;
       }
 
-      html += renderSection('Content Structure', cats.content);
-      html += renderSection('Technical SEO for AI', cats.technical);
-      html += renderSection('Authority Signals', cats.authority);
-      html += renderSection('Accessibility & Semantics', cats.accessibility);
-      html += '</div>';
-
       document.getElementById('aeoResultsContainer').innerHTML = html;
+    }
     }
   </script>
 </body>
