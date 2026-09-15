@@ -1192,7 +1192,7 @@ function renderAuditHistory(){
   var el = document.getElementById('auditHistoryList');
   if(!window.state.audits.length){ el.innerHTML = '<div class="empty">No historical audits recorded.</div>'; return; }
   el.innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Timestamp</th><th>Domain</th><th>Score</th></tr></thead><tbody>' +
-    window.state.audits.map(function(a){
+  window.state.audits.map(function(a){
       return '<tr><td>' + new Date(a.date).toLocaleDateString() + '</td><td>' + escapeHtml(a.url) + '</td><td style="color:' + gaugeColor(a.score) + ';font-weight:700;">' + a.score + '</td></tr>';
     }).join('') +
     '</tbody></table></div>';
@@ -1205,7 +1205,6 @@ function renderStats(){
     '<div class="stat-tile"><div class="stat-val">100%</div><div class="stat-lbl">Engine Health</div></div>' +
     '<div class="stat-tile"><div class="stat-val">ACTIVE</div><div class="stat-lbl">Groq AI API</div></div>';
 }
-
 document.addEventListener('DOMContentLoaded', function(){
   renderStats();
 });
@@ -1763,9 +1762,8 @@ renderStats();
         </div>
       </div>
     `;
-   targetContainer.innerHTML = html;
+  targetContainer.innerHTML = html;
 }
-};
 </script>
 </body>
 </html>
