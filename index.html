@@ -1363,28 +1363,7 @@ renderStats();
   </div>
 
   <script>
-    // Tab Navigation Logic
-    function switchTab(tabId) {
-      document.querySelectorAll('.tool-panel').forEach(function(el) {
-        el.style.display = 'none';
-      });
-      document.querySelectorAll('.nav-pill').forEach(function(btn) {
-        btn.style.background = 'transparent';
-        btn.style.color = '#94a3b8';
-        btn.style.fontWeight = '600';
-      });
-
-      var activePanel = document.getElementById(tabId);
-      if (activePanel) activePanel.style.display = 'block';
-
-      var activeNav = document.getElementById('nav-' + tabId);
-      if (activeNav) {
-        activeNav.style.background = '#1e293b';
-        activeNav.style.color = (tabId === 'geo-tab') ? '#c084fc' : '#38bdf8';
-        activeNav.style.fontWeight = '700';
-      }
-    }
-
+   
     function formatInlineCode(text) {
       if (!text) return '';
       return text.replace(/`([^`]+)`/g, '<code style="background:#e2e8f0; color:#334155; padding:2px 6px; border-radius:4px; font-family:monospace; font-size:0.85em;">$1</code>');
