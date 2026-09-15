@@ -1322,7 +1322,7 @@ renderStats();
           
           <div style="display:flex; gap:0.75rem;">
             <input type="text" id="aeoInputUrl" placeholder="https://prodoo.com" value="https://prodoo.com" style="flex:1; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:0.85rem 1.1rem; color:#fff; font-size:0.95rem; outline:none;" />
-            <button id="btnRunAeoAudit" onclick="runAudit('aeo')" style="background:#10b981; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">Run AEO Audit</button>
+            <button id="btnRunAeoAudit" onclick="runAeoGeoAudit('aeo')" style="background:#10b981; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">Run AEO Audit</button>
           </div>
           <div id="aeoStatusText" style="margin-top:1rem; font-size:0.88rem; color:#38bdf8; display:none;"></div>
 
@@ -1342,7 +1342,7 @@ renderStats();
           
           <div style="display:flex; gap:0.75rem;">
             <input type="text" id="geoInputUrl" placeholder="https://prodoo.com" value="https://prodoo.com" style="flex:1; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:0.85rem 1.1rem; color:#fff; font-size:0.95rem; outline:none;" />
-            <button id="btnRunGeoAudit" onclick="runAudit('geo')" style="background:#8b5cf6; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">Run GEO Audit</button>
+            <button id="btnRunGeoAudit" onclick="runAeoGeoAudit('geo')" style="background:#8b5cf6; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">Run GEO Audit</button>
           </div>
           <div id="geoStatusText" style="margin-top:1rem; font-size:0.88rem; color:#c084fc; display:none;"></div>
 
@@ -1382,7 +1382,7 @@ renderStats();
       }
     }
 
-    async function runAudit(type) {
+   async function runAeoGeoAudit(type) {
       var isAeo = (type === 'aeo');
       var urlInput = document.getElementById(isAeo ? 'aeoInputUrl' : 'geoInputUrl');
       var statusText = document.getElementById(isAeo ? 'aeoStatusText' : 'geoStatusText');
