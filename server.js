@@ -309,7 +309,6 @@ app.post('/api/rank-check', async (req, res) => {
 app.post('/api/competitors', async (req, res) => {
   const { domain, vertical } = req.body;
   const serperKey = process.env.SERPER_API_KEY;
-  const groqKey = process.env.GROQ_API_KEY || process.env.AI_API_KEY;
 
   if (!serperKey) {
     return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured.' });
@@ -325,95 +324,103 @@ app.post('/api/competitors', async (req, res) => {
       .replace(/^www\./i, '')
       .toLowerCase();
 
-    let nicheSearchQuery = vertical ? vertical.trim() : '';
+    const brandName = cleanHost.split('.')[0];
+    let candidateKeywords = [];
 
-    // Step 1: Query Google to get what Google itself indexes about this domain
+    // 1. If vertical is supplied by user, prioritize it
+    if (vertical && vertical.trim().length > 0) {
+      candidateKeywords.push(vertical.trim());
+    }
+
+    // 2. Discover actual organic keywords from Google SERP index
     const siteLookup = await fetch('https://google.serper.dev/search', {
       method: 'POST',
       headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: `site:${cleanHost}`, num: 3 })
+      body: JSON.stringify({ q: `site:${cleanHost}`, num: 10 })
     });
     const siteData = await siteLookup.json();
-    const snippetText = (siteData.organic || [])
-      .map(o => `${o.title} - ${o.snippet}`)
-      .join(' ');
+    const siteResults = siteData.organic || [];
 
-    // Step 2: Use AI to classify the exact commercial business niche
-    if (!nicheSearchQuery && groqKey && snippetText.length > 10) {
-      try {
-        const aiPrompt = `Analyze this website description: "${snippetText}". What is the exact primary business service/product niche? Return ONLY a 3-5 word Google search query to find their direct commercial market rivals (e.g. "digital marketing agency", "b2b saas crm software", "shopify development agency"). Return only the search terms, nothing else.`;
-
-        const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${groqKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [{ role: 'user', content: aiPrompt }],
-            temperature: 0.2
-          })
-        });
-
-        const aiJson = await aiRes.json();
-        const extracted = aiJson.choices?.[0]?.message?.content?.trim().replace(/["']/g, '');
-        if (extracted && extracted.length > 3) {
-          nicheSearchQuery = extracted;
-        }
-      } catch (aiErr) {
-        // Fallback to domain name heuristic if Groq call fails
-      }
-    }
-
-    if (!nicheSearchQuery) {
-      const baseName = cleanHost.split('.')[0];
-      nicheSearchQuery = `${baseName} agency services companies`;
-    }
-
-    // Step 3: Search Google via Serper for real ranking competitors
-    const searchRes = await fetch('https://google.serper.dev/search', {
-      method: 'POST',
-      headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: `${nicheSearchQuery} -site:${cleanHost}`, num: 40 })
+    // Extract real phrases from indexed titles and snippets
+    const rawTokens = siteResults.flatMap(item => {
+      const text = `${item.title || ''} ${item.snippet || ''}`;
+      return text.toLowerCase().replace(/[^a-z0-9\s-]/g, ' ').split(/\s+/);
     });
-    const searchData = await searchRes.json();
-    const organic = searchData.organic || [];
 
-    // Blacklist non-competitor directories and platforms
-    const ignoreList = [
+    const stopWords = new Set([
+      'the','and','for','with','your','our','from','all','are','that','this','you','home',
+      'welcome','official','site','website','online','services','solutions','company','agency',
+      'about','best','free','login','contact','portal','app','inc','ltd','llc','privacy',
+      'terms','policy','copyright','rights','reserved','com','net','org','digital','page',
+      brandName
+    ]);
+
+    const wordCounts = {};
+    rawTokens.forEach(w => {
+      if (w.length > 3 && !stopWords.has(w) && !cleanHost.includes(w)) {
+        wordCounts[w] = (wordCounts[w] || 0) + 1;
+      }
+    });
+
+    const topTerms = Object.keys(wordCounts)
+      .sort((a, b) => wordCounts[b] - wordCounts[a])
+      .slice(0, 4);
+
+    if (topTerms.length >= 2) {
+      candidateKeywords.push(topTerms.slice(0, 2).join(' '));
+      candidateKeywords.push(topTerms.slice(0, 3).join(' '));
+    }
+
+    // Fallback search term if domain has minimal index footprint
+    candidateKeywords.push(`${brandName} platform`);
+
+    // 3. Blacklist directories, aggregators, social platforms & user domain
+    const blacklist = [
       'google', 'bing', 'yahoo', 'youtube', 'facebook', 'linkedin', 'twitter', 'x.com',
       'instagram', 'wikipedia', 'reddit', 'quora', 'gartner', 'g2.com', 'capterra',
       'trustradius', 'cbinsights', 'getapp', 'softwareadvice', 'sourceforge', 'producthunt',
-      'github', 'medium', 'apple', 'clutch.co', 'upwork', 'fiverr', 'yellowpages',
-      'yelp', 'tripadvisor', 'trustpilot', 'forbes', cleanHost
+      'github', 'medium', 'apple.com', 'play.google', 'clutch.co', 'upwork', 'fiverr',
+      'trustpilot', 'forbes', 'techradar', 'pcmag', 'zoominfo', 'crunchbase', cleanHost
     ];
 
     const competitors = [];
     const seenHosts = new Set();
 
-    for (const item of organic) {
-      try {
-        const itemUrl = new URL(item.link);
-        const host = itemUrl.hostname.replace(/^www\./i, '').toLowerCase();
-
-        const isBlocked = ignoreList.some(b => host.includes(b));
-
-        if (!seenHosts.has(host) && !isBlocked) {
-          seenHosts.add(host);
-          competitors.push({
-            domain: host,
-            notes: (item.title || host) + ' — ' + (item.snippet ? item.snippet.slice(0, 140) + '...' : '')
-          });
-        }
-      } catch (e) {}
-
+    // 4. Query SERP for true ranking commercial competitors
+    for (const kw of candidateKeywords) {
       if (competitors.length >= 10) break;
+
+      const serperRes = await fetch('https://google.serper.dev/search', {
+        method: 'POST',
+        headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: `${kw} -site:${cleanHost}`, num: 30 })
+      });
+
+      const serperData = await serperRes.json();
+      const organic = serperData.organic || [];
+
+      for (const item of organic) {
+        try {
+          const itemUrl = new URL(item.link);
+          const host = itemUrl.hostname.replace(/^www\./i, '').toLowerCase();
+          const isBlocked = blacklist.some(b => host.includes(b));
+
+          if (!seenHosts.has(host) && !isBlocked) {
+            seenHosts.add(host);
+            competitors.push({
+              domain: host,
+              notes: (item.title || host) + ' — ' + (item.snippet ? item.snippet.slice(0, 140) + '...' : '')
+            });
+          }
+        } catch (e) {}
+
+        if (competitors.length >= 10) break;
+      }
     }
 
     return res.json({
       success: true,
-      nicheDetected: nicheSearchQuery,
+      nicheDetected: topTerms.join(' ') || brandName,
       competitors
     });
   } catch (err) {
