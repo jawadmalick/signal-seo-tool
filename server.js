@@ -268,7 +268,7 @@ app.post('/api/rank-check', async (req, res) => {
 
     const cleanDomain = domain.replace(/^https?:\/\//i, '').replace(/\/.*$/, '').toLowerCase();
 
-    const response = await fetch('[https://google.serper.dev/search](https://google.serper.dev/search)', {
+   const response = await fetch('https://google.serper.dev/search', {
       method: 'POST',
       headers: {
         'X-API-KEY': apiKey,
