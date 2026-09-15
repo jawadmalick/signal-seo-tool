@@ -309,9 +309,10 @@ app.post('/api/rank-check', async (req, res) => {
 app.post('/api/competitors', async (req, res) => {
   const { domain, vertical } = req.body;
   const serperKey = process.env.SERPER_API_KEY;
+  const aiKey = process.env.GROQ_API_KEY || process.env.AI_API_KEY;
 
   if (!serperKey) {
-    return res.status(500).json({ success: false, error: 'SERPER_API_KEY is missing in server environment.' });
+    return res.status(500).json({ success: false, error: 'SERPER_API_KEY missing from environment.' });
   }
   if (!domain) {
     return res.status(400).json({ success: false, error: 'Domain is required.' });
@@ -323,65 +324,76 @@ app.post('/api/competitors', async (req, res) => {
       .replace(/\/.*$/, '')
       .replace(/^www\./i, '')
       .toLowerCase();
+    const brand = cleanHost.split('.')[0];
 
-    const brandName = cleanHost.split('.')[0];
-    const queries = [];
+    // 1. Fetch live Google SERP snippet for the brand to discover actual context
+    let brandContext = '';
+    try {
+      const brandSearch = await fetch('https://google.serper.dev/search', {
+        method: 'POST',
+        headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: `"${cleanHost}" OR "${brand}"`, num: 5 })
+      });
+      const brandData = await brandSearch.json();
+      brandContext = (brandData.organic || [])
+        .map(o => `${o.title}: ${o.snippet}`)
+        .join(' ');
+    } catch (e) {}
 
-    // 1. Prioritize explicit user input if provided
+    // 2. Derive genuine commercial search queries
+    let searchQueries = [];
     if (vertical && vertical.trim().length > 0) {
-      queries.push(vertical.trim());
+      searchQueries.push(`${vertical.trim()} companies`);
+      searchQueries.push(`${vertical.trim()} platform`);
     }
 
-    // 2. Discover business category from Google's top indexed snippet
-    const brandLookupRes = await fetch('https://google.serper.dev/search', {
-      method: 'POST',
-      headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: `"${brandName}" OR "${cleanHost}"`, num: 5 })
-    });
-    const brandLookupData = await brandLookupRes.json();
-    const primaryOrganic = (brandLookupData.organic || [])[0] || {};
-    const textBlob = `${primaryOrganic.title || ''} ${primaryOrganic.snippet || ''}`.toLowerCase();
+    if (aiKey) {
+      try {
+        const aiPrompt = `Domain: "${cleanHost}". Brand context from Google: "${brandContext.slice(0, 500)}". User vertical hint: "${vertical || ''}".
+What are the top 2 exact Google search queries to find real commercial B2B/B2C business competitors for this company?
+Do NOT return review terms (no words like "best", "reviews", "top 10").
+Return ONLY a raw JSON array of 2 query strings, e.g. ["query 1", "query 2"].`;
 
-    // Remove noise words to isolate actual offerings
-    const stopWords = new Set([
-      'the','and','for','with','your','our','from','all','are','that','this','you','home',
-      'welcome','official','site','website','online','services','solutions','company','agency',
-      'about','best','free','login','contact','portal','app','inc','ltd','llc','privacy',
-      'terms','policy','copyright','rights','reserved','prodoo','perdoo','rabt','digital'
+        const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${aiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [{ role: 'user', content: aiPrompt }],
+            temperature: 0.2
+          })
+        });
+        const aiJson = await aiRes.json();
+        const rawContent = aiJson.choices?.[0]?.message?.content || '[]';
+        const parsed = JSON.parse(rawContent.match(/\[[\s\S]*\]/)?.[0] || '[]');
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          searchQueries.push(...parsed);
+        }
+      } catch (e) {}
+    }
+
+    if (searchQueries.length === 0) {
+      searchQueries.push(`${brand} software platform rivals`);
+      searchQueries.push(`${brand} agency solutions competitors`);
+    }
+
+    // Exact domain blacklist to prevent false positive substring drops
+    const exactBlacklist = new Set([
+      'google.com', 'bing.com', 'yahoo.com', 'youtube.com', 'facebook.com',
+      'linkedin.com', 'twitter.com', 'x.com', 'instagram.com', 'wikipedia.org',
+      'reddit.com', 'quora.com', 'gartner.com', 'g2.com', 'capterra.com',
+      'trustradius.com', 'cbinsights.com', 'getapp.com', 'softwareadvice.com',
+      'sourceforge.net', 'producthunt.com', 'github.com', 'medium.com',
+      'apple.com', 'play.google.com', 'clutch.co', 'upwork.com', 'fiverr.com',
+      'trustpilot.com', 'forbes.com', 'techradar.com', 'pcmag.com', 'crunchbase.com',
+      cleanHost
     ]);
 
-    const words = textBlob
-      .replace(/[^a-z0-9\s-]/g, ' ')
-      .split(/\s+/)
-      .filter(w => w.length > 3 && !stopWords.has(w) && !cleanHost.includes(w));
-
-    const detectedKeywords = [...new Set(words)].slice(0, 3).join(' ');
-
-    if (detectedKeywords.length > 3) {
-      queries.push(`${detectedKeywords} companies`);
-      queries.push(`${detectedKeywords} platform software`);
-    }
-
-    // 3. Robust fallbacks based on common domain suffixes & brand
-    queries.push(`${brandName} software competitors`);
-    queries.push(`${brandName} agency alternatives`);
-    queries.push(`${cleanHost} commercial alternatives`);
-
-    // Universal blacklist: review portals, directory aggregators, social platforms
-    const blacklist = [
-      'google', 'bing', 'yahoo', 'youtube', 'facebook', 'linkedin', 'twitter', 'x.com',
-      'instagram', 'wikipedia', 'reddit', 'quora', 'gartner', 'g2.com', 'capterra',
-      'trustradius', 'cbinsights', 'getapp', 'softwareadvice', 'sourceforge', 'producthunt',
-      'github', 'medium', 'apple.com', 'play.google', 'clutch.co', 'upwork', 'fiverr',
-      'trustpilot', 'forbes', 'techradar', 'pcmag', 'zoominfo', 'crunchbase', 'glassdoor',
-      cleanHost
-    ];
-
     const competitors = [];
-    const seenHosts = new Set();
+    const seen = new Set();
 
-    // Query Google SERP sequentially until at least 10 genuine rivals are found
-    for (const q of queries) {
+    // 3. Search Google SERP across derived queries
+    for (const q of searchQueries) {
       if (competitors.length >= 10) break;
 
       const serperRes = await fetch('https://google.serper.dev/search', {
@@ -389,21 +401,22 @@ app.post('/api/competitors', async (req, res) => {
         headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({ q: `${q} -site:${cleanHost}`, num: 30 })
       });
-
       const serperData = await serperRes.json();
       const organic = serperData.organic || [];
 
       for (const item of organic) {
         try {
           const itemUrl = new URL(item.link);
-          const host = itemUrl.hostname.replace(/^www\./i, '').toLowerCase();
-          const isBlocked = blacklist.some(b => host.includes(b));
+          const rootHost = itemUrl.hostname.replace(/^www\./i, '').toLowerCase();
 
-          if (!seenHosts.has(host) && !isBlocked) {
-            seenHosts.add(host);
+          // Reject exact matches or subdomains of blacklisted aggregators
+          const isBlocked = Array.from(exactBlacklist).some(b => rootHost === b || rootHost.endsWith('.' + b));
+
+          if (!seen.has(rootHost) && !isBlocked) {
+            seen.add(rootHost);
             competitors.push({
-              domain: host,
-              notes: (item.title || host) + ' — ' + (item.snippet ? item.snippet.slice(0, 130) + '...' : '')
+              domain: rootHost,
+              notes: (item.title || rootHost) + ' — ' + (item.snippet ? item.snippet.slice(0, 130) + '...' : '')
             });
           }
         } catch (e) {}
@@ -412,11 +425,41 @@ app.post('/api/competitors', async (req, res) => {
       }
     }
 
-    return res.json({
-      success: true,
-      nicheDetected: detectedKeywords || brandName,
-      competitors
-    });
+    // 4. Safety Fallback: Guarantee 10 results if Google SERP returned fewer
+    if (competitors.length < 10 && aiKey) {
+      try {
+        const fillPrompt = `Provide direct real commercial website competitors for a company in this niche: "${cleanHost} (${brandContext.slice(0, 200)})".
+STRICT RULES:
+1. Return ONLY legitimate commercial company domains (e.g. real rivals in that space).
+2. NEVER return directories, review sites, or search engines (no G2, Gartner, Google, etc.).
+3. Return JSON: {"competitors": [{"domain": "domain.com", "notes": "One-line description of product/service"}]}`;
+
+        const fillRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${aiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [{ role: 'user', content: fillPrompt }],
+            response_format: { type: 'json_object' }
+          })
+        });
+        const fillJson = await fillRes.json();
+        const parsedFill = JSON.parse(fillJson.choices?.[0]?.message?.content || '{}');
+        const fallbackList = parsedFill.competitors || [];
+
+        for (const fb of fallbackList) {
+          const d = (fb.domain || '').replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/.*$/, '').toLowerCase();
+          const isBlocked = Array.from(exactBlacklist).some(b => d === b || d.endsWith('.' + b));
+          if (d && !seen.has(d) && !isBlocked) {
+            seen.add(d);
+            competitors.push({ domain: d, notes: fb.notes || 'Verified industry competitor' });
+          }
+          if (competitors.length >= 10) break;
+        }
+      } catch (e) {}
+    }
+
+    return res.json({ success: true, competitors });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }
