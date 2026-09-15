@@ -397,20 +397,23 @@
 
       <!-- 05. COMPETITORS -->
       <div class="panel" id="panel-competitors">
-        <div class="card">
-          <div class="card-title">Market Rivals & Competitive Gaps</div>
-          <div class="row" style="margin-top:12px;">
-            <div><label>Your Domain</label><input type="text" id="compUrl" placeholder="https://"></div>
-            <div><label>Market Vertical (Optional)</label><input type="text" id="compContext" placeholder="e.g. b2b saas"></div>
-          </div>
-          <button class="btn" id="runCompBtn" onclick="runCompetitors()">Scan Competitors</button>
-          <div id="compLoading" style="display:none;margin-top:12px;" class="loading">Benchmarking rivals and scanning gap closures...</div>
-        </div>
-        <div class="card" id="compResultCard" style="display:none;">
-          <div id="compTable"></div>
-          <div id="compGaps" style="margin-top:16px;"></div>
-        </div>
-      </div>
+  <div class="card">
+    <div class="card-title">Side-by-Side Competitor Benchmarking</div>
+    <div style="margin-top:12px;">
+      <label>Your Domain</label>
+      <input type="text" id="compUrl" placeholder="https://yourdomain.com">
+    </div>
+    <div style="margin-top:12px;">
+      <label>Competitor Domains (Up to 5, one per line or comma-separated)</label>
+      <textarea id="compList" rows="4" placeholder="competitor1.com&#10;competitor2.com&#10;competitor3.com" style="width:100%;box-sizing:border-box;margin-top:4px;resize:vertical;"></textarea>
+    </div>
+    <button class="btn" id="runCompBtn" style="margin-top:12px;" onclick="runCompetitors(event)">Generate Competitor Report</button>
+    <div id="compLoading" style="display:none;margin-top:12px;" class="loading">Auditing domains against Google SERP index...</div>
+  </div>
+  <div class="card" id="compResultCard" style="display:none;margin-top:16px;">
+    <div id="compTable"></div>
+  </div>
+</div>
 
       <!-- 06. RANK TRACKER -->
       <div class="panel" id="panel-ranklog">
@@ -981,9 +984,24 @@ window.runGeo = async function(){
 window.runCompetitors = async function(e){
   if(e && e.preventDefault) e.preventDefault();
 
-  var rawUrl = document.getElementById('compUrl').value.trim();
-  var ctx = document.getElementById('compContext').value.trim();
-  if(!rawUrl){ alert('Enter your domain URL'); return; }
+  var userUrl = document.getElementById('compUrl').value.trim();
+  var rawList = document.getElementById('compList').value.trim();
+
+  if(!userUrl){
+    alert('Please enter your primary domain URL.');
+    return;
+  }
+
+  var comps = rawList
+    .split(/[\n,]+/)
+    .map(function(s){ return s.trim(); })
+    .filter(function(s){ return s.length > 0; })
+    .slice(0, 5);
+
+  if(comps.length === 0){
+    alert('Please enter at least 1 competitor domain.');
+    return;
+  }
 
   var btn = document.getElementById('runCompBtn');
   var loading = document.getElementById('compLoading');
@@ -994,26 +1012,41 @@ window.runCompetitors = async function(e){
     var res = await fetch('/api/competitors', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ domain: rawUrl, vertical: ctx })
+      body: JSON.stringify({ userDomain: userUrl, competitors: comps })
     });
     var data = await res.json();
-    if(!data.success) throw new Error(data.error || 'Failed to fetch competitors');
+    if(!data.success) throw new Error(data.error || 'Comparison failed');
 
-    var card = document.getElementById('compResultCard');
-    if(card) card.style.display = 'block';
+    document.getElementById('compResultCard').style.display = 'block';
 
-    var compTable = document.getElementById('compTable');
-    if (!data.competitors || data.competitors.length === 0) {
-      compTable.innerHTML = '<div style="padding:24px;color:#94a3b8;text-align:center;">No direct commercial rivals found. Try specifying the <b>Market Vertical</b> above.</div>';
-    } else {
-      compTable.innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Competitor Domain</th><th>Live Google Organic Snippet</th></tr></thead><tbody>' +
-        data.competitors.map(function(c){
-          return '<tr><td style="color:#fff;font-weight:700;"><a href="https://' + escapeHtml(c.domain) + '" target="_blank" style="color:inherit;text-decoration:underline;">' + escapeHtml(c.domain) + '</a></td><td>' + escapeHtml(c.notes) + '</td></tr>';
-        }).join('') +
-        '</tbody></table></div>';
-    }
+    var allEntries = [data.targetSite].concat(data.rivals || []);
+    var html = '<div class="table-wrap"><table class="checks-table"><thead><tr>' +
+      '<th>Domain</th>' +
+      '<th>Role</th>' +
+      '<th>Indexed Google Title</th>' +
+      '<th>SERP Meta Snippet</th>' +
+      '<th>Knowledge Graph</th>' +
+      '</tr></thead><tbody>';
+
+    allEntries.forEach(function(row){
+      if(!row) return;
+      var badge = row.isUser 
+        ? '<span style="background:rgba(56,189,248,0.2);color:#38bdf8;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">YOU</span>'
+        : '<span style="background:rgba(148,163,184,0.15);color:#94a3b8;padding:2px 8px;border-radius:4px;font-size:11px;">RIVAL</span>';
+
+      html += '<tr>' +
+        '<td style="font-weight:700;"><a href="https://' + escapeHtml(row.domain) + '" target="_blank" style="color:#fff;text-decoration:underline;">' + escapeHtml(row.domain) + '</a></td>' +
+        '<td>' + badge + '</td>' +
+        '<td style="color:#cbd5e1;max-width:260px;">' + escapeHtml(row.title) + '</td>' +
+        '<td style="color:#94a3b8;font-size:12px;max-width:320px;">' + escapeHtml(row.snippet) + '</td>' +
+        '<td>' + (row.hasKnowledgeGraph ? '<span style="color:#4ade80;">Yes</span>' : '<span style="color:#64748b;">No</span>') + '</td>' +
+        '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    document.getElementById('compTable').innerHTML = html;
   } catch(err){
-    alert('Competitor Check Error: ' + err.message);
+    alert('Analysis Error: ' + err.message);
   } finally {
     if(btn) btn.disabled = false;
     if(loading) loading.style.display = 'none';

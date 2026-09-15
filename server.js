@@ -307,142 +307,77 @@ app.post('/api/rank-check', async (req, res) => {
 });
 
 app.post('/api/competitors', async (req, res) => {
-  const { domain, vertical } = req.body;
+  const { userDomain, competitors } = req.body;
   const serperKey = process.env.SERPER_API_KEY;
 
   if (!serperKey) {
-    return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured.' });
+    return res.status(500).json({ success: false, error: 'SERPER_API_KEY is missing on the server.' });
   }
-  if (!domain) {
-    return res.status(400).json({ success: false, error: 'Domain or URL is required.' });
+  if (!userDomain) {
+    return res.status(400).json({ success: false, error: 'Your primary domain is required.' });
   }
+
+  // Sanitize domains
+  const clean = (url) => (url || '').trim().replace(/^https?:\/\//i, '').replace(/\/.*$/, '').replace(/^www\./i, '').toLowerCase();
+
+  const primaryHost = clean(userDomain);
+  const compHosts = Array.isArray(competitors)
+    ? competitors.map(clean).filter(h => h && h !== primaryHost).slice(0, 5)
+    : [];
+
+  const allHosts = [primaryHost, ...compHosts];
 
   try {
-    // 1. Parse URL to extract both hostname and any informative path slug
-    let rawUrl = domain.trim();
-    if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
-      rawUrl = 'https://' + rawUrl;
-    }
-    const parsedUrl = new URL(rawUrl);
-    const cleanHost = parsedUrl.hostname.replace(/^www\./i, '').toLowerCase();
-    const brand = cleanHost.split('.')[0];
-    
-    // Extract keywords from URL path (e.g. /book-hotels-online -> "book hotels online")
-    const pathKeywords = parsedUrl.pathname
-      .replace(/[\/\-_]/g, ' ')
-      .replace(/\.(html|php|aspx?)$/i, '')
-      .trim();
-
-    // 2. Determine target niche keywords
-    let candidateQueries = [];
-
-    // Prioritize explicit vertical if user provided one
-    if (vertical && vertical.trim().length > 0) {
-      candidateQueries.push(vertical.trim());
-    }
-
-    // Next prioritize informative URL path slug
-    if (pathKeywords && pathKeywords.length > 3) {
-      candidateQueries.push(pathKeywords);
-    }
-
-    // Query Google to extract actual indexed Title & Description for the URL/domain
-    let googleTitle = '';
-    let googleSnippet = '';
-    try {
-      const inspectRes = await fetch('https://google.serper.dev/search', {
-        method: 'POST',
-        headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: `site:${cleanHost}`, num: 5 })
-      });
-      const inspectData = await inspectRes.json();
-      const firstHit = (inspectData.organic && inspectData.organic[0]) || {};
-      googleTitle = firstHit.title || '';
-      googleSnippet = firstHit.snippet || '';
-    } catch (e) {}
-
-    // Extract core commercial terms from the Google title/snippet (stripping stop words and brand)
-    const titleCleaned = `${googleTitle} ${googleSnippet}`
-      .replace(/https?:\/\/\S+/gi, '')
-      .replace(/[^a-zA-Z0-9\s]/g, ' ')
-      .toLowerCase();
-
-    const stopWords = new Set([
-      'the','and','for','with','your','our','from','all','are','that','this','you','home',
-      'welcome','official','site','website','online','services','solutions','company','agency',
-      'about','best','free','login','contact','portal','app','inc','ltd','llc','privacy',
-      'terms','policy','copyright','rights','reserved','pakistan','india','usa','uk',brand
-    ]);
-
-    const meaningfulWords = titleCleaned
-      .split(/\s+/)
-      .filter(w => w.length > 3 && !stopWords.has(w) && !cleanHost.includes(w));
-
-    if (meaningfulWords.length >= 2) {
-      candidateQueries.push(meaningfulWords.slice(0, 3).join(' '));
-      candidateQueries.push(meaningfulWords.slice(0, 2).join(' '));
-    }
-
-    // Fallbacks if domain is brand-new or has minimal index
-    candidateQueries.push(`${brand} alternatives`);
-    candidateQueries.push(`${brand} competitors`);
-
-    // Remove duplicates and empty strings
-    candidateQueries = [...new Set(candidateQueries.filter(q => q && q.trim().length > 2))];
-
-    // Directories, search engines, and social media to exclude
-    const blacklist = new Set([
-      'google.com', 'bing.com', 'yahoo.com', 'youtube.com', 'facebook.com',
-      'linkedin.com', 'twitter.com', 'x.com', 'instagram.com', 'wikipedia.org',
-      'reddit.com', 'quora.com', 'gartner.com', 'g2.com', 'capterra.com',
-      'trustradius.com', 'cbinsights.com', 'getapp.com', 'softwareadvice.com',
-      'sourceforge.net', 'medium.com', 'apple.com', 'play.google.com', cleanHost
-    ]);
-
-    const competitors = [];
-    const seen = new Set();
-
-    // 3. Query Google SERP sequentially until we collect 10 real commercial rivals
-    for (const q of candidateQueries) {
-      if (competitors.length >= 10) break;
-
-      const serperRes = await fetch('https://google.serper.dev/search', {
-        method: 'POST',
-        headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: `${q} -site:${cleanHost}`, num: 20 })
-      });
-
-      const serperData = await serperRes.json();
-      const organic = serperData.organic || [];
-
-      for (const item of organic) {
+    // Fetch live Google index metrics for each domain in parallel
+    const domainAudits = await Promise.all(
+      allHosts.map(async (host) => {
         try {
-          const itemUrl = new URL(item.link);
-          const host = itemUrl.hostname.replace(/^www\./i, '').toLowerCase();
-          const isBlocked = blacklist.has(host) || Array.from(blacklist).some(b => host.endsWith('.' + b));
+          const resp = await fetch('https://google.serper.dev/search', {
+            method: 'POST',
+            headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ q: `site:${host}`, num: 10 })
+          });
+          const data = await resp.json();
+          const organic = data.organic || [];
+          const firstHit = organic[0] || {};
+          
+          return {
+            domain: host,
+            isUser: host === primaryHost,
+            indexedPagesSample: organic.length,
+            title: firstHit.title || 'No indexed title found',
+            snippet: firstHit.snippet || 'No indexed snippet found',
+            totalSearchHits: data.searchInformation?.totalResults || 0,
+            hasKnowledgeGraph: Boolean(data.knowledgeGraph)
+          };
+        } catch (e) {
+          return {
+            domain: host,
+            isUser: host === primaryHost,
+            indexedPagesSample: 0,
+            title: 'Audit fetch failed',
+            snippet: e.message,
+            totalSearchHits: 0,
+            hasKnowledgeGraph: false
+          };
+        }
+      })
+    );
 
-          if (!seen.has(host) && !isBlocked) {
-            seen.add(host);
-            competitors.push({
-              domain: host,
-              notes: (item.title || host) + ' — ' + (item.snippet ? item.snippet.slice(0, 130) + '...' : '')
-            });
-          }
-        } catch (e) {}
+    const targetSite = domainAudits.find(d => d.isUser);
+    const rivals = domainAudits.filter(d => !d.isUser);
 
-        if (competitors.length >= 10) break;
-      }
-    }
-
-    return res.json({
+    res.json({
       success: true,
-      niche: candidateQueries[0] || brand,
-      competitors
+      targetSite,
+      rivals,
+      analyzedCount: rivals.length
     });
   } catch (err) {
-    return res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
+
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
