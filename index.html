@@ -563,13 +563,21 @@ function gaugeColor(score){ return score>=80?'var(--green)': score>=50?'var(--am
 window.switchTab = function(tabId){
   var target = document.getElementById('panel-' + tabId);
   if(!target) return;
+
+  // 1. Update sidebar button states
   document.querySelectorAll('.rail-btn').forEach(function(b){ b.classList.remove('active'); });
   var btn = document.getElementById('btn-' + tabId);
   if(btn) btn.classList.add('active');
 
-  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+  // 2. Hide all panels and show only the target
+  document.querySelectorAll('.panel').forEach(function(p){
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
   target.classList.add('active');
+  target.style.display = 'block';
 
+  // 3. Update header titles
   var titles = {
     dashboard: '00 · DECK OVERVIEW',
     audit: '01 · SITE AUDIT 360°',
@@ -586,9 +594,8 @@ window.switchTab = function(tabId){
   var eb = document.getElementById('pageEyebrow');
   var pt = document.getElementById('pageTitle');
   if(eb) eb.textContent = titles[tabId] || 'INSTRUMENT PANEL';
-  if(pt) pt.textContent = tabId.toUpperCase();
+  if(pt) pt.textContent = (titles[tabId] || tabId).replace(/^[0-9·\s]+/, '');
 };
-
 window.switchUtil = function(uId, btn){
   document.querySelectorAll('.util-pill').forEach(function(b){ b.classList.remove('active'); });
   document.querySelectorAll('.util-panel').forEach(function(p){ p.classList.remove('active'); });
