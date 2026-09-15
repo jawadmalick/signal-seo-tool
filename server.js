@@ -379,10 +379,10 @@ app.post('/api/competitors', async (req, res) => {
 });
 
 // Live Organic Rank Tracker: Top 10 Keywords Ranked on Google's First 10 Pages (#1-#100)
+// Live Organic Rank Tracker: Dynamic Ranking Harvester (No artificial limits)
 app.post('/api/rank-tracker', async (req, res) => {
   const { domain, keywords } = req.body;
   const serperKey = process.env.SERPER_API_KEY;
-  const aiKey = process.env.GROQ_API_KEY || process.env.AI_API_KEY;
 
   if (!serperKey) {
     return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured.' });
@@ -402,96 +402,75 @@ app.post('/api/rank-tracker', async (req, res) => {
 
     let candidateQueries = [];
 
-    // 1. Manual user keywords take precedence if provided
+    // 1. Manual user override if supplied
     if (keywords && keywords.trim().length > 0) {
       candidateQueries = keywords.split(/[\n,]+/).map(k => k.trim()).filter(Boolean);
-    }
-
-    // 2. Fetch all indexed pages and titles from Google
-    let siteContext = '';
-    const indexedItems = [];
-    try {
+    } else {
+      // 2. Deep-harvest indexed pages directly from Google
       const siteLookup = await fetch('https://google.serper.dev/search', {
         method: 'POST',
         headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: `site:${cleanHost}`, num: 30 })
+        body: JSON.stringify({ q: `site:${cleanHost}`, num: 50 })
       });
       const siteData = await siteLookup.json();
-      (siteData.organic || []).forEach(item => {
-        indexedItems.push(item);
-        siteContext += ` ${item.title || ''} ${item.snippet || ''}`;
-      });
-    } catch (e) {}
+      const indexedPages = siteData.organic || [];
 
-    // Fallback: If site lookup returns nothing, fetch homepage directly
-    if (siteContext.trim().length < 20) {
-      try {
-        const homeRes = await fetch(rawUrl, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-          signal: AbortSignal.timeout(3500)
-        });
-        const html = await homeRes.text();
-        const title = (html.match(/<title[^>]*>([^<]+)<\/title>/i) || [])[1] || '';
-        const metaDesc = (html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i) || [])[1] || '';
-        siteContext = `${title} ${metaDesc}`;
-      } catch (err) {}
-    }
+      const queryMap = new Map();
+      queryMap.set(brand, rawUrl);
 
-    // 3. Harvest candidate search queries from slugs, titles, and niche intelligence
-    if (candidateQueries.length === 0) {
-      const stopWords = new Set(['the','and','for','with','your','our','from','all','are','that','this','you','home','welcome','official','site','website','online','page','services','solutions','company','privacy','policy','terms','contact','faq','login','register','about']);
-      const querySet = new Set();
-      querySet.add(brand);
+      const ignoredWords = new Set([
+        'privacy', 'policy', 'terms', 'conditions', 'faq', 'contact',
+        'login', 'register', 'signin', 'signup', 'checkout', 'cart',
+        'home', 'welcome', 'official', 'about', brand
+      ]);
 
-      // A. Slugs and Titles from Google's index
-      indexedItems.forEach(item => {
-        const cleanTitle = (item.title || '')
-          .replace(new RegExp(brand, 'gi'), '')
-          .replace(/[|\-–—:•]/g, ' ')
-          .replace(/[^a-zA-Z0-9\s]/g, ' ')
-          .trim();
+      indexedPages.forEach(item => {
+        if (!item.title) return;
 
-        const words = cleanTitle.toLowerCase().split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
-        if (words.length >= 2) {
-          querySet.add(words.slice(0, 3).join(' '));
-          querySet.add(words.slice(0, 2).join(' '));
+        // Clean indexed page titles into search queries
+        const titleParts = item.title.split(/[|\-–—:•]/).map(p => p.trim()).filter(Boolean);
+        for (const part of titleParts) {
+          const cleanPart = part
+            .replace(new RegExp('\\b' + brand + '\\b', 'gi'), '')
+            .replace(/[^a-zA-Z0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+          const words = cleanPart.toLowerCase().split(' ').filter(w => w.length > 2 && !ignoredWords.has(w));
+          if (words.length >= 2 && words.length <= 5) {
+            const candidate = words.join(' ');
+            if (!queryMap.has(candidate)) {
+              queryMap.set(candidate, item.link);
+            }
+          }
         }
 
+        // Clean slugs into search queries
         try {
           const u = new URL(item.link);
-          const slugWords = u.pathname.split('/').filter(Boolean).pop() || '';
-          const sWords = slugWords.replace(/\.[^/.]+$/, '').split(/[-_]+/).filter(w => w.length > 2 && !stopWords.has(w));
-          if (sWords.length >= 2) querySet.add(sWords.join(' '));
+          const slug = u.pathname.split('/').filter(Boolean).pop();
+          if (slug) {
+            const slugWords = slug
+              .replace(/[-_]+/g, ' ')
+              .replace(/\.[^/.]+$/, '')
+              .toLowerCase()
+              .split(/\s+/)
+              .filter(w => w.length > 2 && !ignoredWords.has(w));
+            if (slugWords.length >= 2 && slugWords.length <= 4) {
+              const slugCandidate = slugWords.join(' ');
+              if (!queryMap.has(slugCandidate)) {
+                queryMap.set(slugCandidate, item.link);
+              }
+            }
+          }
         } catch (e) {}
       });
 
-      // B. Contextual keyword expansion for this exact niche
-      if (aiKey && siteContext.trim().length > 10) {
-        try {
-          const aiPrompt = `Analyze domain: "${cleanHost}". Live content: "${siteContext.slice(0, 600)}".
-Return 25 realistic, high-intent Google search phrases that potential customers use to find this website and its specific products/services.
-Return ONLY a JSON array of strings: ["phrase 1", "phrase 2"]`;
-
-          const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${aiKey}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              model: 'llama-3.3-70b-versatile',
-              messages: [{ role: 'user', content: aiPrompt }],
-              temperature: 0.2
-            })
-          });
-          const aiJson = await aiRes.json();
-          const parsed = JSON.parse(aiJson.choices?.[0]?.message?.content?.match(/\[[\s\S]*\]/)?.[0] || '[]');
-          parsed.forEach(k => querySet.add(String(k).trim()));
-        } catch (e) {}
-      }
-
-      candidateQueries = Array.from(querySet).filter(q => q && q.length > 2);
+      candidateQueries = Array.from(queryMap.keys());
     }
 
-    // 4. Test Google SERP across 100 results (Google's First 10 Pages)
-    const verifiedRankedKeywords = [];
+    // 3. Test Google live SERP for all candidates up to 100 results deep (Top 10 Pages)
+    const liveRankings = [];
 
     await Promise.all(
       candidateQueries.map(async (kw) => {
@@ -505,38 +484,35 @@ Return ONLY a JSON array of strings: ["phrase 1", "phrase 2"]`;
           const organic = checkData.organic || [];
 
           let rankPosition = null;
-          let landingPage = null;
+          let targetLandingPage = null;
 
           for (let i = 0; i < organic.length; i++) {
             const link = (organic[i].link || '').toLowerCase();
             if (link.includes(cleanHost)) {
               rankPosition = i + 1;
-              landingPage = organic[i].link;
+              targetLandingPage = organic[i].link;
               break;
             }
           }
 
-          // STRICT FILTER: Keep ONLY keywords that rank inside Google's Top 100 (Pages 1 to 10)
+          // STRICT CRITERIA: ONLY keep terms that genuinely rank in Google
           if (rankPosition !== null) {
-            const topCompetitorLink = organic[0] && !organic[0].link.toLowerCase().includes(cleanHost)
-              ? organic[0].link
-              : (organic[1] && !organic[1].link.toLowerCase().includes(cleanHost) ? organic[1].link : null);
-
+            const topCompetitorItem = organic.find(item => !item.link.toLowerCase().includes(cleanHost));
             let topCompHost = 'None';
-            if (topCompetitorLink) {
+            if (topCompetitorItem) {
               try {
-                topCompHost = new URL(topCompetitorLink).hostname.replace(/^www\./i, '');
+                topCompHost = new URL(topCompetitorItem.link).hostname.replace(/^www\./i, '');
               } catch (e) {
-                topCompHost = topCompetitorLink;
+                topCompHost = topCompetitorItem.link;
               }
             }
 
-            verifiedRankedKeywords.push({
+            liveRankings.push({
               keyword: kw,
               position: `#${rankPosition}`,
               page: `Page ${Math.ceil(rankPosition / 10)}`,
               numericalRank: rankPosition,
-              rankingPage: landingPage,
+              rankingPage: targetLandingPage,
               topCompetitor: topCompHost
             });
           }
@@ -544,21 +520,19 @@ Return ONLY a JSON array of strings: ["phrase 1", "phrase 2"]`;
       })
     );
 
-    // Sort by best ranking position (#1 first) and take the top 10
-    verifiedRankedKeywords.sort((a, b) => a.numericalRank - b.numericalRank);
-    const top10Rankings = verifiedRankedKeywords.slice(0, 10);
+    // Sort by true ranking position (#1 at the top, down to #100)
+    liveRankings.sort((a, b) => a.numericalRank - b.numericalRank);
 
     return res.json({
       success: true,
       domain: cleanHost,
-      totalRanked: top10Rankings.length,
-      rankings: top10Rankings
+      totalRanked: liveRankings.length,
+      rankings: liveRankings
     });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }
 });
-
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)

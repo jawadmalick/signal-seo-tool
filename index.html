@@ -1090,25 +1090,26 @@ window.checkPositions = async function(e){
 
     if(!data.rankings || data.rankings.length === 0){
       document.getElementById('rankLogTable').innerHTML = 
-        '<div style="padding:28px;text-align:center;color:#94a3b8;font-size:14px;">No organic rankings detected on Google\'s first 10 pages (Top 100) for this domain.</div>';
+        '<div style="padding:28px;text-align:center;color:#94a3b8;font-size:14px;">No organic Google rankings detected within the first 10 pages for this domain.</div>';
       return;
     }
 
-    var html = '<div class="table-wrap"><table class="checks-table"><thead><tr>' +
-      '<th>Keyword Query</th>' +
+    var html = '<div style="margin-bottom:12px;font-size:13px;color:#94a3b8;">Found <strong style="color:#4ade80;">' + data.totalRanked + '</strong> live ranking keywords on Google:</div>' +
+      '<div class="table-wrap"><table class="checks-table"><thead><tr>' +
+      '<th>Ranking Keyword</th>' +
       '<th>Google Position</th>' +
       '<th>Google Page</th>' +
-      '<th>Ranking Landing Page</th>' +
+      '<th>Ranked Landing Page</th>' +
       '<th>Top Competitor (#1)</th>' +
       '</tr></thead><tbody>';
 
     data.rankings.forEach(function(row){
       html += '<tr>' +
-        '<td style="font-weight:700;color:#fff;">' + escapeHtml(row.keyword) + '</td>' +
+        '<td style="font-weight:700;color:#fff;text-transform:capitalize;">' + escapeHtml(row.keyword) + '</td>' +
         '<td style="color:#4ade80;font-weight:700;font-size:15px;">' + escapeHtml(row.position) + '</td>' +
-        '<td style="color:#38bdf8;font-weight:600;font-size:12px;">' + escapeHtml(row.page) + '</td>' +
+        '<td style="color:#38bdf8;font-weight:600;font-size:13px;">' + escapeHtml(row.page) + '</td>' +
         '<td style="max-width:320px;word-break:break-all;"><a href="' + escapeHtml(row.rankingPage) + '" target="_blank" style="color:var(--accent);text-decoration:underline;font-size:12px;">' + escapeHtml(row.rankingPage) + '</a></td>' +
-        '<td style="color:#cbd5e1;font-size:13px;">' + escapeHtml(row.topCompetitor) + '</td>' +
+        '<td style="color:#cbd5e1;font-size:13px;font-weight:600;">' + escapeHtml(row.topCompetitor) + '</td>' +
         '</tr>';
     });
 
@@ -1120,7 +1121,8 @@ window.checkPositions = async function(e){
     if(btn) btn.disabled = false;
     if(loading) loading.style.display = 'none';
   }
-};    
+};
+
   window.generateBlog = async function(){
     var topic = document.getElementById('blogTopic').value.trim();
     var kws = document.getElementById('blogKeywords').value.trim();
