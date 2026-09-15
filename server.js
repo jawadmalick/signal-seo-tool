@@ -377,6 +377,124 @@ app.post('/api/competitors', async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+// 1.5. Automated Organic Keyword Discovery & Live SERP Rank Tracker
+app.post('/api/rank-tracker', async (req, res) => {
+  const { domain, keywords } = req.body;
+  const serperKey = process.env.SERPER_API_KEY;
+
+  if (!serperKey) {
+    return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured.' });
+  }
+  if (!domain) {
+    return res.status(400).json({ success: false, error: 'Target domain is required.' });
+  }
+
+  try {
+    const cleanHost = domain
+      .replace(/^https?:\/\//i, '')
+      .replace(/\/.*$/, '')
+      .replace(/^www\./i, '')
+      .toLowerCase();
+    const brand = cleanHost.split('.')[0];
+
+    let targetKeywords = [];
+
+    // 1. Check if user typed manual keywords
+    if (keywords && keywords.trim().length > 0) {
+      targetKeywords = keywords.split(/[\n,]+/).map(k => k.trim()).filter(Boolean);
+    }
+
+    // 2. Automatically extract Google-indexed ranking pages & commercial search keywords
+    const siteLookup = await fetch('https://google.serper.dev/search', {
+      method: 'POST',
+      headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ q: `site:${cleanHost}`, num: 10 })
+    });
+    const siteData = await siteLookup.json();
+    const indexedPages = siteData.organic || [];
+
+    if (targetKeywords.length === 0) {
+      const stopWords = new Set(['the','and','for','with','your','our','from','all','are','that','this','you','home','welcome','official','site','website','online','page','services','solutions','company',brand]);
+
+      indexedPages.forEach(item => {
+        const rawPhrase = (item.title || '')
+          .replace(new RegExp(brand, 'gi'), '')
+          .replace(/[|\-–—:•]/g, ' ')
+          .replace(/[^a-zA-Z0-9\s]/g, ' ')
+          .trim();
+
+        const words = rawPhrase
+          .toLowerCase()
+          .split(/\s+/)
+          .filter(w => w.length > 2 && !stopWords.has(w));
+
+        if (words.length >= 2) {
+          targetKeywords.push(words.slice(0, 4).join(' '));
+        }
+      });
+
+      targetKeywords = [...new Set(targetKeywords)].slice(0, 6);
+    }
+
+    if (targetKeywords.length === 0) {
+      targetKeywords = [`${brand} platform`, `${brand} services`];
+    }
+
+    // 3. Check Google live SERP positions and find exact landing pages
+    const results = await Promise.all(
+      targetKeywords.map(async (kw) => {
+        try {
+          const checkRes = await fetch('https://google.serper.dev/search', {
+            method: 'POST',
+            headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ q: kw, num: 30 })
+          });
+          const checkData = await checkRes.json();
+          const organic = checkData.organic || [];
+
+          let position = null;
+          let rankingPage = null;
+
+          for (let i = 0; i < organic.length; i++) {
+            const link = (organic[i].link || '').toLowerCase();
+            if (link.includes(cleanHost)) {
+              position = i + 1;
+              rankingPage = organic[i].link;
+              break;
+            }
+          }
+
+          return {
+            keyword: kw,
+            position: position ? `#${position}` : '30+ (Not in top 30)',
+            ranked: Boolean(position),
+            rankingPage: rankingPage || 'No direct landing page in top 30',
+            topCompetitor: (organic[0] && !organic[0].link.toLowerCase().includes(cleanHost))
+              ? new URL(organic[0].link).hostname.replace(/^www\./i, '')
+              : 'None'
+          };
+        } catch (err) {
+          return {
+            keyword: kw,
+            position: 'Error',
+            ranked: false,
+            rankingPage: '-',
+            topCompetitor: '-'
+          };
+        }
+      })
+    );
+
+    return res.json({
+      success: true,
+      domain: cleanHost,
+      totalTracked: results.length,
+      rankings: results
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)

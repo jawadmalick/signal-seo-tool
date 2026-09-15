@@ -415,22 +415,29 @@
   </div>
 </div>
 
-      <!-- 06. RANK TRACKER -->
-      <div class="panel" id="panel-ranklog">
-        <div class="card">
-          <div class="card-title">SERP Position Estimator</div>
-          <div class="row" style="margin-top:12px;">
-            <div><label>Tracking Domain</label><input type="text" id="trackSiteUrl" placeholder="https://"></div>
-            <div><label>Keywords (Comma Separated)</label><input type="text" id="trackKeywords" placeholder="e.g. analytics tool, seo software"></div>
-          </div>
-          <button class="btn" id="runRankBtn" onclick="checkPositions()">Estimate Rankings</button>
-          <div id="rankLoading" style="display:none;margin-top:12px;" class="loading">Estimating live search ranking positions...</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Tracked Rankings</div>
-          <div id="rankLogTable"><div class="empty">No rankings active.</div></div>
-        </div>
+     <!-- 06. RANK TRACKER -->
+<div class="panel" id="panel-ranklog">
+  <div class="card">
+    <div class="card-title">Live SERP Position & Keyword Tracker</div>
+    <div class="row" style="margin-top:12px;">
+      <div>
+        <label>Tracking Domain URL</label>
+        <input type="text" id="trackSiteUrl" placeholder="https://example.com">
       </div>
+      <div>
+        <label>Custom Keywords (Optional — Auto-detected if blank)</label>
+        <input type="text" id="trackKeywords" placeholder="Leave empty for auto-discovery">
+      </div>
+    </div>
+    <button class="btn" id="runRankBtn" onclick="checkPositions(event)">Auto-Discover & Estimate Rankings</button>
+    <div id="rankLoading" style="display:none;margin-top:12px;" class="loading">Auditing Google index and testing live SERP rankings...</div>
+  </div>
+
+  <div class="card" id="rankResultCard" style="display:none;margin-top:16px;">
+    <div class="card-title">Discovered Ranking Keywords & Live Google Positions</div>
+    <div id="rankLogTable" style="margin-top:12px;"></div>
+  </div>
+</div>
 
       <!-- 07. BLOG WRITER -->
       <div class="panel" id="panel-blog">
@@ -1053,56 +1060,65 @@ window.runCompetitors = async function(e){
   }
 };
 
-window.checkPositions = async function(){
+window.checkPositions = async function(e){
+  if(e && e.preventDefault) e.preventDefault();
+
   var rawUrl = document.getElementById('trackSiteUrl').value.trim();
-  var kws = document.getElementById('trackKeywords').value.trim();
-  if(!rawUrl || !kws){ alert('Enter domain and comma-separated keywords'); return; }
-  
-  var domain = rawUrl.replace(/^https?:\/\//i, '').replace(/\/+$/, '').replace(/^www\./i, '');
-  
+  var manualKw = document.getElementById('trackKeywords').value.trim();
+
+  if(!rawUrl){
+    alert('Please enter your website URL.');
+    return;
+  }
+
   var btn = document.getElementById('runRankBtn');
   var loading = document.getElementById('rankLoading');
-  btn.disabled = true;
-  loading.style.display = 'block';
-
-  var kwList = kws.split(',').map(function(k){ return k.trim(); }).filter(Boolean);
-  var results = [];
+  if(btn) btn.disabled = true;
+  if(loading) loading.style.display = 'block';
 
   try {
-    for (var i = 0; i < kwList.length; i++) {
-      var query = kwList[i];
-      var res = await fetch('/api/rank-check', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domain: domain, query: query, gl: 'us' })
-      });
-      
-      var d = await res.json();
-      if (!res.ok || !d.success) {
-        throw new Error(d.error || 'Failed to query live Google SERP');
-      }
+    var res = await fetch('/api/rank-tracker', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domain: rawUrl, keywords: manualKw })
+    });
+    var data = await res.json();
+    if(!data.success) throw new Error(data.error || 'Failed to pull rankings');
 
-      results.push({
-        keyword: query,
-        position: d.targetResult ? d.targetResult.position : '100+',
-        topCompetitor: d.topCompetitor ? d.topCompetitor.title : 'None'
-      });
-    }
+    var resultCard = document.getElementById('rankResultCard');
+    if(resultCard) resultCard.style.display = 'block';
 
-    document.getElementById('rankLogTable').innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Keyword</th><th>Organic Position</th><th>Top Competitor</th></tr></thead><tbody>' +
-      results.map(function(r){
-        var posDisplay = r.position === '100+' ? '<span style="color:#ef4444;">Not in Top 100</span>' : '#' + escapeHtml(String(r.position));
-        return '<tr><td style="color:#fff;font-weight:700;">' + escapeHtml(r.keyword) + '</td><td style="color:var(--accent);font-family:var(--font-mono);font-weight:700;">' + posDisplay + '</td><td style="color:#94a3b8;">' + escapeHtml(r.topCompetitor) + '</td></tr>';
-      }).join('') +
-      '</tbody></table></div>';
- } catch(e){
-      alert('SERP Check Error: ' + e.message);
-    } finally {
-      btn.disabled = false;
-      loading.style.display = 'none';
-    }
-  };
+    var html = '<div class="table-wrap"><table class="checks-table"><thead><tr>' +
+      '<th>Keyword Query</th>' +
+      '<th>Google Position</th>' +
+      '<th>Ranked URL / Landing Page</th>' +
+      '<th>Top Competitor (#1)</th>' +
+      '</tr></thead><tbody>';
 
+    data.rankings.forEach(function(row){
+      var posColor = row.ranked ? '#4ade80' : '#94a3b8';
+      var pageCell = row.ranked
+        ? '<a href="' + escapeHtml(row.rankingPage) + '" target="_blank" style="color:var(--accent);text-decoration:underline;font-size:12px;">' + escapeHtml(row.rankingPage) + '</a>'
+        : '<span style="color:#64748b;font-size:12px;">' + escapeHtml(row.rankingPage) + '</span>';
+
+      html += '<tr>' +
+        '<td style="font-weight:700;color:#fff;">' + escapeHtml(row.keyword) + '</td>' +
+        '<td style="color:' + posColor + ';font-weight:700;font-size:15px;">' + escapeHtml(row.position) + '</td>' +
+        '<td style="max-width:320px;word-break:break-all;">' + pageCell + '</td>' +
+        '<td style="color:#cbd5e1;font-size:13px;">' + escapeHtml(row.topCompetitor) + '</td>' +
+        '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    document.getElementById('rankLogTable').innerHTML = html;
+  } catch(err){
+    alert('Rank Tracker Error: ' + err.message);
+  } finally {
+    if(btn) btn.disabled = false;
+    if(loading) loading.style.display = 'none';
+  }
+};
+    
   window.generateBlog = async function(){
     var topic = document.getElementById('blogTopic').value.trim();
     var kws = document.getElementById('blogKeywords').value.trim();
