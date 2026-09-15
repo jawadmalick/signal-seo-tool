@@ -998,11 +998,16 @@ window.runCompetitors = async function(){
     if(!data.success) throw new Error(data.error || 'Failed to fetch competitors');
 
     document.getElementById('compResultCard').style.display = 'block';
-    document.getElementById('compTable').innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Competitor Domain</th><th>Live Google Organic Snippet</th></tr></thead><tbody>' +
-      data.competitors.map(function(c){
-        return '<tr><td style="color:#fff;font-weight:700;"><a href="https://' + escapeHtml(c.domain) + '" target="_blank" style="color:inherit;text-decoration:underline;">' + escapeHtml(c.domain) + '</a></td><td>' + escapeHtml(c.notes) + '</td></tr>';
-      }).join('') +
-      '</tbody></table></div>';
+    
+    if (!data.competitors || data.competitors.length === 0) {
+      document.getElementById('compTable').innerHTML = '<div style="padding:24px;color:#94a3b8;text-align:center;font-size:14px;">No direct commercial rivals found in top SERP. Try specifying the <b>Market Vertical</b> above.</div>';
+    } else {
+      document.getElementById('compTable').innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Competitor Domain</th><th>Live Google Organic Snippet</th></tr></thead><tbody>' +
+        data.competitors.map(function(c){
+          return '<tr><td style="color:#fff;font-weight:700;"><a href="https://' + escapeHtml(c.domain) + '" target="_blank" style="color:inherit;text-decoration:underline;">' + escapeHtml(c.domain) + '</a></td><td>' + escapeHtml(c.notes) + '</td></tr>';
+        }).join('') +
+        '</tbody></table></div>';
+    }
   } catch(e){
     alert('Competitor Check Error: ' + e.message);
   } finally {
@@ -1010,6 +1015,7 @@ window.runCompetitors = async function(){
     loading.style.display = 'none';
   }
 };
+
 window.checkPositions = async function(){
   var rawUrl = document.getElementById('trackSiteUrl').value.trim();
   var kws = document.getElementById('trackKeywords').value.trim();
