@@ -312,7 +312,7 @@ app.post('/api/competitors', async (req, res) => {
   const aiKey = process.env.GROQ_API_KEY || process.env.AI_API_KEY;
 
   if (!serperKey) {
-    return res.status(500).json({ success: false, error: 'SERPER_API_KEY missing from environment.' });
+    return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured.' });
   }
   if (!domain) {
     return res.status(400).json({ success: false, error: 'Domain is required.' });
@@ -324,112 +324,116 @@ app.post('/api/competitors', async (req, res) => {
       .replace(/\/.*$/, '')
       .replace(/^www\./i, '')
       .toLowerCase();
+    const brand = cleanHost.split('.')[0];
 
-    let targetNiche = vertical ? vertical.trim() : '';
+    // 1. Fetch any indexed context from Google
+    let siteSnippet = '';
+    try {
+      const sRes = await fetch('https://google.serper.dev/search', {
+        method: 'POST',
+        headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: `site:${cleanHost} OR "${cleanHost}"`, num: 3 })
+      });
+      const sData = await sRes.json();
+      siteSnippet = (sData.organic || []).map(o => `${o.title} ${o.snippet}`).join(' ');
+    } catch(e) {}
 
-    // Step 1: Detect the real niche by fetching homepage text or SERP metadata
-    if (!targetNiche) {
-      let pageContent = '';
+    // 2. Identify the actual niche query
+    let nicheQuery = vertical ? vertical.trim() : '';
+    if (!nicheQuery && aiKey) {
       try {
-        const siteFetch = await fetch(`https://${cleanHost}`, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-          signal: AbortSignal.timeout(4000)
+        const prompt = `Identify the commercial industry/product category for "${cleanHost}". Google snippet: "${siteSnippet.slice(0, 300)}".
+Return ONLY a concise 2-4 word commercial search query to find rival businesses (e.g. "project management software", "seo agency", "b2b ecommerce platform"). Do not return review or comparison words.`;
+
+        const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${aiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.1
+          })
         });
-        const html = await siteFetch.text();
-        const title = (html.match(/<title[^>]*>([^<]+)<\/title>/i) || [])[1] || '';
-        const metaDesc = (html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i) || [])[1] || '';
-        pageContent = `${title} ${metaDesc}`.slice(0, 500);
-      } catch (e) {
-        // Fallback to Google index snippet if site blocks direct scraping
-        try {
-          const sRes = await fetch('https://google.serper.dev/search', {
-            method: 'POST',
-            headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ q: `site:${cleanHost}`, num: 3 })
-          });
-          const sData = await sRes.json();
-          pageContent = (sData.organic || []).map(o => `${o.title} ${o.snippet}`).join(' ').slice(0, 500);
-        } catch (err) {}
-      }
-
-      // Step 2: Use LLM to extract the precise commercial niche category
-      if (aiKey && pageContent.trim().length > 10) {
-        try {
-          const catRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${aiKey}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              model: 'llama-3.3-70b-versatile',
-              messages: [{
-                role: 'user',
-                content: `Based on this website description: "${pageContent}", state the exact business category / product offering in 2 to 4 words (for example: "freelance marketplace", "b2b crm software", "branding agency"). Return ONLY the category phrase, nothing else.`
-              }],
-              temperature: 0.1
-            })
-          });
-          const catData = await catRes.json();
-          const cleanCat = catData.choices?.[0]?.message?.content?.trim().replace(/["\.]/g, '');
-          if (cleanCat && cleanCat.length > 2) {
-            targetNiche = cleanCat;
-          }
-        } catch (aiErr) {}
-      }
+        const aiJson = await aiRes.json();
+        const text = aiJson.choices?.[0]?.message?.content?.trim().replace(/["\.]/g, '');
+        if (text && text.length > 2) nicheQuery = text;
+      } catch(e) {}
     }
 
-    if (!targetNiche) {
-      targetNiche = cleanHost.split('.')[0] + ' platform software';
+    if (!nicheQuery) {
+      nicheQuery = `${brand} software tools`;
     }
 
-    // Step 3: Search Google specifically for the niche to get direct rivals
+    // 3. Query Google for true organic rivals in that niche
     const serperRes = await fetch('https://google.serper.dev/search', {
       method: 'POST',
       headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        q: `${targetNiche} companies OR platform -site:${cleanHost}`,
-        num: 40
-      })
+      body: JSON.stringify({ q: `${nicheQuery} -site:${cleanHost}`, num: 40 })
     });
-
     const serperData = await serperRes.json();
     const organic = serperData.organic || [];
 
-    // Filter review portals, social networks, and search engines
-    const directoryBlacklist = new Set([
+    // Exact domain blacklist to avoid falsely blocking legitimate business domains
+    const blacklist = new Set([
       'google.com', 'bing.com', 'yahoo.com', 'youtube.com', 'facebook.com',
       'linkedin.com', 'twitter.com', 'x.com', 'instagram.com', 'wikipedia.org',
       'reddit.com', 'quora.com', 'gartner.com', 'g2.com', 'capterra.com',
       'trustradius.com', 'cbinsights.com', 'getapp.com', 'softwareadvice.com',
       'sourceforge.net', 'producthunt.com', 'github.com', 'medium.com',
       'apple.com', 'play.google.com', 'clutch.co', 'upwork.com', 'fiverr.com',
-      'trustpilot.com', 'forbes.com', 'techradar.com', 'pcmag.com', cleanHost
+      'trustpilot.com', 'forbes.com', 'techradar.com', cleanHost
     ]);
 
     const competitors = [];
-    const seenHosts = new Set();
+    const seen = new Set();
 
     for (const item of organic) {
       try {
         const itemUrl = new URL(item.link);
         const host = itemUrl.hostname.replace(/^www\./i, '').toLowerCase();
-        const isBlocked = directoryBlacklist.has(host) || Array.from(directoryBlacklist).some(d => host.endsWith('.' + d));
+        const isBlocked = blacklist.has(host) || Array.from(blacklist).some(b => host.endsWith('.' + b));
 
-        if (!seenHosts.has(host) && !isBlocked) {
-          seenHosts.add(host);
+        if (!seen.has(host) && !isBlocked) {
+          seen.add(host);
           competitors.push({
             domain: host,
             notes: (item.title || host) + ' — ' + (item.snippet ? item.snippet.slice(0, 120) + '...' : '')
           });
         }
-      } catch (e) {}
-
+      } catch(e) {}
       if (competitors.length >= 10) break;
     }
 
-    return res.json({
-      success: true,
-      niche: targetNiche,
-      competitors
-    });
+    // 4. Fill remaining slots if SERP had few commercial results
+    if (competitors.length < 10 && aiKey) {
+      try {
+        const fbRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${aiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [{
+              role: 'user',
+              content: `List 10 actual commercial direct competitor websites for a business in this vertical: "${nicheQuery}". Exclude directories and review aggregators. Return JSON: {"competitors":[{"domain":"domain.com","notes":"one sentence summary"}]}`
+            }],
+            response_format: { type: 'json_object' }
+          })
+        });
+        const fbJson = await fbRes.json();
+        const list = JSON.parse(fbJson.choices?.[0]?.message?.content || '{}').competitors || [];
+        for (const c of list) {
+          const d = (c.domain || '').replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/.*$/, '').toLowerCase();
+          const isBlocked = blacklist.has(d) || Array.from(blacklist).some(b => d.endsWith('.' + b));
+          if (d && !seen.has(d) && !isBlocked) {
+            seen.add(d);
+            competitors.push({ domain: d, notes: c.notes || 'Direct market competitor' });
+          }
+          if (competitors.length >= 10) break;
+        }
+      } catch(e) {}
+    }
+
+    return res.json({ success: true, niche: nicheQuery, competitors });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }
