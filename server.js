@@ -306,6 +306,76 @@ app.post('/api/rank-check', async (req, res) => {
   }
 });
 
+app.post('/api/competitors', async (req, res) => {
+  const { domain, vertical } = req.body;
+  const apiKey = process.env.SERPER_API_KEY;
+
+  if (!apiKey) {
+    return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured on the server.' });
+  }
+
+  if (!domain) {
+    return res.status(400).json({ success: false, error: 'Domain is required.' });
+  }
+
+  try {
+    const cleanHost = domain
+      .replace(/^https?:\/\//i, '')
+      .replace(/\/.*$/, '')
+      .replace(/^www\./i, '')
+      .toLowerCase();
+
+    const brandName = cleanHost.split('.')[0];
+    const baseQuery = vertical && vertical.trim().length > 0 
+      ? vertical.trim() 
+      : `${brandName} alternatives competitors platforms`;
+
+    const serperRes = await fetch('https://google.serper.dev/search', {
+      method: 'POST',
+      headers: {
+        'X-API-KEY': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ q: baseQuery, num: 30 })
+    });
+
+    const serperData = await serperRes.json();
+    const organic = serperData.organic || [];
+
+    const ignoreList = [
+      'google.com', 'bing.com', 'yahoo.com', 'youtube.com',
+      'facebook.com', 'linkedin.com', 'twitter.com', 'x.com',
+      'instagram.com', 'wikipedia.org', 'reddit.com', 'quora.com',
+      cleanHost
+    ];
+
+    const competitors = [];
+    const seenDomains = new Set();
+
+    for (const item of organic) {
+      try {
+        const itemUrl = new URL(item.link);
+        const itemHost = itemUrl.hostname.replace(/^www\./i, '').toLowerCase();
+        const isIgnored = ignoreList.some(ig => itemHost === ig || itemHost.endsWith('.' + ig));
+
+        if (!seenDomains.has(itemHost) && !isIgnored) {
+          seenDomains.add(itemHost);
+          competitors.push({
+            domain: itemHost,
+            notes: (item.title || '') + ' — ' + (item.snippet ? item.snippet.slice(0, 120) + '...' : '')
+          });
+        }
+      } catch (err) {}
+
+      if (competitors.length >= 10) break;
+    }
+
+    return res.json({ success: true, competitors });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)

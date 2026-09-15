@@ -979,31 +979,37 @@ window.runGeo = async function(){
 };
 
 window.runCompetitors = async function(){
-  var url = document.getElementById('compUrl').value.trim();
+  var rawUrl = document.getElementById('compUrl').value.trim();
   var ctx = document.getElementById('compContext').value.trim();
-  if(!url){ alert('Enter your domain URL'); return; }
+  if(!rawUrl){ alert('Enter your domain URL'); return; }
+  
   var btn = document.getElementById('runCompBtn');
   var loading = document.getElementById('compLoading');
   btn.disabled = true;
   loading.style.display = 'block';
 
   try {
-    var promptText = 'Identify 3 to 5 real commercial direct competitors for the business at "' + url + '". ' +
-      (ctx ? 'Industry vertical: ' + ctx + '. ' : 'Deduce the business niche and offerings directly from the domain brand name. ') +
-      'STRICT RULE: NEVER return generic search engines, directories, or tech giants (do NOT return google.com, bing.com, yahoo.com, amazon.com, or wikipedia.org). Return only genuine commercial rivals. ' +
-      'Return JSON format: {"competitors": [{"domain": "example.com", "notes": "concise market finding"}], "gaps": [{"label": "string", "status": "warning", "detail": "string", "fix": "string"}]}';
-    var data = await callAiJson(promptText);
+    var res = await fetch('/api/competitors', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domain: rawUrl, vertical: ctx })
+    });
+    var data = await res.json();
+    if(!data.success) throw new Error(data.error || 'Failed to fetch competitors');
+
     document.getElementById('compResultCard').style.display = 'block';
-    document.getElementById('compTable').innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Competitor Domain</th><th>Strategic Market Finding</th></tr></thead><tbody>' +
+    document.getElementById('compTable').innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Competitor Domain</th><th>Live Google Organic Snippet</th></tr></thead><tbody>' +
       data.competitors.map(function(c){
-        return '<tr><td style="color:#fff;font-weight:700;">' + escapeHtml(c.domain) + '</td><td>' + escapeHtml(c.notes) + '</td></tr>';
+        return '<tr><td style="color:#fff;font-weight:700;"><a href="https://' + escapeHtml(c.domain) + '" target="_blank" style="color:inherit;text-decoration:underline;">' + escapeHtml(c.domain) + '</a></td><td>' + escapeHtml(c.notes) + '</td></tr>';
       }).join('') +
       '</tbody></table></div>';
-    document.getElementById('compGaps').innerHTML = renderChecksTable(data.gaps);
-  } catch(e){ alert('Error: ' + e.message); }
-  finally { btn.disabled = false; loading.style.display = 'none'; }
+  } catch(e){
+    alert('Competitor Check Error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    loading.style.display = 'none';
+  }
 };
-
 window.checkPositions = async function(){
   var rawUrl = document.getElementById('trackSiteUrl').value.trim();
   var kws = document.getElementById('trackKeywords').value.trim();
