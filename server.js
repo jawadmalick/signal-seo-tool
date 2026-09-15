@@ -383,6 +383,7 @@ app.post('/api/competitors', async (req, res) => {
 
 // Reliable Live Organic SERP Rank Tracker (Batched Execution + Complete Page Auditing)
 // Live Organic Rank Tracker (Direct Top 5 Clean Queries)
+// Live Organic Rank Tracker: Dynamic All Ranked Keywords across Google Top 10 Pages
 app.post('/api/rank-tracker', async (req, res) => {
   const { domain, keywords } = req.body;
   const serperKey = process.env.SERPER_API_KEY;
@@ -405,100 +406,131 @@ app.post('/api/rank-tracker', async (req, res) => {
 
     let targetKeywords = [];
 
-    // 1. Manual keywords if provided
+    // 1. Agar user ne manual keywords diye hon
     if (keywords && keywords.trim().length > 0) {
       targetKeywords = keywords.split(/[\n,]+/).map(k => k.trim()).filter(Boolean);
-    }
-
-    // 2. Extract 4-5 core keywords from indexed titles
-    if (targetKeywords.length === 0) {
+    } else {
+      // 2. Google index se website ke authentic pages aur queries nikalna
       const siteLookup = await fetch('https://google.serper.dev/search', {
         method: 'POST',
         headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: `site:${cleanHost}`, num: 10 })
+        body: JSON.stringify({ q: `site:${cleanHost}`, num: 40 })
       });
       const siteData = await siteLookup.json();
       const indexedPages = siteData.organic || [];
 
-      const stopWords = new Set(['the','and','for','with','your','our','from','all','are','that','this','you','home','welcome','official','site','website','online','page','services','solutions','company',brand]);
+      const stopWords = new Set(['the','and','for','with','your','our','from','all','are','that','this','you','home','welcome','official','site','website','online','page','services','solutions','company','privacy','policy','terms','contact','faq','about',brand]);
+
+      const querySet = new Set();
+      querySet.add(brand);
 
       indexedPages.forEach(item => {
+        // A. Titles se keywords
         const rawPhrase = (item.title || '')
           .replace(new RegExp(brand, 'gi'), '')
           .replace(/[|\-–—:•]/g, ' ')
           .replace(/[^a-zA-Z0-9\s]/g, ' ')
           .trim();
 
-        const words = rawPhrase
-          .toLowerCase()
-          .split(/\s+/)
-          .filter(w => w.length > 2 && !stopWords.has(w));
-
+        const words = rawPhrase.toLowerCase().split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
         if (words.length >= 2) {
-          targetKeywords.push(words.slice(0, 3).join(' '));
+          querySet.add(words.slice(0, 3).join(' '));
+          if (words.length >= 4) querySet.add(words.slice(1, 4).join(' '));
         }
+
+        // B. URL slugs se target queries
+        try {
+          const u = new URL(item.link);
+          const slug = u.pathname.split('/').filter(Boolean).pop();
+          if (slug) {
+            const sWords = slug.replace(/[-_]+/g, ' ').replace(/\.[^/.]+$/, '').toLowerCase().split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
+            if (sWords.length >= 2) querySet.add(sWords.slice(0, 3).join(' '));
+          }
+        } catch (e) {}
       });
 
-      targetKeywords = [...new Set(targetKeywords)].slice(0, 5);
-      targetKeywords.unshift(brand);
-      targetKeywords = [...new Set(targetKeywords)].slice(0, 5);
+      targetKeywords = Array.from(querySet);
     }
 
-    // 3. Check Google live SERP
-    const results = await Promise.all(
-      targetKeywords.map(async (kw) => {
-        try {
-          const checkRes = await fetch('https://google.serper.dev/search', {
-            method: 'POST',
-            headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ q: kw, num: 30 })
-          });
-          const checkData = await checkRes.json();
-          const organic = checkData.organic || [];
+    // 3. Batches of 4 mein check karein taake Serper drop na ho
+    const verifiedRankings = [];
+    const chunkSize = 4;
 
-          let position = null;
-          let rankingPage = null;
+    for (let i = 0; i < targetKeywords.length; i += chunkSize) {
+      const chunk = targetKeywords.slice(i, i + chunkSize);
 
-          for (let i = 0; i < organic.length; i++) {
-            const link = (organic[i].link || '').toLowerCase();
-            if (link.includes(cleanHost)) {
-              position = i + 1;
-              rankingPage = organic[i].link;
-              break;
+      const chunkResults = await Promise.all(
+        chunk.map(async (kw) => {
+          try {
+            const checkRes = await fetch('https://google.serper.dev/search', {
+              method: 'POST',
+              headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ q: kw, num: 100 }) // Top 100 positions (10 pages)
+            });
+            const checkData = await checkRes.json();
+            const organic = checkData.organic || [];
+
+            let position = null;
+            let rankingPage = null;
+
+            for (let j = 0; j < organic.length; j++) {
+              const link = (organic[j].link || '').toLowerCase();
+              if (link.includes(cleanHost)) {
+                position = j + 1;
+                rankingPage = organic[j].link;
+                break;
+              }
             }
-          }
 
-          return {
-            keyword: kw,
-            position: position ? `#${position}` : '30+ (Not in top 30)',
-            ranked: Boolean(position),
-            rankingPage: rankingPage || 'No direct landing page in top 30',
-            topCompetitor: (organic[0] && !organic[0].link.toLowerCase().includes(cleanHost))
-              ? new URL(organic[0].link).hostname.replace(/^www\./i, '')
-              : 'None'
-          };
-        } catch (err) {
-          return {
-            keyword: kw,
-            position: 'Error',
-            ranked: false,
-            rankingPage: '-',
-            topCompetitor: '-'
-          };
-        }
-      })
-    );
+            // FILTER: Sirf wohi keyword table mein jaega jo top 100 (10 pages) me rank kr raha ho
+            if (position !== null) {
+              const rival = organic.find(item => !item.link.toLowerCase().includes(cleanHost));
+              let topCompHost = 'None';
+              if (rival) {
+                try {
+                  topCompHost = new URL(rival.link).hostname.replace(/^www\./i, '');
+                } catch (e) {
+                  topCompHost = rival.link;
+                }
+              }
+
+              const pageNumber = Math.ceil(position / 10);
+
+              return {
+                keyword: kw,
+                position: `#${position} (Page ${pageNumber})`,
+                numericalRank: position,
+                rankingPage: rankingPage,
+                topCompetitor: topCompHost
+              };
+            }
+
+            return null;
+          } catch (err) {
+            return null;
+          }
+        })
+      );
+
+      chunkResults.forEach(r => {
+        if (r) verifiedRankings.push(r);
+      });
+    }
+
+    // Sort by best position (#1 pehle aega)
+    verifiedRankings.sort((a, b) => a.numericalRank - b.numericalRank);
 
     return res.json({
       success: true,
       domain: cleanHost,
-      totalTracked: results.length,
-      rankings: results
+      totalTracked: verifiedRankings.length,
+      rankings: verifiedRankings
     });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }
 });
+
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
