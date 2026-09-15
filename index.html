@@ -988,7 +988,11 @@ window.runCompetitors = async function(){
   loading.style.display = 'block';
 
   try {
-    var data = await callAiJson('Identify genuine market competitors for "' + url + '" (Vertical: "' + ctx + '"). Return JSON format: {"competitors": [{"domain": string, "notes": string}], "gaps": [{"label": string, "status": "warning", "detail": string, "fix": string}]}');
+    var promptText = 'Identify 3 to 5 real commercial direct competitors for the business at "' + url + '". ' +
+      (ctx ? 'Industry vertical: ' + ctx + '. ' : 'Deduce the business niche and offerings directly from the domain brand name. ') +
+      'STRICT RULE: NEVER return generic search engines, directories, or tech giants (do NOT return google.com, bing.com, yahoo.com, amazon.com, or wikipedia.org). Return only genuine commercial rivals. ' +
+      'Return JSON format: {"competitors": [{"domain": "example.com", "notes": "concise market finding"}], "gaps": [{"label": "string", "status": "warning", "detail": "string", "fix": "string"}]}';
+    var data = await callAiJson(promptText);
     document.getElementById('compResultCard').style.display = 'block';
     document.getElementById('compTable').innerHTML = '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Competitor Domain</th><th>Strategic Market Finding</th></tr></thead><tbody>' +
       data.competitors.map(function(c){
