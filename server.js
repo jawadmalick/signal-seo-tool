@@ -380,9 +380,12 @@ app.post('/api/competitors', async (req, res) => {
 
 // Live Organic Rank Tracker: Top 10 Keywords Ranked on Google's First 10 Pages (#1-#100)
 // Live Organic Rank Tracker: Dynamic Ranking Harvester (No artificial limits)
+
+// Reliable Live Organic SERP Rank Tracker (Batched Execution + Complete Page Auditing)
 app.post('/api/rank-tracker', async (req, res) => {
   const { domain, keywords } = req.body;
   const serperKey = process.env.SERPER_API_KEY;
+  const aiKey = process.env.GROQ_API_KEY || process.env.AI_API_KEY;
 
   if (!serperKey) {
     return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured.' });
@@ -400,127 +403,175 @@ app.post('/api/rank-tracker', async (req, res) => {
     const cleanHost = parsedUrl.hostname.replace(/^www\./i, '').toLowerCase();
     const brand = cleanHost.split('.')[0];
 
+    // 1. Fetch site's indexed footprint from Google (up to 30 pages)
+    let indexedPages = [];
+    try {
+      const siteRes = await fetch('https://google.serper.dev/search', {
+        method: 'POST',
+        headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: `site:${cleanHost}`, num: 30 })
+      });
+      const siteJson = await siteRes.json();
+      indexedPages = siteJson.organic || [];
+    } catch (e) {}
+
     let candidateQueries = [];
 
-    // 1. Manual user override if supplied
+    // 2. Manual user input if provided
     if (keywords && keywords.trim().length > 0) {
       candidateQueries = keywords.split(/[\n,]+/).map(k => k.trim()).filter(Boolean);
     } else {
-      // 2. Deep-harvest indexed pages directly from Google
-      const siteLookup = await fetch('https://google.serper.dev/search', {
-        method: 'POST',
-        headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: `site:${cleanHost}`, num: 50 })
-      });
-      const siteData = await siteLookup.json();
-      const indexedPages = siteData.organic || [];
-
       const queryMap = new Map();
       queryMap.set(brand, rawUrl);
 
-      const ignoredWords = new Set([
-        'privacy', 'policy', 'terms', 'conditions', 'faq', 'contact',
-        'login', 'register', 'signin', 'signup', 'checkout', 'cart',
-        'home', 'welcome', 'official', 'about', brand
-      ]);
+      const ignoredSlugs = new Set(['privacy', 'terms', 'condition', 'conditions', 'faq', 'contact', 'about', 'login', 'signup', 'register', 'cart', 'checkout', 'wp-admin', 'author', 'category', 'tag']);
+      const stopWords = new Set(['the','and','for','with','your','our','from','all','are','that','this','you','home','welcome','official','site','website','online','services','solutions','company',brand]);
 
-      indexedPages.forEach(item => {
-        if (!item.title) return;
+      // Extract high-intent keywords from indexed titles and URLs
+      indexedPages.forEach(p => {
+        if (!p.link) return;
 
-        // Clean indexed page titles into search queries
-        const titleParts = item.title.split(/[|\-–—:•]/).map(p => p.trim()).filter(Boolean);
-        for (const part of titleParts) {
-          const cleanPart = part
-            .replace(new RegExp('\\b' + brand + '\\b', 'gi'), '')
-            .replace(/[^a-zA-Z0-9\s]/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-
-          const words = cleanPart.toLowerCase().split(' ').filter(w => w.length > 2 && !ignoredWords.has(w));
-          if (words.length >= 2 && words.length <= 5) {
-            const candidate = words.join(' ');
-            if (!queryMap.has(candidate)) {
-              queryMap.set(candidate, item.link);
-            }
-          }
-        }
-
-        // Clean slugs into search queries
+        // A. Extract from URL slug
         try {
-          const u = new URL(item.link);
+          const u = new URL(p.link);
           const slug = u.pathname.split('/').filter(Boolean).pop();
           if (slug) {
-            const slugWords = slug
-              .replace(/[-_]+/g, ' ')
-              .replace(/\.[^/.]+$/, '')
-              .toLowerCase()
-              .split(/\s+/)
-              .filter(w => w.length > 2 && !ignoredWords.has(w));
-            if (slugWords.length >= 2 && slugWords.length <= 4) {
-              const slugCandidate = slugWords.join(' ');
-              if (!queryMap.has(slugCandidate)) {
-                queryMap.set(slugCandidate, item.link);
-              }
+            const cleanSlugWords = slug.replace(/[-_]+/g, ' ').replace(/\.[^/.]+$/, '').toLowerCase().split(/\s+/).filter(w => w.length > 2 && !ignoredSlugs.has(w) && !stopWords.has(w));
+            if (cleanSlugWords.length >= 2) {
+              const kw = cleanSlugWords.slice(0, 4).join(' ');
+              if (!queryMap.has(kw)) queryMap.set(kw, p.link);
             }
           }
         } catch (e) {}
+
+        // B. Extract from Page Title
+        if (p.title) {
+          const parts = p.title.split(/[|\-–—:•]/).map(s => s.trim()).filter(Boolean);
+          parts.forEach(part => {
+            const cleanPart = part.replace(new RegExp('\\b' + brand + '\\b', 'gi'), '').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
+            const words = cleanPart.toLowerCase().split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w) && !ignoredSlugs.has(w));
+            if (words.length >= 2 && words.length <= 5) {
+              const kw = words.join(' ');
+              if (!queryMap.has(kw)) queryMap.set(kw, p.link);
+            }
+          });
+        }
       });
 
-      candidateQueries = Array.from(queryMap.keys());
+      // C. Expand with AI if fewer than 15 unique queries discovered
+      if (queryMap.size < 15 && aiKey) {
+        try {
+          const contextSnippets = indexedPages.slice(0, 6).map(p => `${p.title} ${p.snippet}`).join(' ');
+          const prompt = `Domain: "${cleanHost}". Content: "${contextSnippets.slice(0, 500)}".
+Generate 15 natural commercial search keywords that potential users type into Google to find these exact services or products.
+Return ONLY a valid JSON array of strings: ["keyword 1", "keyword 2", ...]`;
+
+          const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${aiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'llama-3.3-70b-versatile',
+              messages: [{ role: 'user', content: prompt }],
+              temperature: 0.2
+            })
+          });
+          const aiData = await aiRes.json();
+          const parsed = JSON.parse(aiData.choices?.[0]?.message?.content?.match(/\[[\s\S]*\]/)?.[0] || '[]');
+          parsed.forEach(k => {
+            const cleanK = String(k).trim().toLowerCase();
+            if (cleanK && !queryMap.has(cleanK)) queryMap.set(cleanK, rawUrl);
+          });
+        } catch (e) {}
+      }
+
+      candidateQueries = Array.from(queryMap.keys()).slice(0, 25);
     }
 
-    // 3. Test Google live SERP for all candidates up to 100 results deep (Top 10 Pages)
+    // 3. Batched execution (chunks of 4) to prevent Serper 429 rate-limiting / drops
     const liveRankings = [];
+    const chunkSize = 4;
 
-    await Promise.all(
-      candidateQueries.map(async (kw) => {
-        try {
-          const checkRes = await fetch('https://google.serper.dev/search', {
-            method: 'POST',
-            headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ q: kw, num: 100 })
-          });
-          const checkData = await checkRes.json();
-          const organic = checkData.organic || [];
+    for (let i = 0; i < candidateQueries.length; i += chunkSize) {
+      const chunk = candidateQueries.slice(i, i + chunkSize);
 
-          let rankPosition = null;
-          let targetLandingPage = null;
+      const chunkResults = await Promise.all(
+        chunk.map(async (kw) => {
+          try {
+            const checkRes = await fetch('https://google.serper.dev/search', {
+              method: 'POST',
+              headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ q: kw, num: 100 })
+            });
 
-          for (let i = 0; i < organic.length; i++) {
-            const link = (organic[i].link || '').toLowerCase();
-            if (link.includes(cleanHost)) {
-              rankPosition = i + 1;
-              targetLandingPage = organic[i].link;
-              break;
-            }
-          }
+            if (!checkRes.ok) return null;
+            const checkData = await checkRes.json();
+            const organic = checkData.organic || [];
 
-          // STRICT CRITERIA: ONLY keep terms that genuinely rank in Google
-          if (rankPosition !== null) {
-            const topCompetitorItem = organic.find(item => !item.link.toLowerCase().includes(cleanHost));
-            let topCompHost = 'None';
-            if (topCompetitorItem) {
-              try {
-                topCompHost = new URL(topCompetitorItem.link).hostname.replace(/^www\./i, '');
-              } catch (e) {
-                topCompHost = topCompetitorItem.link;
+            let rankPosition = null;
+            let targetLandingPage = null;
+
+            for (let j = 0; j < organic.length; j++) {
+              const link = (organic[j].link || '').toLowerCase();
+              if (link.includes(cleanHost)) {
+                rankPosition = j + 1;
+                targetLandingPage = organic[j].link;
+                break;
               }
             }
 
-            liveRankings.push({
-              keyword: kw,
-              position: `#${rankPosition}`,
-              page: `Page ${Math.ceil(rankPosition / 10)}`,
-              numericalRank: rankPosition,
-              rankingPage: targetLandingPage,
-              topCompetitor: topCompHost
-            });
-          }
-        } catch (err) {}
-      })
-    );
+            // Top competing domain holding #1 in Google SERP
+            const topRival = organic.find(item => !item.link.toLowerCase().includes(cleanHost));
+            let topCompHost = 'None';
+            if (topRival) {
+              try {
+                topCompHost = new URL(topRival.link).hostname.replace(/^www\./i, '');
+              } catch (e) {
+                topCompHost = topRival.link;
+              }
+            }
 
-    // Sort by true ranking position (#1 at the top, down to #100)
+            // If ranked in top 100 (Google Pages 1 to 10)
+            if (rankPosition !== null) {
+              return {
+                keyword: kw,
+                position: `#${rankPosition}`,
+                page: `Page ${Math.ceil(rankPosition / 10)}`,
+                numericalRank: rankPosition,
+                rankingPage: targetLandingPage,
+                topCompetitor: topCompHost
+              };
+            }
+
+            // If page exists in Google's index for this query specifically
+            const matchedIndexedPage = indexedPages.find(p => 
+              (p.title && p.title.toLowerCase().includes(kw)) || 
+              (p.link && p.link.toLowerCase().includes(kw.replace(/\s+/g, '-')))
+            );
+
+            if (matchedIndexedPage) {
+              return {
+                keyword: kw,
+                position: 'Indexed (#10+)',
+                page: 'Indexed Page',
+                numericalRank: 105,
+                rankingPage: matchedIndexedPage.link,
+                topCompetitor: topCompHost
+              };
+            }
+
+            return null;
+          } catch (err) {
+            return null;
+          }
+        })
+      );
+
+      chunkResults.forEach(res => {
+        if (res) liveRankings.push(res);
+      });
+    }
+
+    // Sort: Best rankings first (#1, #2, #5...), then indexed landing pages
     liveRankings.sort((a, b) => a.numericalRank - b.numericalRank);
 
     return res.json({
@@ -533,6 +584,7 @@ app.post('/api/rank-tracker', async (req, res) => {
     return res.status(500).json({ success: false, error: err.message });
   }
 });
+
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
