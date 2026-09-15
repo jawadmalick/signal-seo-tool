@@ -1734,5 +1734,71 @@ renderStats();
     targetContainer.innerHTML = html;
   }
 </script>
+
+<script>
+window.runAeoAuditOnly = async function() {
+  var input = document.getElementById('aeoInputUrl');
+  var status = document.getElementById('aeoStatusText');
+  var results = document.getElementById('aeoResultsContainer');
+  var btn = document.getElementById('btnRunAeoAudit') || event.target;
+  
+  var url = input ? input.value.trim() : '';
+  if (!url) { alert('Please provide a URL to audit.'); return; }
+  
+  if (status) { status.style.display = 'block'; status.textContent = 'Running AEO content extraction scan...'; }
+  if (results) results.innerHTML = '';
+  if (btn) btn.disabled = true;
+
+  try {
+    var res = await fetch('/api/aeo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: url })
+    });
+    var data = await res.json();
+    if (status) status.style.display = 'none';
+    if (results) {
+      results.innerHTML = '<pre style="background:#0b1120; padding:1rem; border-radius:8px; border:1px solid #1e293b; color:#38bdf8; overflow-x:auto;">' + 
+        JSON.stringify(data, null, 2) + '</pre>';
+    }
+  } catch (err) {
+    if (status) { status.style.display = 'block'; status.textContent = 'AEO scan failed: ' + err.message; }
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+};
+
+window.runGeoAuditOnly = async function() {
+  var input = document.getElementById('geoInputUrl');
+  var status = document.getElementById('geoStatusText');
+  var results = document.getElementById('geoResultsContainer');
+  var btn = document.getElementById('btnRunGeoAudit') || event.target;
+  
+  var url = input ? input.value.trim() : '';
+  if (!url) { alert('Please provide a URL to audit.'); return; }
+  
+  if (status) { status.style.display = 'block'; status.textContent = 'Analyzing crawler access & robots.txt...'; }
+  if (results) results.innerHTML = '';
+  if (btn) btn.disabled = true;
+
+  try {
+    var res = await fetch('/api/geo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: url })
+    });
+    var data = await res.json();
+    if (status) status.style.display = 'none';
+    if (results) {
+      results.innerHTML = '<pre style="background:#0b1120; padding:1rem; border-radius:8px; border:1px solid #1e293b; color:#c084fc; overflow-x:auto;">' + 
+        JSON.stringify(data, null, 2) + '</pre>';
+    }
+  } catch (err) {
+    if (status) { status.style.display = 'block'; status.textContent = 'GEO scan failed: ' + err.message; }
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+};
+</script>
 </body>
 </html>
