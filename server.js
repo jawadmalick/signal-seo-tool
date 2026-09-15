@@ -313,7 +313,6 @@ app.post('/api/competitors', async (req, res) => {
   if (!apiKey) {
     return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured on the server.' });
   }
-
   if (!domain) {
     return res.status(400).json({ success: false, error: 'Domain is required.' });
   }
@@ -325,57 +324,109 @@ app.post('/api/competitors', async (req, res) => {
       .replace(/^www\./i, '')
       .toLowerCase();
 
-    const brandName = cleanHost.split('.')[0];
-    const baseQuery = vertical && vertical.trim().length > 0 
-      ? vertical.trim() 
-      : `${brandName} alternatives competitors platforms`;
+    let targetNicheQuery = vertical ? vertical.trim() : '';
 
+    // Step 1: Scrape live site homepage metadata to detect industry/offerings
+    if (!targetNicheQuery) {
+      try {
+        const siteRes = await fetch(`https://${cleanHost}`, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+          signal: AbortSignal.timeout(4500)
+        });
+        const html = await siteRes.text();
+        const title = (html.match(/<title[^>]*>([^<]+)<\/title>/i) || [])[1] || '';
+        const metaDesc = (html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i) || [])[1] || '';
+        const metaKw = (html.match(/<meta[^>]*name=["']keywords["'][^>]*content=["']([^"']+)["']/i) || [])[1] || '';
+
+        const fullMeta = `${title} ${metaDesc} ${metaKw}`
+          .replace(/[^\w\s-]/g, ' ')
+          .toLowerCase();
+
+        const stopWords = new Set([
+          'the','and','for','with','your','our','from','all','are','that','this','you','home',
+          'welcome','official','site','website','online','services','solutions','company','agency',
+          'page','about','best','free','login','contact','portal','app','inc','ltd','llc','privacy',
+          'terms','policy','copyright','rights','reserved'
+        ]);
+
+        const tokens = fullMeta
+          .split(/\s+/)
+          .filter(word => word.length > 3 && !stopWords.has(word) && !cleanHost.includes(word));
+
+        // Frequency map to isolate the dominant niche keywords
+        const freq = {};
+        tokens.forEach(w => { freq[w] = (freq[w] || 0) + 1; });
+        const topKeywords = Object.keys(freq).sort((a, b) => freq[b] - freq[a]).slice(0, 3);
+
+        if (topKeywords.length > 0) {
+          targetNicheQuery = topKeywords.join(' ');
+        }
+      } catch (scrapeErr) {
+        // Continue to fallback if domain blocks bots
+      }
+    }
+
+    // Step 2: Fallback query using brand name if site blocked direct scraping
+    const brandName = cleanHost.split('.')[0];
+    const finalSearchQuery = targetNicheQuery && targetNicheQuery.length > 2
+      ? `${targetNicheQuery} -site:${cleanHost}`
+      : `"${brandName}" alternatives competitors -site:${cleanHost}`;
+
+    // Step 3: Run Google search for organic competitors via Serper
     const serperRes = await fetch('https://google.serper.dev/search', {
       method: 'POST',
       headers: {
         'X-API-KEY': apiKey,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ q: baseQuery, num: 30 })
+      body: JSON.stringify({ q: finalSearchQuery, num: 40 })
     });
 
     const serperData = await serperRes.json();
     const organic = serperData.organic || [];
 
-    const ignoreList = [
-      'google.com', 'bing.com', 'yahoo.com', 'youtube.com',
-      'facebook.com', 'linkedin.com', 'twitter.com', 'x.com',
-      'instagram.com', 'wikipedia.org', 'reddit.com', 'quora.com',
+    // Step 4: Universal filter to strip directories, search engines, app stores, and socials
+    const universalBlacklist = [
+      'google.', 'bing.', 'yahoo.', 'youtube.', 'facebook.', 'linkedin.', 'twitter.', 'x.com',
+      'instagram.', 'wikipedia.org', 'reddit.com', 'quora.com', 'gartner.com', 'g2.com',
+      'capterra.com', 'trustradius.com', 'cbinsights.com', 'getapp.com', 'softwareadvice.com',
+      'sourceforge.net', 'producthunt.com', 'github.com', 'medium.com', 'apple.com',
+      'play.google.com', 'clutch.co', 'upwork.com', 'fiverr.com', 'yellowpages.com',
+      'yelp.com', 'tripadvisor.com', 'trustpilot.com', 'forbes.com', 'techradar.com',
       cleanHost
     ];
 
     const competitors = [];
-    const seenDomains = new Set();
+    const seenHosts = new Set();
 
     for (const item of organic) {
       try {
         const itemUrl = new URL(item.link);
-        const itemHost = itemUrl.hostname.replace(/^www\./i, '').toLowerCase();
-        const isIgnored = ignoreList.some(ig => itemHost === ig || itemHost.endsWith('.' + ig));
+        const host = itemUrl.hostname.replace(/^www\./i, '').toLowerCase();
 
-        if (!seenDomains.has(itemHost) && !isIgnored) {
-          seenDomains.add(itemHost);
+        const isFiltered = universalBlacklist.some(b => host === b || host.endsWith('.' + b));
+
+        if (!seenHosts.has(host) && !isFiltered) {
+          seenHosts.add(host);
           competitors.push({
-            domain: itemHost,
-            notes: (item.title || '') + ' — ' + (item.snippet ? item.snippet.slice(0, 120) + '...' : '')
+            domain: host,
+            notes: (item.title || host) + ' — ' + (item.snippet ? item.snippet.slice(0, 140) + '...' : '')
           });
         }
-      } catch (err) {}
+      } catch (e) {}
 
       if (competitors.length >= 10) break;
     }
 
-    return res.json({ success: true, competitors });
+    return res.json({ 
+      success: true, 
+      nicheDetected: targetNicheQuery || brandName,
+      competitors 
+    });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }
 });
-
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
