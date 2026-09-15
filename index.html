@@ -1067,8 +1067,6 @@ window.checkPositions = async function(){
     finally { btn.disabled = false; loading.style.display = 'none'; }
   };
 
-  window.sendChat = async function(){
-
 window.sendChat = async function(){
   var input = document.getElementById('chatInput');
   var q = input.value.trim();
@@ -1080,13 +1078,14 @@ window.sendChat = async function(){
   loading.style.display = 'block';
 
   try {
-    var ans = await callAi('You are a top-tier organic search and AI citation strategist. Give a concise, actionable response to this user query: ' + q);
-    box.innerHTML += '<div style="background:var(--panel-subtle);padding:8px 12px;border-radius:6px;border:1px solid var(--border);">' + escapeHtml(ans) + '</div>';
-    box.scrollTop = box.scrollHeight;
-  } catch(e){ alert('Error: ' + e.message); }
-  finally { loading.style.display = 'none'; }
+    var reply = await callAi(q);
+    box.innerHTML += '<div style="background:rgba(255,255,255,0.05);padding:8px 12px;border-radius:6px;align-self:flex-start;">' + escapeHtml(reply) + '</div>';
+  } catch(e){
+    box.innerHTML += '<div style="color:var(--danger);padding:8px 12px;">Error: ' + escapeHtml(e.message) + '</div>';
+  } finally {
+    loading.style.display = 'none';
+  }
 };
-
 var __fixCounter = 0;
 function renderChecksTable(checks){
   return '<div class="table-wrap"><table class="checks-table"><thead><tr><th>Diagnostic Factor</th><th>Status</th><th>Finding</th><th>Action</th></tr></thead><tbody>' +
