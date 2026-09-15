@@ -308,10 +308,11 @@ app.post('/api/rank-check', async (req, res) => {
 
 app.post('/api/competitors', async (req, res) => {
   const { domain, vertical } = req.body;
-  const apiKey = process.env.SERPER_API_KEY;
+  const serperKey = process.env.SERPER_API_KEY;
+  const groqKey = process.env.GROQ_API_KEY || process.env.AI_API_KEY;
 
-  if (!apiKey) {
-    return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured on the server.' });
+  if (!serperKey) {
+    return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured.' });
   }
   if (!domain) {
     return res.status(400).json({ success: false, error: 'Domain is required.' });
@@ -324,92 +325,96 @@ app.post('/api/competitors', async (req, res) => {
       .replace(/^www\./i, '')
       .toLowerCase();
 
-    let searchNiche = vertical ? vertical.trim() : '';
+    let nicheSearchQuery = vertical ? vertical.trim() : '';
 
-    // Step 1: Discover what the domain actually does from Google's index
-    if (!searchNiche) {
-      const infoRes = await fetch('https://google.serper.dev/search', {
-        method: 'POST',
-        headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: `site:${cleanHost} OR "${cleanHost}"`, num: 5 })
-      });
-      const infoData = await infoRes.json();
-      const firstHit = (infoData.organic && infoData.organic[0]) || {};
-      
-      // Clean title and snippet into core business terms
-      const rawText = `${firstHit.title || ''} ${firstHit.snippet || ''}`
-        .replace(/https?:\/\/\S+/gi, '')
-        .replace(/[^\w\s-]/g, ' ')
-        .toLowerCase();
+    // Step 1: Query Google to get what Google itself indexes about this domain
+    const siteLookup = await fetch('https://google.serper.dev/search', {
+      method: 'POST',
+      headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ q: `site:${cleanHost}`, num: 3 })
+    });
+    const siteData = await siteLookup.json();
+    const snippetText = (siteData.organic || [])
+      .map(o => `${o.title} - ${o.snippet}`)
+      .join(' ');
 
-      const stopWords = new Set([
-        'the','and','for','with','your','our','from','all','are','that','this','you','home',
-        'welcome','official','site','website','online','services','solutions','company','agency',
-        'about','best','free','login','contact','portal','app','inc','ltd','llc','privacy',
-        'terms','policy','copyright','rights','reserved','prodoo'
-      ]);
+    // Step 2: Use AI to classify the exact commercial business niche
+    if (!nicheSearchQuery && groqKey && snippetText.length > 10) {
+      try {
+        const aiPrompt = `Analyze this website description: "${snippetText}". What is the exact primary business service/product niche? Return ONLY a 3-5 word Google search query to find their direct commercial market rivals (e.g. "digital marketing agency", "b2b saas crm software", "shopify development agency"). Return only the search terms, nothing else.`;
 
-      const extracted = rawText
-        .split(/\s+/)
-        .filter(w => w.length > 3 && !stopWords.has(w) && !cleanHost.includes(w));
+        const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${groqKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [{ role: 'user', content: aiPrompt }],
+            temperature: 0.2
+          })
+        });
 
-      // Get the top 2-3 most descriptive niche words
-      searchNiche = [...new Set(extracted)].slice(0, 3).join(' ');
-    }
-
-    // Step 2: Build Google search queries for organic niche rivals
-    const brandName = cleanHost.split('.')[0];
-    const queriesToTry = [
-      searchNiche ? `${searchNiche} companies OR software -site:${cleanHost}` : null,
-      `${brandName} alternatives OR competitors -site:${cleanHost}`
-    ].filter(Boolean);
-
-    const competitors = [];
-    const seenHosts = new Set();
-    const blacklist = [
-      'google', 'bing', 'yahoo', 'youtube', 'facebook', 'linkedin', 'twitter', 'x.com',
-      'instagram', 'wikipedia', 'reddit', 'quora', 'gartner', 'g2.com', 'capterra',
-      'trustradius', 'cbinsights', 'getapp', 'softwareadvice', 'sourceforge', 'producthunt',
-      'github', 'medium', 'apple', 'clutch.co', 'upwork', 'fiverr', 'trustpilot',
-      cleanHost
-    ];
-
-    for (const q of queriesToTry) {
-      if (competitors.length >= 10) break;
-
-      const serperRes = await fetch('https://google.serper.dev/search', {
-        method: 'POST',
-        headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q, num: 30 })
-      });
-
-      const serperData = await serperRes.json();
-      const organic = serperData.organic || [];
-
-      for (const item of organic) {
-        try {
-          const itemUrl = new URL(item.link);
-          const host = itemUrl.hostname.replace(/^www\./i, '').toLowerCase();
-
-          const isBlocked = blacklist.some(b => host.includes(b));
-
-          if (!seenHosts.has(host) && !isBlocked) {
-            seenHosts.add(host);
-            competitors.push({
-              domain: host,
-              notes: (item.title || host) + ' — ' + (item.snippet ? item.snippet.slice(0, 130) + '...' : '')
-            });
-          }
-        } catch (e) {}
-
-        if (competitors.length >= 10) break;
+        const aiJson = await aiRes.json();
+        const extracted = aiJson.choices?.[0]?.message?.content?.trim().replace(/["']/g, '');
+        if (extracted && extracted.length > 3) {
+          nicheSearchQuery = extracted;
+        }
+      } catch (aiErr) {
+        // Fallback to domain name heuristic if Groq call fails
       }
     }
 
-    return res.json({ 
-      success: true, 
-      nicheDetected: searchNiche || brandName,
-      competitors 
+    if (!nicheSearchQuery) {
+      const baseName = cleanHost.split('.')[0];
+      nicheSearchQuery = `${baseName} agency services companies`;
+    }
+
+    // Step 3: Search Google via Serper for real ranking competitors
+    const searchRes = await fetch('https://google.serper.dev/search', {
+      method: 'POST',
+      headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ q: `${nicheSearchQuery} -site:${cleanHost}`, num: 40 })
+    });
+    const searchData = await searchRes.json();
+    const organic = searchData.organic || [];
+
+    // Blacklist non-competitor directories and platforms
+    const ignoreList = [
+      'google', 'bing', 'yahoo', 'youtube', 'facebook', 'linkedin', 'twitter', 'x.com',
+      'instagram', 'wikipedia', 'reddit', 'quora', 'gartner', 'g2.com', 'capterra',
+      'trustradius', 'cbinsights', 'getapp', 'softwareadvice', 'sourceforge', 'producthunt',
+      'github', 'medium', 'apple', 'clutch.co', 'upwork', 'fiverr', 'yellowpages',
+      'yelp', 'tripadvisor', 'trustpilot', 'forbes', cleanHost
+    ];
+
+    const competitors = [];
+    const seenHosts = new Set();
+
+    for (const item of organic) {
+      try {
+        const itemUrl = new URL(item.link);
+        const host = itemUrl.hostname.replace(/^www\./i, '').toLowerCase();
+
+        const isBlocked = ignoreList.some(b => host.includes(b));
+
+        if (!seenHosts.has(host) && !isBlocked) {
+          seenHosts.add(host);
+          competitors.push({
+            domain: host,
+            notes: (item.title || host) + ' — ' + (item.snippet ? item.snippet.slice(0, 140) + '...' : '')
+          });
+        }
+      } catch (e) {}
+
+      if (competitors.length >= 10) break;
+    }
+
+    return res.json({
+      success: true,
+      nicheDetected: nicheSearchQuery,
+      competitors
     });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
