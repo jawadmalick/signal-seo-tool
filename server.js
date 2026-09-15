@@ -378,10 +378,11 @@ app.post('/api/competitors', async (req, res) => {
   }
 });
 
-// Automated Organic Keyword Discovery & Live SERP Rank Tracker (20+ Keywords)
+// Live SERP Rank Tracker (Surfaces ONLY genuinely ranked keywords in top 10 pages / 1-100)
 app.post('/api/rank-tracker', async (req, res) => {
   const { domain, keywords } = req.body;
   const serperKey = process.env.SERPER_API_KEY;
+  const aiKey = process.env.GROQ_API_KEY || process.env.AI_API_KEY;
 
   if (!serperKey) {
     return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured.' });
@@ -391,171 +392,158 @@ app.post('/api/rank-tracker', async (req, res) => {
   }
 
   try {
-    const cleanHost = domain
-      .replace(/^https?:\/\//i, '')
-      .replace(/\/.*$/, '')
-      .replace(/^www\./i, '')
-      .toLowerCase();
+    let rawUrl = domain.trim();
+    if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+      rawUrl = 'https://' + rawUrl;
+    }
+    const parsedUrl = new URL(rawUrl);
+    const cleanHost = parsedUrl.hostname.replace(/^www\./i, '').toLowerCase();
     const brand = cleanHost.split('.')[0];
 
-    let targetKeywords = [];
+    let candidateKeywords = [];
 
-    // 1. If user entered manual keywords, use them
+    // 1. Manual user override if provided
     if (keywords && keywords.trim().length > 0) {
-      targetKeywords = keywords.split(/[\n,]+/).map(k => k.trim()).filter(Boolean);
+      candidateKeywords = keywords.split(/[\n,]+/).map(k => k.trim()).filter(Boolean);
     }
 
-    // 2. Query Google index deeply (up to 30 indexed pages)
-    const siteLookup = await fetch('https://google.serper.dev/search', {
-      method: 'POST',
-      headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: `site:${cleanHost}`, num: 30 })
-    });
-    const siteData = await siteLookup.json();
-    const indexedPages = siteData.organic || [];
-
-    if (targetKeywords.length === 0) {
-      const ignoredSlugs = new Set([
-        'privacy', 'policy', 'terms', 'condition', 'conditions', 'faq', 'contact',
-        'login', 'register', 'signin', 'signup', 'checkout', 'cart', 'about-us',
-        'disclaimer', 'author', 'category', 'tag', 'wp-content', 'admin'
-      ]);
-
-      const stopWords = new Set([
-        'the','and','for','with','your','our','from','all','are','that','this','you','home',
-        'welcome','official','site','website','online','page','pages','services','solutions',
-        'company','agency','best','top','free','pro','app','get','how','why','what','where',
-        brand
-      ]);
-
-      const extractedSet = new Set();
-
-      indexedPages.forEach(item => {
-        const itemUrl = item.link ? new URL(item.link) : null;
-        if (!itemUrl) return;
-
-        // A. Extract high-intent commercial keywords from clean URL path slugs
-        const pathSegments = itemUrl.pathname.split('/').filter(Boolean);
-        pathSegments.forEach(seg => {
-          const cleanSeg = seg.replace(/\.(html|php|aspx?)$/i, '').toLowerCase();
-          const words = cleanSeg.split(/[-_]+/).filter(w => w.length > 2 && !ignoredSlugs.has(w) && !stopWords.has(w));
-          if (words.length >= 2) {
-            extractedSet.add(words.join(' '));
-          }
-        });
-
-        // B. Extract keywords from indexed title tags
-        const rawTitle = (item.title || '')
-          .replace(new RegExp(brand, 'gi'), '')
-          .replace(/[|\-–—:•]/g, ' ')
-          .replace(/[^a-zA-Z0-9\s]/g, ' ')
-          .trim();
-
-        const titleWords = rawTitle
-          .toLowerCase()
-          .split(/\s+/)
-          .filter(w => w.length > 2 && !stopWords.has(w) && !ignoredSlugs.has(w));
-
-        if (titleWords.length >= 2) {
-          extractedSet.add(titleWords.slice(0, 3).join(' '));
-          if (titleWords.length >= 4) {
-            extractedSet.add(titleWords.slice(1, 4).join(' '));
-          }
-        }
+    // 2. Fetch live Google index data for the target domain
+    let siteContext = '';
+    const indexedPages = [];
+    try {
+      const siteLookup = await fetch('https://google.serper.dev/search', {
+        method: 'POST',
+        headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: `site:${cleanHost}`, num: 20 })
       });
+      const siteData = await siteLookup.json();
+      (siteData.organic || []).forEach(item => {
+        indexedPages.push(item);
+        siteContext += ` ${item.title || ''} ${item.snippet || ''}`;
+      });
+    } catch (e) {}
 
-      targetKeywords = Array.from(extractedSet).filter(k => k.split(' ').length >= 2);
+    // Fallback: If site:domain returns nothing, fetch homepage metadata directly
+    if (siteContext.trim().length < 20) {
+      try {
+        const homeRes = await fetch(rawUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+          signal: AbortSignal.timeout(3500)
+        });
+        const html = await homeRes.text();
+        const title = (html.match(/<title[^>]*>([^<]+)<\/title>/i) || [])[1] || '';
+        const metaDesc = (html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i) || [])[1] || '';
+        const h1 = (html.match(/<h1[^>]*>([^<]+)<\/h1>/i) || [])[1] || '';
+        siteContext = `${title} ${metaDesc} ${h1}`;
+      } catch (err) {}
+    }
 
-      // Supplemental organic seed queries if domain has limited indexed pages
-      if (targetKeywords.length < 20) {
-        const fallbacks = [
-          `${brand} digital business card`,
-          `${brand} nfc card`,
-          'nfc business cards',
-          'smart business cards',
-          'digital business card platform',
-          'electronic business cards for teams',
-          'custom nfc cards for business',
-          'contactless digital business card',
-          'qr code business cards'
-        ];
-        fallbacks.forEach(fb => {
-          if (!targetKeywords.includes(fb)) targetKeywords.push(fb);
+    // 3. Synthesize candidate commercial search queries based on the niche
+    if (candidateKeywords.length === 0) {
+      if (aiKey && siteContext.trim().length > 10) {
+        try {
+          const aiPrompt = `Domain: "${cleanHost}".
+Site Content / Google Meta: "${siteContext.slice(0, 700)}".
+Identify the exact commercial niche/services of this website.
+Generate 15 realistic search queries that users type on Google where this site likely ranks or targets. Include brand, specific feature terms, and core offerings.
+Return ONLY a valid JSON array of strings, e.g. ["phrase 1", "phrase 2"]. No other text.`;
+
+          const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${aiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'llama-3.3-70b-versatile',
+              messages: [{ role: 'user', content: aiPrompt }],
+              temperature: 0.2
+            })
+          });
+          const aiJson = await aiRes.json();
+          const raw = aiJson.choices?.[0]?.message?.content || '[]';
+          const parsed = JSON.parse(raw.match(/\[[\s\S]*\]/)?.[0] || '[]');
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            candidateKeywords = parsed.map(k => String(k).trim()).filter(Boolean);
+          }
+        } catch (aiErr) {}
+      }
+
+      // Title/slug fallback
+      if (candidateKeywords.length === 0 && indexedPages.length > 0) {
+        const stopWords = new Set(['the','and','for','with','your','our','from','all','are','that','this','you','home','welcome','official','site','website','online','page','services','solutions','company','privacy','policy','terms','contact']);
+        indexedPages.forEach(p => {
+          const cleanText = (p.title || '').replace(/[|\-–—:•]/g, ' ').toLowerCase();
+          const words = cleanText.split(/\s+/).filter(w => w.length > 3 && !stopWords.has(w) && !cleanHost.includes(w));
+          if (words.length >= 2) candidateKeywords.push(words.slice(0, 3).join(' '));
         });
       }
 
-      // Ensure at least 20 keywords
-      targetKeywords = targetKeywords.slice(0, 22);
+      candidateKeywords.unshift(brand);
+      candidateKeywords = [...new Set(candidateKeywords)];
     }
 
-    // 3. Transparently audit Google SERP for all keywords in parallel batches
-    const results = await Promise.all(
-      targetKeywords.map(async (kw) => {
+    // 4. Test Google SERP across top 100 results (10 pages)
+    const verifiedRankings = [];
+
+    await Promise.all(
+      candidateKeywords.map(async (kw) => {
         try {
           const checkRes = await fetch('https://google.serper.dev/search', {
             method: 'POST',
             headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ q: kw, num: 50 })
+            body: JSON.stringify({ q: kw, num: 100 })
           });
           const checkData = await checkRes.json();
           const organic = checkData.organic || [];
 
-          let position = null;
-          let rankingPage = null;
+          let rankPosition = null;
+          let landingPage = null;
 
           for (let i = 0; i < organic.length; i++) {
             const link = (organic[i].link || '').toLowerCase();
             if (link.includes(cleanHost)) {
-              position = i + 1;
-              rankingPage = organic[i].link;
+              rankPosition = i + 1;
+              landingPage = organic[i].link;
               break;
             }
           }
 
-          const topCompetitorLink = organic[0] && !organic[0].link.toLowerCase().includes(cleanHost)
-            ? organic[0].link
-            : (organic[1] && !organic[1].link.toLowerCase().includes(cleanHost) ? organic[1].link : null);
+          // ONLY include if the domain genuinely ranks in the top 100
+          if (rankPosition !== null) {
+            const topCompetitorLink = organic[0] && !organic[0].link.toLowerCase().includes(cleanHost)
+              ? organic[0].link
+              : (organic[1] && !organic[1].link.toLowerCase().includes(cleanHost) ? organic[1].link : null);
 
-          let topCompHost = 'None';
-          if (topCompetitorLink) {
-            try {
-              topCompHost = new URL(topCompetitorLink).hostname.replace(/^www\./i, '');
-            } catch (e) {
-              topCompHost = topCompetitorLink;
+            let topCompHost = 'None';
+            if (topCompetitorLink) {
+              try {
+                topCompHost = new URL(topCompetitorLink).hostname.replace(/^www\./i, '');
+              } catch (e) {
+                topCompHost = topCompetitorLink;
+              }
             }
-          }
 
-          return {
-            keyword: kw,
-            position: position ? `#${position}` : '50+ (Not in top 50)',
-            ranked: Boolean(position),
-            rankingPage: rankingPage || 'No direct landing page in top 50',
-            topCompetitor: topCompHost
-          };
-        } catch (err) {
-          return {
-            keyword: kw,
-            position: 'Check Failed',
-            ranked: false,
-            rankingPage: '-',
-            topCompetitor: '-'
-          };
-        }
+            const pageNumber = Math.ceil(rankPosition / 10);
+
+            verifiedRankings.push({
+              keyword: kw,
+              position: `#${rankPosition}`,
+              page: `Page ${pageNumber}`,
+              numericalRank: rankPosition,
+              rankingPage: landingPage,
+              topCompetitor: topCompHost
+            });
+          }
+        } catch (err) {}
       })
     );
 
-    // Sort to place ranked positions at the top of the report
-    results.sort((a, b) => {
-      if (a.ranked && !b.ranked) return -1;
-      if (!a.ranked && b.ranked) return 1;
-      return 0;
-    });
+    // Sort by best ranking position (#1 first)
+    verifiedRankings.sort((a, b) => a.numericalRank - b.numericalRank);
 
     return res.json({
       success: true,
       domain: cleanHost,
-      totalTracked: results.length,
-      rankings: results
+      totalRanked: verifiedRankings.length,
+      rankings: verifiedRankings
     });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
