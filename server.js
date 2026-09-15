@@ -309,10 +309,9 @@ app.post('/api/rank-check', async (req, res) => {
 app.post('/api/competitors', async (req, res) => {
   const { domain, vertical } = req.body;
   const serperKey = process.env.SERPER_API_KEY;
-  const aiKey = process.env.GROQ_API_KEY || process.env.AI_API_KEY;
 
   if (!serperKey) {
-    return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured.' });
+    return res.status(500).json({ success: false, error: 'SERPER_API_KEY is missing.' });
   }
   if (!domain) {
     return res.status(400).json({ success: false, error: 'Domain is required.' });
@@ -326,128 +325,75 @@ app.post('/api/competitors', async (req, res) => {
       .toLowerCase();
     const brand = cleanHost.split('.')[0];
 
-    // 1. Fetch indexed knowledge about this site from Google
-    let brandSnippet = '';
-    try {
-      const siteCheck = await fetch('https://google.serper.dev/search', {
-        method: 'POST',
-        headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: `site:${cleanHost} OR "${cleanHost}"`, num: 3 })
-      });
-      const siteJson = await siteCheck.json();
-      brandSnippet = (siteJson.organic || []).map(o => `${o.title}: ${o.snippet}`).join(' ');
-    } catch(e) {}
-
-    // 2. Identify target niche query using AI
-    let detectedNiche = vertical ? vertical.trim() : '';
-    if (!detectedNiche && aiKey) {
-      try {
-        const prompt = `Analyze this domain: "${cleanHost}". Google SERP snippet: "${brandSnippet.slice(0, 400)}".
-What is the core industry/service category?
-Return ONLY a short 2-4 word commercial Google search phrase (e.g. "project management software", "seo agency services", "b2b payment platform").
-Do NOT use review or directory terms. Return only the phrase text.`;
-
-        const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${aiKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [{ role: 'user', content: prompt }],
-            temperature: 0.1
-          })
-        });
-        const aiData = await aiRes.json();
-        const extracted = aiData.choices?.[0]?.message?.content?.trim().replace(/["\.\n]/g, '');
-        if (extracted && extracted.length > 2) {
-          detectedNiche = extracted;
-        }
-      } catch(e) {}
+    // Priority queries: 1. User vertical, 2. Brand alternatives, 3. Related market queries
+    const searchQueries = [];
+    if (vertical && vertical.trim()) {
+      searchQueries.push(`${vertical.trim()} tools OR software OR companies`);
     }
+    searchQueries.push(`${brand} alternatives`);
+    searchQueries.push(`${brand} competitors`);
+    searchQueries.push(`similar to ${cleanHost}`);
 
-    // Fallback if AI or SERP has no info
-    if (!detectedNiche) {
-      detectedNiche = `${brand} software platforms`;
-    }
-
-    // 3. Search Google for real commercial players in that niche
-    const searchRes = await fetch('https://google.serper.dev/search', {
-      method: 'POST',
-      headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: `${detectedNiche} -site:${cleanHost}`, num: 40 })
-    });
-    const searchData = await searchRes.json();
-    const organic = searchData.organic || [];
-
-    // Blacklist review platforms, directories, and social media
-    const blacklist = new Set([
+    // Blacklist only the exact major aggregators and search engines
+    const blockedDomains = new Set([
       'google.com', 'bing.com', 'yahoo.com', 'youtube.com', 'facebook.com',
       'linkedin.com', 'twitter.com', 'x.com', 'instagram.com', 'wikipedia.org',
       'reddit.com', 'quora.com', 'gartner.com', 'g2.com', 'capterra.com',
       'trustradius.com', 'cbinsights.com', 'getapp.com', 'softwareadvice.com',
       'sourceforge.net', 'producthunt.com', 'github.com', 'medium.com',
       'apple.com', 'play.google.com', 'clutch.co', 'upwork.com', 'fiverr.com',
-      'trustpilot.com', 'forbes.com', 'techradar.com', 'pcmag.com', cleanHost
+      cleanHost
     ]);
 
     const competitors = [];
-    const seen = new Set();
+    const seenHosts = new Set();
 
-    for (const item of organic) {
-      try {
-        const itemUrl = new URL(item.link);
-        const host = itemUrl.hostname.replace(/^www\./i, '').toLowerCase();
-        const isBlocked = Array.from(blacklist).some(b => host === b || host.endsWith('.' + b));
-
-        if (!seen.has(host) && !isBlocked) {
-          seen.add(host);
-          competitors.push({
-            domain: host,
-            notes: (item.title || host) + ' — ' + (item.snippet ? item.snippet.slice(0, 130) + '...' : '')
-          });
-        }
-      } catch(e) {}
+    for (const query of searchQueries) {
       if (competitors.length >= 10) break;
-    }
 
-    // 4. Guarantee 10 results by asking AI for direct competitors if SERP was sparse
-    if (competitors.length < 10 && aiKey) {
-      try {
-        const fallbackPrompt = `List 10 genuine commercial competitors for a business in this exact niche: "${detectedNiche}".
-Rules:
-- Include ONLY real business website domains (e.g. asana.com, monday.com).
-- Exclude directories, review aggregators (no G2, Gartner, Capterra), and search engines.
-- Return valid JSON: {"competitors": [{"domain": "domain.com", "notes": "Brief description"}]}`;
+      const serperRes = await fetch('https://google.serper.dev/search', {
+        method: 'POST',
+        headers: {
+          'X-API-KEY': serperKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ q: query, num: 20 })
+      });
 
-        const fbRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${aiKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [{ role: 'user', content: fallbackPrompt }],
-            response_format: { type: 'json_object' },
-            temperature: 0.2
-          })
-        });
-        const fbJson = await fbRes.json();
-        const list = JSON.parse(fbJson.choices?.[0]?.message?.content || '{}').competitors || [];
+      const data = await serperRes.json();
+      const organic = data.organic || [];
 
-        for (const c of list) {
-          const d = (c.domain || '').replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/.*$/, '').toLowerCase();
-          const isBlocked = Array.from(blacklist).some(b => d === b || d.endsWith('.' + b));
-          if (d && !seen.has(d) && !isBlocked) {
-            seen.add(d);
-            competitors.push({ domain: d, notes: c.notes || 'Direct niche competitor' });
+      for (const item of organic) {
+        try {
+          const itemUrl = new URL(item.link);
+          const host = itemUrl.hostname.replace(/^www\./i, '').toLowerCase();
+
+          // Ensure it's not the user's domain and not an aggregator
+          const isBlocked = blockedDomains.has(host) || Array.from(blockedDomains).some(b => host.endsWith('.' + b));
+
+          if (!seenHosts.has(host) && !isBlocked) {
+            seenHosts.add(host);
+            competitors.push({
+              domain: host,
+              notes: item.title + (item.snippet ? ' — ' + item.snippet.slice(0, 110) + '...' : '')
+            });
           }
-          if (competitors.length >= 10) break;
-        }
-      } catch(e) {}
+        } catch (e) {}
+
+        if (competitors.length >= 10) break;
+      }
     }
 
-    return res.json({ success: true, niche: detectedNiche, competitors });
+    return res.json({
+      success: true,
+      niche: vertical || brand,
+      competitors
+    });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }
 });
+
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
 // 2. Enhanced Organic Keyword Research & Competitor Intelligence Engine (50+ Keywords)
