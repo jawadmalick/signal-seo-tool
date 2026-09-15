@@ -309,93 +309,109 @@ app.post('/api/rank-check', async (req, res) => {
 app.post('/api/competitors', async (req, res) => {
   const { domain, vertical } = req.body;
   const serperKey = process.env.SERPER_API_KEY;
-  const aiKey = process.env.GROQ_API_KEY || process.env.AI_API_KEY;
 
   if (!serperKey) {
     return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured.' });
   }
   if (!domain) {
-    return res.status(400).json({ success: false, error: 'Domain is required.' });
+    return res.status(400).json({ success: false, error: 'Domain or URL is required.' });
   }
 
   try {
-    const cleanHost = domain
-      .replace(/^https?:\/\//i, '')
-      .replace(/\/.*$/, '')
-      .replace(/^www\./i, '')
-      .toLowerCase();
+    // 1. Parse URL to extract both hostname and any informative path slug
+    let rawUrl = domain.trim();
+    if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+      rawUrl = 'https://' + rawUrl;
+    }
+    const parsedUrl = new URL(rawUrl);
+    const cleanHost = parsedUrl.hostname.replace(/^www\./i, '').toLowerCase();
     const brand = cleanHost.split('.')[0];
+    
+    // Extract keywords from URL path (e.g. /book-hotels-online -> "book hotels online")
+    const pathKeywords = parsedUrl.pathname
+      .replace(/[\/\-_]/g, ' ')
+      .replace(/\.(html|php|aspx?)$/i, '')
+      .trim();
 
-    // 1. Fetch live Google search data for the domain
-    let siteSnippet = '';
+    // 2. Determine target niche keywords
+    let candidateQueries = [];
+
+    // Prioritize explicit vertical if user provided one
+    if (vertical && vertical.trim().length > 0) {
+      candidateQueries.push(vertical.trim());
+    }
+
+    // Next prioritize informative URL path slug
+    if (pathKeywords && pathKeywords.length > 3) {
+      candidateQueries.push(pathKeywords);
+    }
+
+    // Query Google to extract actual indexed Title & Description for the URL/domain
+    let googleTitle = '';
+    let googleSnippet = '';
     try {
-      const sRes = await fetch('https://google.serper.dev/search', {
+      const inspectRes = await fetch('https://google.serper.dev/search', {
         method: 'POST',
         headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: `"${cleanHost}" OR ${cleanHost}`, num: 5 })
+        body: JSON.stringify({ q: `site:${cleanHost}`, num: 5 })
       });
-      const sData = await sRes.json();
-      siteSnippet = (sData.organic || []).map(o => `${o.title} ${o.snippet}`).join(' ');
+      const inspectData = await inspectRes.json();
+      const firstHit = (inspectData.organic && inspectData.organic[0]) || {};
+      googleTitle = firstHit.title || '';
+      googleSnippet = firstHit.snippet || '';
     } catch (e) {}
 
-    // 2. Identify the exact commercial category
-    let targetCategory = vertical ? vertical.trim() : '';
+    // Extract core commercial terms from the Google title/snippet (stripping stop words and brand)
+    const titleCleaned = `${googleTitle} ${googleSnippet}`
+      .replace(/https?:\/\/\S+/gi, '')
+      .replace(/[^a-zA-Z0-9\s]/g, ' ')
+      .toLowerCase();
 
-    if (!targetCategory && aiKey) {
-      try {
-        const prompt = `Analyze this domain: "${cleanHost}". Live search info: "${siteSnippet.slice(0, 400)}".
-What is the exact commercial business niche/service? (e.g. for "ebedbooking.com" -> "hotel booking reservation", for "prodoo.com" -> "freelance talent marketplace").
-Return ONLY the 2-4 word commercial search query people use to find these services. Do not include quotes or punctuation.`;
+    const stopWords = new Set([
+      'the','and','for','with','your','our','from','all','are','that','this','you','home',
+      'welcome','official','site','website','online','services','solutions','company','agency',
+      'about','best','free','login','contact','portal','app','inc','ltd','llc','privacy',
+      'terms','policy','copyright','rights','reserved','pakistan','india','usa','uk',brand
+    ]);
 
-        const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${aiKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [{ role: 'user', content: prompt }],
-            temperature: 0.1
-          })
-        });
-        const aiData = await aiRes.json();
-        const extracted = aiData.choices?.[0]?.message?.content?.trim().replace(/["\.\n]/g, '');
-        if (extracted && extracted.length > 2) targetCategory = extracted;
-      } catch (e) {}
+    const meaningfulWords = titleCleaned
+      .split(/\s+/)
+      .filter(w => w.length > 3 && !stopWords.has(w) && !cleanHost.includes(w));
+
+    if (meaningfulWords.length >= 2) {
+      candidateQueries.push(meaningfulWords.slice(0, 3).join(' '));
+      candidateQueries.push(meaningfulWords.slice(0, 2).join(' '));
     }
 
-    // Heuristic fallback if AI is unavailable or domain is unindexed
-    if (!targetCategory) {
-      const cleanBrand = brand.replace(/[-_]/g, ' ');
-      targetCategory = `${cleanBrand} online services`;
-    }
+    // Fallbacks if domain is brand-new or has minimal index
+    candidateQueries.push(`${brand} alternatives`);
+    candidateQueries.push(`${brand} competitors`);
 
-    // 3. Search Google for commercial competitors in that niche
-    const queries = [
-      `${targetCategory} -site:${cleanHost}`,
-      `${brand} competitors -site:${cleanHost}`
-    ];
+    // Remove duplicates and empty strings
+    candidateQueries = [...new Set(candidateQueries.filter(q => q && q.trim().length > 2))];
 
-    // Directories and review aggregators to filter out
-    const aggregatorBlacklist = new Set([
+    // Directories, search engines, and social media to exclude
+    const blacklist = new Set([
       'google.com', 'bing.com', 'yahoo.com', 'youtube.com', 'facebook.com',
       'linkedin.com', 'twitter.com', 'x.com', 'instagram.com', 'wikipedia.org',
       'reddit.com', 'quora.com', 'gartner.com', 'g2.com', 'capterra.com',
       'trustradius.com', 'cbinsights.com', 'getapp.com', 'softwareadvice.com',
-      'sourceforge.net', 'producthunt.com', 'github.com', 'medium.com',
-      'apple.com', 'play.google.com', 'clutch.co', 'upwork.com', 'fiverr.com',
-      'trustpilot.com', 'forbes.com', 'techradar.com', cleanHost
+      'sourceforge.net', 'medium.com', 'apple.com', 'play.google.com', cleanHost
     ]);
 
     const competitors = [];
     const seen = new Set();
 
-    for (const q of queries) {
+    // 3. Query Google SERP sequentially until we collect 10 real commercial rivals
+    for (const q of candidateQueries) {
       if (competitors.length >= 10) break;
 
       const serperRes = await fetch('https://google.serper.dev/search', {
         method: 'POST',
         headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q, num: 30 })
+        body: JSON.stringify({ q: `${q} -site:${cleanHost}`, num: 20 })
       });
+
       const serperData = await serperRes.json();
       const organic = serperData.organic || [];
 
@@ -403,7 +419,7 @@ Return ONLY the 2-4 word commercial search query people use to find these servic
         try {
           const itemUrl = new URL(item.link);
           const host = itemUrl.hostname.replace(/^www\./i, '').toLowerCase();
-          const isBlocked = aggregatorBlacklist.has(host) || Array.from(aggregatorBlacklist).some(b => host.endsWith('.' + b));
+          const isBlocked = blacklist.has(host) || Array.from(blacklist).some(b => host.endsWith('.' + b));
 
           if (!seen.has(host) && !isBlocked) {
             seen.add(host);
@@ -418,41 +434,11 @@ Return ONLY the 2-4 word commercial search query people use to find these servic
       }
     }
 
-    // 4. Fallback guarantee: if Google SERP returns fewer than 10, fill with top category competitors
-    if (competitors.length < 10 && aiKey) {
-      try {
-        const fillRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${aiKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [{
-              role: 'user',
-              content: `List 10 top commercial business domains that compete in the niche: "${targetCategory}".
-Rules:
-- Return only real commercial company websites (e.g. for hotel booking: booking.com, expedia.com, agoda.com, hotels.com).
-- Never return directories (no G2, Capterra, Wikipedia, search engines).
-- JSON format: {"competitors": [{"domain": "example.com", "notes": "One-line service summary"}]}`
-            }],
-            response_format: { type: 'json_object' }
-          })
-        });
-        const fillData = await fillRes.json();
-        const list = JSON.parse(fillData.choices?.[0]?.message?.content || '{}').competitors || [];
-
-        for (const c of list) {
-          const d = (c.domain || '').replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/.*$/, '').toLowerCase();
-          const isBlocked = aggregatorBlacklist.has(d) || Array.from(aggregatorBlacklist).some(b => d.endsWith('.' + b));
-          if (d && !seen.has(d) && !isBlocked) {
-            seen.add(d);
-            competitors.push({ domain: d, notes: c.notes || 'Verified industry competitor' });
-          }
-          if (competitors.length >= 10) break;
-        }
-      } catch (e) {}
-    }
-
-    return res.json({ success: true, niche: targetCategory, competitors });
+    return res.json({
+      success: true,
+      niche: candidateQueries[0] || brand,
+      competitors
+    });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }
