@@ -311,7 +311,7 @@ app.post('/api/competitors', async (req, res) => {
   const serperKey = process.env.SERPER_API_KEY;
 
   if (!serperKey) {
-    return res.status(500).json({ success: false, error: 'SERPER_API_KEY is not configured.' });
+    return res.status(500).json({ success: false, error: 'SERPER_API_KEY is missing in server environment.' });
   }
   if (!domain) {
     return res.status(400).json({ success: false, error: 'Domain is required.' });
@@ -325,75 +325,69 @@ app.post('/api/competitors', async (req, res) => {
       .toLowerCase();
 
     const brandName = cleanHost.split('.')[0];
-    let candidateKeywords = [];
+    const queries = [];
 
-    // 1. If vertical is supplied by user, prioritize it
+    // 1. Prioritize explicit user input if provided
     if (vertical && vertical.trim().length > 0) {
-      candidateKeywords.push(vertical.trim());
+      queries.push(vertical.trim());
     }
 
-    // 2. Discover actual organic keywords from Google SERP index
-    const siteLookup = await fetch('https://google.serper.dev/search', {
+    // 2. Discover business category from Google's top indexed snippet
+    const brandLookupRes = await fetch('https://google.serper.dev/search', {
       method: 'POST',
       headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: `site:${cleanHost}`, num: 10 })
+      body: JSON.stringify({ q: `"${brandName}" OR "${cleanHost}"`, num: 5 })
     });
-    const siteData = await siteLookup.json();
-    const siteResults = siteData.organic || [];
+    const brandLookupData = await brandLookupRes.json();
+    const primaryOrganic = (brandLookupData.organic || [])[0] || {};
+    const textBlob = `${primaryOrganic.title || ''} ${primaryOrganic.snippet || ''}`.toLowerCase();
 
-    // Extract real phrases from indexed titles and snippets
-    const rawTokens = siteResults.flatMap(item => {
-      const text = `${item.title || ''} ${item.snippet || ''}`;
-      return text.toLowerCase().replace(/[^a-z0-9\s-]/g, ' ').split(/\s+/);
-    });
-
+    // Remove noise words to isolate actual offerings
     const stopWords = new Set([
       'the','and','for','with','your','our','from','all','are','that','this','you','home',
       'welcome','official','site','website','online','services','solutions','company','agency',
       'about','best','free','login','contact','portal','app','inc','ltd','llc','privacy',
-      'terms','policy','copyright','rights','reserved','com','net','org','digital','page',
-      brandName
+      'terms','policy','copyright','rights','reserved','prodoo','perdoo','rabt','digital'
     ]);
 
-    const wordCounts = {};
-    rawTokens.forEach(w => {
-      if (w.length > 3 && !stopWords.has(w) && !cleanHost.includes(w)) {
-        wordCounts[w] = (wordCounts[w] || 0) + 1;
-      }
-    });
+    const words = textBlob
+      .replace(/[^a-z0-9\s-]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length > 3 && !stopWords.has(w) && !cleanHost.includes(w));
 
-    const topTerms = Object.keys(wordCounts)
-      .sort((a, b) => wordCounts[b] - wordCounts[a])
-      .slice(0, 4);
+    const detectedKeywords = [...new Set(words)].slice(0, 3).join(' ');
 
-    if (topTerms.length >= 2) {
-      candidateKeywords.push(topTerms.slice(0, 2).join(' '));
-      candidateKeywords.push(topTerms.slice(0, 3).join(' '));
+    if (detectedKeywords.length > 3) {
+      queries.push(`${detectedKeywords} companies`);
+      queries.push(`${detectedKeywords} platform software`);
     }
 
-    // Fallback search term if domain has minimal index footprint
-    candidateKeywords.push(`${brandName} platform`);
+    // 3. Robust fallbacks based on common domain suffixes & brand
+    queries.push(`${brandName} software competitors`);
+    queries.push(`${brandName} agency alternatives`);
+    queries.push(`${cleanHost} commercial alternatives`);
 
-    // 3. Blacklist directories, aggregators, social platforms & user domain
+    // Universal blacklist: review portals, directory aggregators, social platforms
     const blacklist = [
       'google', 'bing', 'yahoo', 'youtube', 'facebook', 'linkedin', 'twitter', 'x.com',
       'instagram', 'wikipedia', 'reddit', 'quora', 'gartner', 'g2.com', 'capterra',
       'trustradius', 'cbinsights', 'getapp', 'softwareadvice', 'sourceforge', 'producthunt',
       'github', 'medium', 'apple.com', 'play.google', 'clutch.co', 'upwork', 'fiverr',
-      'trustpilot', 'forbes', 'techradar', 'pcmag', 'zoominfo', 'crunchbase', cleanHost
+      'trustpilot', 'forbes', 'techradar', 'pcmag', 'zoominfo', 'crunchbase', 'glassdoor',
+      cleanHost
     ];
 
     const competitors = [];
     const seenHosts = new Set();
 
-    // 4. Query SERP for true ranking commercial competitors
-    for (const kw of candidateKeywords) {
+    // Query Google SERP sequentially until at least 10 genuine rivals are found
+    for (const q of queries) {
       if (competitors.length >= 10) break;
 
       const serperRes = await fetch('https://google.serper.dev/search', {
         method: 'POST',
         headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: `${kw} -site:${cleanHost}`, num: 30 })
+        body: JSON.stringify({ q: `${q} -site:${cleanHost}`, num: 30 })
       });
 
       const serperData = await serperRes.json();
@@ -409,7 +403,7 @@ app.post('/api/competitors', async (req, res) => {
             seenHosts.add(host);
             competitors.push({
               domain: host,
-              notes: (item.title || host) + ' — ' + (item.snippet ? item.snippet.slice(0, 140) + '...' : '')
+              notes: (item.title || host) + ' — ' + (item.snippet ? item.snippet.slice(0, 130) + '...' : '')
             });
           }
         } catch (e) {}
@@ -420,7 +414,7 @@ app.post('/api/competitors', async (req, res) => {
 
     return res.json({
       success: true,
-      nicheDetected: topTerms.join(' ') || brandName,
+      nicheDetected: detectedKeywords || brandName,
       competitors
     });
   } catch (err) {
