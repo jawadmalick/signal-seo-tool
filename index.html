@@ -410,14 +410,27 @@
       </div>
     </div>
 
-    <!-- Category Jump Pills Bar -->
-    <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem;">
-      <span style="background:#312e81; color:#c7d2fe; font-size:0.8rem; font-weight:800; padding:6px 14px; border-radius:99px;">AEO <span id="pillScoreAeo" style="background:#4338ca; padding:2px 8px; border-radius:99px; margin-left:4px;">0</span></span>
-      <span style="background:#064e3b; color:#a7f3d0; font-size:0.8rem; font-weight:800; padding:6px 14px; border-radius:99px;">GEO <span id="pillScoreGeo" style="background:#047857; padding:2px 8px; border-radius:99px; margin-left:4px;">0</span></span>
-      <span style="background:#065f46; color:#6ee7b7; font-size:0.8rem; font-weight:800; padding:6px 14px; border-radius:99px;">AI Crawlers <span id="pillScoreCrawlers" style="background:#047857; padding:2px 8px; border-radius:99px; margin-left:4px;">100</span></span>
-      <span style="background:#78350f; color:#fde68a; font-size:0.8rem; font-weight:800; padding:6px 14px; border-radius:99px;">Technical SEO <span id="pillScoreTech" style="background:#b45309; padding:2px 8px; border-radius:99px; margin-left:4px;">40</span></span>
-      <span style="background:#374151; color:#e5e7eb; font-size:0.8rem; font-weight:800; padding:6px 14px; border-radius:99px;">Content Quality <span id="pillScoreContent" style="background:#4b5563; padding:2px 8px; border-radius:99px; margin-left:4px;">47</span></span>
-    </div>
+    <!-- Category Jump Pills Bar (Clickable Anchors) -->
+<div style="display:flex; flex-wrap:wrap; gap:0.6rem; justify-content:center; margin-bottom:1.75rem;">
+  <button type="button" onclick="scrollToSection('sec-aeo-checker')" style="background:#1e1b4b; border:1px solid #3730a3; color:#c7d2fe; font-size:0.8rem; font-weight:800; padding:7px 14px; border-radius:99px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s ease;">
+    AEO <span id="pillScoreAeo" style="background:#4338ca; color:#fff; padding:2px 8px; border-radius:99px; font-size:0.75rem;">0</span>
+  </button>
+  <button type="button" onclick="scrollToSection('sec-geo-checker')" style="background:#064e3b; border:1px solid #065f46; color:#a7f3d0; font-size:0.8rem; font-weight:800; padding:7px 14px; border-radius:99px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s ease;">
+    GEO <span id="pillScoreGeo" style="background:#047857; color:#fff; padding:2px 8px; border-radius:99px; font-size:0.75rem;">0</span>
+  </button>
+  <button type="button" onclick="scrollToSection('sec-crawlers-checker')" style="background:#022c22; border:1px solid #047857; color:#6ee7b7; font-size:0.8rem; font-weight:800; padding:7px 14px; border-radius:99px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s ease;">
+    AI Crawlers <span id="pillScoreCrawlers" style="background:#059669; color:#fff; padding:2px 8px; border-radius:99px; font-size:0.75rem;">100</span>
+  </button>
+  <button type="button" onclick="scrollToSection('sec-tech-checker')" style="background:#451a03; border:1px solid #78350f; color:#fde68a; font-size:0.8rem; font-weight:800; padding:7px 14px; border-radius:99px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s ease;">
+    Technical SEO <span id="pillScoreTech" style="background:#b45309; color:#fff; padding:2px 8px; border-radius:99px; font-size:0.75rem;">40</span>
+  </button>
+  <button type="button" onclick="scrollToSection('sec-content-checker')" style="background:#1f2937; border:1px solid #374151; color:#e5e7eb; font-size:0.8rem; font-weight:800; padding:7px 14px; border-radius:99px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s ease;">
+    Content Quality <span id="pillScoreContent" style="background:#4b5563; color:#fff; padding:2px 8px; border-radius:99px; font-size:0.75rem;">47</span>
+  </button>
+  <button type="button" onclick="scrollToSection('sec-speed-checker')" style="background:#450a0a; border:1px solid #7f1d1d; color:#fca5a5; font-size:0.8rem; font-weight:800; padding:7px 14px; border-radius:99px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s ease;">
+    Page Speed <span id="pillScoreSpeed" style="background:#b91c1c; color:#fff; padding:2px 8px; border-radius:99px; font-size:0.75rem;">0</span>
+  </button>
+</div>
 
     <!-- 1. Hero Score Dial Card -->
     <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2.5rem 2rem; text-align:center; margin-bottom:1.5rem;">
@@ -430,87 +443,164 @@
       <p id="repScoreText" style="color:#94a3b8; font-size:0.9rem; max-width:640px; margin:0 auto; line-height:1.6;"></p>
     </div>
 
-    <!-- 2. Six Metric Tiles Grid -->
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
-      <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
-        <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">AEO</div>
-        <div id="tileAeo" style="font-size:2rem; font-weight:900; color:#fff; margin:0.4rem 0;">0</div>
-        <div style="height:4px; background:#1e293b; border-radius:2px; overflow:hidden; margin-bottom:0.5rem;"><div id="tileBarAeo" style="height:100%; width:0%; background:#ef4444;"></div></div>
-        <div id="tileAeoStatus" style="font-size:0.75rem; font-weight:800; color:#ef4444;">Critical →</div>
+   <!-- SCORE BREAKDOWN WITH RADAR CHART & CLICKABLE TILES -->
+<div style="display: grid; grid-template-columns: 280px 1fr; gap: 1.25rem; margin-bottom: 2rem; align-items: stretch;">
+  
+  <!-- Left: SVG Radar Chart Card -->
+  <div style="background: #121826; border: 1px solid #1e293b; border-radius: 18px; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+    <div style="font-weight: 800; font-size: 1.05rem; color: #fff; margin-bottom: 1rem; align-self: flex-start;">Score Breakdown</div>
+    <svg id="radarChartSvg" viewBox="0 0 260 260" style="width: 100%; max-width: 220px; overflow: visible;">
+      <!-- Grid Polygons -->
+      <polygon points="130,20 225,75 225,185 130,240 35,185 35,75" fill="none" stroke="#1e293b" stroke-width="1.5" />
+      <polygon points="130,48 198,87 198,166 130,205 62,166 62,87" fill="none" stroke="#1e293b" stroke-width="1.5" />
+      <polygon points="130,75 172,99 172,148 130,171 88,148 88,99" fill="none" stroke="#1e293b" stroke-width="1.5" />
+      
+      <!-- Axis Lines -->
+      <line x1="130" y1="130" x2="130" y2="20" stroke="#1e293b" stroke-width="1" />
+      <line x1="130" y1="130" x2="225" y2="75" stroke="#1e293b" stroke-width="1" />
+      <line x1="130" y1="130" x2="225" y2="185" stroke="#1e293b" stroke-width="1" />
+      <line x1="130" y1="130" x2="130" y2="240" stroke="#1e293b" stroke-width="1" />
+      <line x1="130" y1="130" x2="35" y2="185" stroke="#1e293b" stroke-width="1" />
+      <line x1="130" y1="130" x2="35" y2="75" stroke="#1e293b" stroke-width="1" />
+
+      <!-- Data Polygon & Points -->
+      <polygon id="radarDataPoly" points="130,115 155,115 225,185 130,174 85,156 130,130" fill="rgba(168, 85, 247, 0.28)" stroke="#a855f7" stroke-width="2" />
+      <circle id="radarPtAeo" cx="130" cy="115" r="3.5" fill="#818cf8" />
+      <circle id="radarPtGeo" cx="155" cy="115" r="3.5" fill="#2dd4bf" />
+      <circle id="radarPtCrawlers" cx="225" cy="185" r="3.5" fill="#4ade80" />
+      <circle id="radarPtTech" cx="130" cy="174" r="3.5" fill="#f59e0b" />
+      <circle id="radarPtContent" cx="85" cy="156" r="3.5" fill="#c084fc" />
+      <circle id="radarPtSpeed" cx="130" cy="130" r="3.5" fill="#ef4444" />
+
+      <!-- Labels -->
+      <text x="130" y="10" fill="#64748b" font-size="9" font-weight="700" text-anchor="middle">AEO</text>
+      <text x="235" y="75" fill="#64748b" font-size="9" font-weight="700" text-anchor="start">GEO</text>
+      <text x="235" y="190" fill="#64748b" font-size="9" font-weight="700" text-anchor="start">Crawlers</text>
+      <text x="130" y="255" fill="#64748b" font-size="9" font-weight="700" text-anchor="middle">Technical</text>
+      <text x="25" y="190" fill="#64748b" font-size="9" font-weight="700" text-anchor="end">Content</text>
+      <text x="25" y="75" fill="#64748b" font-size="9" font-weight="700" text-anchor="end">Speed</text>
+    </svg>
+  </div>
+
+  <!-- Right: 6 Interactive Clickable Metric Tiles Grid -->
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+    
+    <!-- 1. AEO Tile -->
+    <div onclick="scrollToSection('sec-aeo-checker')" style="background: #121826; border: 1px solid #1e293b; border-top: 3px solid #6366f1; border-radius: 16px; padding: 1.25rem 1.1rem; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor='#1e293b'">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <span style="font-size: 0.72rem; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px;">AEO</span>
+        <svg viewBox="0 0 36 36" style="width: 24px; height: 24px;">
+          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#1e293b" stroke-width="4" />
+          <path id="ringAeo" stroke-dasharray="13, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round" />
+        </svg>
       </div>
-      <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
-        <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">GEO</div>
-        <div id="tileGeo" style="font-size:2rem; font-weight:900; color:#fff; margin:0.4rem 0;">0</div>
-        <div style="height:4px; background:#1e293b; border-radius:2px; overflow:hidden; margin-bottom:0.5rem;"><div id="tileBarGeo" style="height:100%; width:0%; background:#ef4444;"></div></div>
-        <div id="tileGeoStatus" style="font-size:0.75rem; font-weight:800; color:#ef4444;">Critical →</div>
+      <div id="tileAeo" style="font-size: 2.1rem; font-weight: 900; color: #fff; margin: 0.2rem 0 0.4rem 0;">13</div>
+      <div style="height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; margin-bottom: 0.6rem;">
+        <div id="tileBarAeo" style="height: 100%; width: 13%; background: #ef4444;"></div>
       </div>
-      <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
-        <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">AI CRAWLERS</div>
-        <div id="tileCrawlers" style="font-size:2rem; font-weight:900; color:#fff; margin:0.4rem 0;">100</div>
-        <div style="height:4px; background:#1e293b; border-radius:2px; overflow:hidden; margin-bottom:0.5rem;"><div id="tileBarCrawlers" style="height:100%; width:100%; background:#4ade80;"></div></div>
-        <div id="tileCrawlersStatus" style="font-size:0.75rem; font-weight:800; color:#4ade80;">Excellent →</div>
-      </div>
-      <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
-        <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">TECHNICAL SEO</div>
-        <div id="tileTech" style="font-size:2rem; font-weight:900; color:#fff; margin:0.4rem 0;">40</div>
-        <div style="height:4px; background:#1e293b; border-radius:2px; overflow:hidden; margin-bottom:0.5rem;"><div id="tileBarTech" style="height:100%; width:40%; background:#f59e0b;"></div></div>
-        <div id="tileTechStatus" style="font-size:0.75rem; font-weight:800; color:#f59e0b;">Needs Work →</div>
-      </div>
-      <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
-        <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">CONTENT QUALITY</div>
-        <div id="tileContent" style="font-size:2rem; font-weight:900; color:#fff; margin:0.4rem 0;">47</div>
-        <div style="height:4px; background:#1e293b; border-radius:2px; overflow:hidden; margin-bottom:0.5rem;"><div id="tileBarContent" style="height:100%; width:47%; background:#f59e0b;"></div></div>
-        <div id="tileContentStatus" style="font-size:0.75rem; font-weight:800; color:#f59e0b;">Needs Work →</div>
-      </div>
-      <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
-        <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">PAGE SPEED</div>
-        <div id="tileSpeed" style="font-size:2rem; font-weight:900; color:#fff; margin:0.4rem 0;">0</div>
-        <div style="height:4px; background:#1e293b; border-radius:2px; overflow:hidden; margin-bottom:0.5rem;"><div id="tileBarSpeed" style="height:100%; width:0%; background:#ef4444;"></div></div>
-        <div id="tileSpeedStatus" style="font-size:0.75rem; font-weight:800; color:#ef4444;">Critical →</div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span id="tileAeoStatus" style="font-size: 0.75rem; font-weight: 800; color: #ef4444;">Critical</span>
+        <span style="color: #64748b; font-size: 0.75rem; font-weight: 900;">→</span>
       </div>
     </div>
 
-    <!-- Quick Signals Bar -->
-    <div id="quickSignalsBar" style="display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin-bottom:1rem;"></div>
-    <div id="metaDetailsBar" style="text-align:center; font-size:0.75rem; color:#64748b; margin-bottom:1.5rem;"></div>
-
-    <!-- Page Type Notice Box -->
-    <div style="background:#1a102e; border:1px solid #3b1d6e; border-radius:12px; padding:1rem 1.25rem; margin-bottom:2rem; display:flex; gap:0.75rem; align-items:flex-start;">
-      <div style="font-size:1.2rem; line-height:1;">📄</div>
-      <div>
-        <div id="repPageTypeTitle" style="color:#d8b4fe; font-weight:700; font-size:0.88rem; margin-bottom:0.25rem;">Page type detected: Homepage</div>
-        <div style="color:#a855f7; font-size:0.8rem; line-height:1.5;">
-          Checks for author name, publish date, and article schema are marked as <b>Not applicable</b> for this page type and do not reduce your score.
-        </div>
+    <!-- 2. GEO Tile -->
+    <div onclick="scrollToSection('sec-geo-checker')" style="background: #121826; border: 1px solid #1e293b; border-top: 3px solid #14b8a6; border-radius: 16px; padding: 1.25rem 1.1rem; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.borderColor='#14b8a6'" onmouseout="this.style.borderColor='#1e293b'">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <span style="font-size: 0.72rem; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px;">GEO</span>
+        <svg viewBox="0 0 36 36" style="width: 24px; height: 24px;">
+          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#1e293b" stroke-width="4" />
+          <path id="ringGeo" stroke-dasharray="35, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#14b8a6" stroke-width="4" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div id="tileGeo" style="font-size: 2.1rem; font-weight: 900; color: #fff; margin: 0.2rem 0 0.4rem 0;">35</div>
+      <div style="height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; margin-bottom: 0.6rem;">
+        <div id="tileBarGeo" style="height: 100%; width: 35%; background: #ef4444;"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span id="tileGeoStatus" style="font-size: 0.75rem; font-weight: 800; color: #ef4444;">Critical</span>
+        <span style="color: #64748b; font-size: 0.75rem; font-weight: 900;">→</span>
       </div>
     </div>
 
-    <!-- 3. Prioritized Fixes Roadmap ("Your Top Fixes") -->
-    <h3 style="color:#fff; font-size:1.25rem; font-weight:800; margin:0 0 0.5rem 0;">Your Top Fixes</h3>
-    <div style="font-size:0.82rem; color:#94a3b8; margin-bottom:1rem;">Sorted by impact — fix these first</div>
-    <div id="actionPlanContainer" style="display:flex; flex-direction:column; gap:1rem; margin-bottom:2.5rem;"></div>
-
-    <!-- 4. Detailed Inspection Checklists -->
-    <div id="detailedCheckSections"></div>
-
-    <!-- 5. AI Crawler Checker (Summary Dial & Bot Tiers) -->
-    <div style="background:#131c31; border:1px solid #1e293b; border-radius:16px; padding:2rem; margin-bottom:2rem;">
-      <h3 style="color:#fff; font-size:1.2rem; font-weight:800; margin:0 0 1.5rem 0;">AI Crawler Access Summary</h3>
-      <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:2rem;">
-        <div id="crawlerAccessDial" style="width:120px; height:120px; border-radius:50%; border:8px solid #10b981; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-          <span id="crawlerAllowedNum" style="font-size:2.2rem; font-weight:900; color:#fff; line-height:1;">14</span>
-          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700; margin-top:4px;">/ 14 Allowed</span>
-        </div>
+    <!-- 3. AI Crawlers Tile -->
+    <div onclick="scrollToSection('sec-crawlers-checker')" style="background: #121826; border: 1px solid #1e293b; border-top: 3px solid #10b981; border-radius: 16px; padding: 1.25rem 1.1rem; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.borderColor='#10b981'" onmouseout="this.style.borderColor='#1e293b'">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <span style="font-size: 0.72rem; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; line-height: 1.2;">AI<br>CRAWLERS</span>
+        <svg viewBox="0 0 36 36" style="width: 24px; height: 24px;">
+          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#1e293b" stroke-width="4" />
+          <path id="ringCrawlers" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
+        </svg>
       </div>
-      <div id="crawlerTierSections"></div>
+      <div id="tileCrawlers" style="font-size: 2.1rem; font-weight: 900; color: #fff; margin: 0.2rem 0 0.4rem 0;">100</div>
+      <div style="height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; margin-bottom: 0.6rem;">
+        <div id="tileBarCrawlers" style="height: 100%; width: 100%; background: #10b981;"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span id="tileCrawlersStatus" style="font-size: 0.75rem; font-weight: 800; color: #10b981;">Excellent</span>
+        <span style="color: #64748b; font-size: 0.75rem; font-weight: 900;">→</span>
+      </div>
     </div>
 
-    <!-- 6. AI Configuration Files Drawer -->
-    <div style="background:#131c31; border:1px solid #1e293b; border-radius:16px; padding:1.75rem; margin-bottom:2rem;">
-      <h3 style="color:#fff; font-size:1rem; font-weight:800; margin:0 0 1rem 0; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8;">AI Configuration Files</h3>
-      <div id="aiConfigFilesList"></div>
+    <!-- 4. Technical SEO Tile -->
+    <div onclick="scrollToSection('sec-tech-checker')" style="background: #121826; border: 1px solid #1e293b; border-top: 3px solid #f59e0b; border-radius: 16px; padding: 1.25rem 1.1rem; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.borderColor='#f59e0b'" onmouseout="this.style.borderColor='#1e293b'">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <span style="font-size: 0.72rem; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; line-height: 1.2;">TECHNICAL<br>SEO</span>
+        <svg viewBox="0 0 36 36" style="width: 24px; height: 24px;">
+          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#1e293b" stroke-width="4" />
+          <path id="ringTech" stroke-dasharray="40, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f59e0b" stroke-width="4" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div id="tileTech" style="font-size: 2.1rem; font-weight: 900; color: #fff; margin: 0.2rem 0 0.4rem 0;">40</div>
+      <div style="height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; margin-bottom: 0.6rem;">
+        <div id="tileBarTech" style="height: 100%; width: 40%; background: #f59e0b;"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span id="tileTechStatus" style="font-size: 0.75rem; font-weight: 800; color: #f59e0b;">Needs Work</span>
+        <span style="color: #64748b; font-size: 0.75rem; font-weight: 900;">→</span>
+      </div>
     </div>
 
+    <!-- 5. Content Quality Tile -->
+    <div onclick="scrollToSection('sec-content-checker')" style="background: #121826; border: 1px solid #1e293b; border-top: 3px solid #a855f7; border-radius: 16px; padding: 1.25rem 1.1rem; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.borderColor='#a855f7'" onmouseout="this.style.borderColor='#1e293b'">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <span style="font-size: 0.72rem; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; line-height: 1.2;">CONTENT<br>QUALITY</span>
+        <svg viewBox="0 0 36 36" style="width: 24px; height: 24px;">
+          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#1e293b" stroke-width="4" />
+          <path id="ringContent" stroke-dasharray="47, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#a855f7" stroke-width="4" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div id="tileContent" style="font-size: 2.1rem; font-weight: 900; color: #fff; margin: 0.2rem 0 0.4rem 0;">47</div>
+      <div style="height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; margin-bottom: 0.6rem;">
+        <div id="tileBarContent" style="height: 100%; width: 47%; background: #f59e0b;"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span id="tileContentStatus" style="font-size: 0.75rem; font-weight: 800; color: #f59e0b;">Needs Work</span>
+        <span style="color: #64748b; font-size: 0.75rem; font-weight: 900;">→</span>
+      </div>
+    </div>
+
+    <!-- 6. Page Speed Tile -->
+    <div onclick="scrollToSection('sec-speed-checker')" style="background: #121826; border: 1px solid #1e293b; border-top: 3px solid #ef4444; border-radius: 16px; padding: 1.25rem 1.1rem; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.borderColor='#ef4444'" onmouseout="this.style.borderColor='#1e293b'">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <span style="font-size: 0.72rem; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; line-height: 1.2;">PAGE<br>SPEED</span>
+        <svg viewBox="0 0 36 36" style="width: 24px; height: 24px;">
+          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#1e293b" stroke-width="4" />
+          <path id="ringSpeed" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#ef4444" stroke-width="4" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div id="tileSpeed" style="font-size: 2.1rem; font-weight: 900; color: #fff; margin: 0.2rem 0 0.4rem 0;">0</div>
+      <div style="height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; margin-bottom: 0.6rem;">
+        <div id="tileBarSpeed" style="height: 100%; width: 0%; background: #ef4444;"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span id="tileSpeedStatus" style="font-size: 0.75rem; font-weight: 800; color: #ef4444;">Critical</span>
+        <span style="color: #64748b; font-size: 0.75rem; font-weight: 900;">→</span>
+      </div>
+    </div>
+
+  </div>
+</div>
     <!-- 7. Page Speed Checker Card -->
     <div style="background:#131c31; border:1px solid #1e293b; border-radius:16px; padding:2rem; margin-bottom:2rem;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
@@ -2325,6 +2415,76 @@ window.executeFullAiAudit = async function() {
 };
 
 window.runUnifiedAeoGeoAudit = window.executeFullAiAudit;
+
+
+// --- ADD THE TWO HELPERS HERE ---
+window.scrollToSection = function(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el.style.transition = 'box-shadow 0.4s ease';
+    el.style.boxShadow = '0 0 25px rgba(56, 189, 248, 0.4)';
+    setTimeout(() => { el.style.boxShadow = 'none'; }, 1500);
+  }
+};
+
+window.updateScoreBreakdownUI = function(cats) {
+  const aeo = cats.aeo || 0;
+  const geo = cats.geo || 0;
+  const crawlers = cats.crawlers || 0;
+  const tech = cats.technical || 0;
+  const content = cats.contentQuality || 0;
+  const speed = cats.speed || 0;
+
+  const setRing = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('stroke-dasharray', `${Math.min(100, Math.max(0, val))}, 100`);
+  };
+  setRing('ringAeo', aeo);
+  setRing('ringGeo', geo);
+  setRing('ringCrawlers', crawlers);
+  setRing('ringTech', tech);
+  setRing('ringContent', content);
+  setRing('ringSpeed', speed);
+
+  const calcPt = (angleDeg, val) => {
+    const r = (Math.max(5, Math.min(100, val)) / 100) * 110;
+    const rad = (angleDeg - 90) * (Math.PI / 180);
+    return {
+      x: Math.round(130 + r * Math.cos(rad)),
+      y: Math.round(130 + r * Math.sin(rad))
+    };
+  };
+
+  const pAeo = calcPt(0, aeo);
+  const pGeo = calcPt(60, geo);
+  const pCrawlers = calcPt(120, crawlers);
+  const pTech = calcPt(180, tech);
+  const pContent = calcPt(240, content);
+  const pSpeed = calcPt(300, speed);
+
+  const poly = document.getElementById('radarDataPoly');
+  if (poly) {
+    poly.setAttribute('points', `${pAeo.x},${pAeo.y} ${pGeo.x},${pGeo.y} ${pCrawlers.x},${pCrawlers.y} ${pTech.x},${pTech.y} ${pContent.x},${pContent.y} ${pSpeed.x},${pSpeed.y}`);
+  }
+
+  const setCircle = (id, pt) => {
+    const c = document.getElementById(id);
+    if (c) {
+      c.setAttribute('cx', pt.x);
+      c.setAttribute('cy', pt.y);
+    }
+  };
+  setCircle('radarPtAeo', pAeo);
+  setCircle('radarPtGeo', pGeo);
+  setCircle('radarPtCrawlers', pCrawlers);
+  setCircle('radarPtTech', pTech);
+  setCircle('radarPtContent', pContent);
+  setCircle('radarPtSpeed', pSpeed);
+};
+</script>
+</body>
+</html>
 </script>
 </body>
 </html>
