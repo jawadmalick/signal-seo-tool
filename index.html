@@ -359,41 +359,100 @@
         </div>
       </div>
 
-      <!-- 03. AEO (Answer Engine Optimization) -->
-<div class="panel" id="panel-aeo">
-  <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2rem; margin-bottom:1.5rem;">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
-      <h2 style="margin:0; font-size:1.25rem; color:#f8fafc; font-weight:700;">AEO Analyzer (Answer Engine Optimization)</h2>
-      <span style="background:#0284c7; color:#fff; font-size:0.7rem; font-weight:800; padding:3px 10px; border-radius:99px;">AEO ONLY</span>
-    </div>
-    <p style="margin:0 0 1.25rem 0; font-size:0.85rem; color:#94a3b8;">Evaluates direct-answer extraction readiness: quotable statements, heading hierarchy, and Schema JSON-LD.</p>
-    
-    <div style="display:flex; gap:0.75rem;">
-      <input type="text" id="aeoInputUrl" placeholder="https://yourwebsite.com"  style="flex:1; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:0.85rem 1.1rem; color:#fff; font-size:0.95rem; outline:none;" />
-      <button id="btnRunAeoAudit" onclick="runAeoAuditOnly()" style="background:#10b981; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">Run AEO Audit</button>
-    </div>
-    <div id="aeoStatusText" style="margin-top:1rem; font-size:0.88rem; color:#38bdf8; display:none;"></div>
-    <div id="aeoResultsContainer" style="margin-top:1.5rem;"></div>
-  </div>
-</div>
+     <!-- 03. UNIFIED AEO & GEO ANALYZER -->
+    <div class="panel" id="panel-aeo">
+      <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2rem; margin-bottom:1.5rem;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+          <h2 style="margin:0; font-size:1.3rem; color:#f8fafc; font-weight:700;">AEO & GEO Analyzer</h2>
+          <span style="background:#0284c7; color:#fff; font-size:0.75rem; font-weight:800; padding:4px 12px; border-radius:99px;">AI SEARCH READINESS</span>
+        </div>
+        <p style="margin:0 0 1.5rem 0; font-size:0.88rem; color:#94a3b8;">
+          Full diagnostic for generative engine visibility: Direct-answer extraction, Schema markup, llms.txt validation, and AI crawler permissions.
+        </p>
 
-      <!-- 04. GEO (Generative Engine Optimization) -->
-<div class="panel" id="panel-geo">
-  <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2rem; margin-bottom:1.5rem;">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
-      <h2 style="margin:0; font-size:1.25rem; color:#f8fafc; font-weight:700;">GEO Analyzer (Generative Engine Optimization)</h2>
-      <span style="background:#7c3aed; color:#fff; font-size:0.7rem; font-weight:800; padding:3px 10px; border-radius:99px;">GEO ONLY</span>
+        <div style="display:flex; gap:0.75rem;">
+          <input type="text" id="unifiedAiUrl" placeholder="https://yourwebsite.com" style="flex:1; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:0.85rem 1.1rem; color:#fff; font-size:0.95rem; outline:none;" />
+          <button id="btnRunUnifiedAudit" onclick="runUnifiedAeoGeoAudit()" style="background:#10b981; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">
+            Run Full AI Audit
+          </button>
+        </div>
+        <div id="unifiedAiLoading" style="display:none; color:#38bdf8; font-size:0.88rem; margin-top:1rem; font-weight:600;">
+          Auditing page HTML, robots.txt, and AI manifest files...
+        </div>
+      </div>
+
+      <!-- Unified Output Report -->
+      <div id="unifiedAiReport" style="display:none;">
+
+        <!-- 1. Hero Readiness Score -->
+        <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2.5rem 2rem; text-align:center; margin-bottom:1.5rem;">
+          <div style="font-size:0.85rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:1px;">Overall AI Readiness Score</div>
+          <div id="repCircleScore" style="margin:1.5rem auto; width:120px; height:120px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; border:8px solid #f59e0b; font-size:2.2rem; font-weight:800; color:#fff;">
+            <span id="repScoreNum">0</span>
+            <span style="font-size:0.7rem; color:#94a3b8; font-weight:600; margin-top:-4px;">/ 100</span>
+          </div>
+          <div id="repScoreStatus" style="font-size:1.15rem; font-weight:800; color:#f59e0b; margin-bottom:0.6rem; letter-spacing:0.5px;">NEEDS WORK</div>
+          <p id="repScoreText" style="color:#94a3b8; font-size:0.9rem; max-width:640px; margin:0 auto; line-height:1.6;"></p>
+        </div>
+
+        <!-- 2. Metric Tiles Grid (6 Tiles) -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+          <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
+            <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">AEO</div>
+            <div id="tileAeo" style="font-size:2rem; font-weight:800; color:#fff; margin:0.4rem 0;">0</div>
+            <div id="tileAeoStatus" style="font-size:0.75rem; font-weight:700; color:#ef4444;">Critical</div>
+          </div>
+          <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
+            <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">GEO</div>
+            <div id="tileGeo" style="font-size:2rem; font-weight:800; color:#fff; margin:0.4rem 0;">0</div>
+            <div id="tileGeoStatus" style="font-size:0.75rem; font-weight:700; color:#ef4444;">Critical</div>
+          </div>
+          <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
+            <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">AI CRAWLERS</div>
+            <div id="tileCrawlers" style="font-size:2rem; font-weight:800; color:#fff; margin:0.4rem 0;">0</div>
+            <div id="tileCrawlersStatus" style="font-size:0.75rem; font-weight:700; color:#4ade80;">Excellent</div>
+          </div>
+          <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
+            <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">TECHNICAL SEO</div>
+            <div id="tileTech" style="font-size:2rem; font-weight:800; color:#fff; margin:0.4rem 0;">0</div>
+            <div id="tileTechStatus" style="font-size:0.75rem; font-weight:700; color:#f59e0b;">Needs Work</div>
+          </div>
+          <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
+            <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">CONTENT QUALITY</div>
+            <div id="tileContent" style="font-size:2rem; font-weight:800; color:#fff; margin:0.4rem 0;">0</div>
+            <div id="tileContentStatus" style="font-size:0.75rem; font-weight:700; color:#f59e0b;">Needs Work</div>
+          </div>
+          <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
+            <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">PAGE SPEED</div>
+            <div id="tileSpeed" style="font-size:2rem; font-weight:800; color:#fff; margin:0.4rem 0;">40</div>
+            <div id="tileSpeedStatus" style="font-size:0.75rem; font-weight:700; color:#f59e0b;">Good</div>
+          </div>
+        </div>
+
+        <!-- 3. Quick Meta Badges -->
+        <div id="quickSignalsBar" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:2rem; justify-content:center;"></div>
+
+        <!-- 4. Top Recommended Fixes (Roadmap Timeline) -->
+        <h3 style="color:#fff; font-size:1.15rem; font-weight:800; margin-bottom:1rem;">Priority Fixes for AI Visibility</h3>
+        <div id="actionPlanContainer" style="display:flex; flex-direction:column; gap:1rem; margin-bottom:2.5rem;"></div>
+
+        <!-- 5. Detailed Inspection Checklists -->
+        <div id="detailedCheckSections"></div>
+
+        <!-- 6. Keyword Density Module -->
+        <div style="background:#131c31; border:1px solid #1e293b; border-radius:16px; padding:1.75rem; margin-top:2rem;">
+          <h3 style="color:#fff; font-size:1.05rem; font-weight:800; margin:0 0 0.25rem 0;">Keyword Density Analysis</h3>
+          <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:1rem;">Most frequent terms extracted by AI search bots:</div>
+          <div class="table-wrap">
+            <table class="checks-table">
+              <thead><tr><th>Keyword Term</th><th>Occurrences in Page Content</th></tr></thead>
+              <tbody id="kwDensityRows"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
     </div>
-    <p style="margin:0 0 1.25rem 0; font-size:0.85rem; color:#94a3b8;">Evaluates AI crawler permissions: GPTBot, ClaudeBot, PerplexityBot in robots.txt and security headers.</p>
-    
-    <div style="display:flex; gap:0.75rem;">
-      <input type="text" id="geoInputUrl" placeholder="https://yourwebsite.com"  style="flex:1; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:0.85rem 1.1rem; color:#fff; font-size:0.95rem; outline:none;" />
-      <button id="btnRunGeoAudit" onclick="runGeoAuditOnly()" style="background:#8b5cf6; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">Run GEO Audit</button>
-    </div>
-    <div id="geoStatusText" style="margin-top:1rem; font-size:0.88rem; color:#c084fc; display:none;"></div>
-    <div id="geoResultsContainer" style="margin-top:1.5rem;"></div>
-  </div>
-</div>
 
       <!-- 05. COMPETITORS -->
       <div class="panel" id="panel-competitors">
@@ -1739,38 +1798,154 @@ renderStats();
     }
   }
 
-  async function runGeoAuditOnly() {
-    var input = document.getElementById('geoInputUrl');
-    var status = document.getElementById('geoStatusText');
-    var btn = document.getElementById('btnRunGeoAudit');
-    var container = document.getElementById('geoResultsContainer');
-    var target = (input.value || '').trim();
-    if (!target) return alert('Enter a URL');
+  window.runUnifiedAeoGeoAudit = async function() {
+  const urlInput = document.getElementById('unifiedAiUrl');
+  const url = urlInput ? urlInput.value.trim() : '';
+  if (!url) return alert('Please enter your website URL.');
 
-    btn.disabled = true;
-    btn.innerText = 'Analyzing...';
-    status.style.display = 'block';
-    status.innerText = 'Scanning robots.txt AI bot directives and security headers...';
-    container.innerHTML = '';
+  const btn = document.getElementById('btnRunUnifiedAudit');
+  const loading = document.getElementById('unifiedAiLoading');
+  const report = document.getElementById('unifiedAiReport');
 
-    try {
-      var res = await fetch('/api/geo-audit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: target })
-      });
-      var data = await res.json();
-      if (!data.success) throw new Error(data.error || 'GEO Audit failed');
-      var mod = data.modules.find(m => m.id === 'geo_bots') || data.modules[0];
-      renderOutrunDrawer(mod, container);
-      status.style.display = 'none';
-    } catch (e) {
-      status.innerText = 'Error: ' + e.message;
-    } finally {
-      btn.disabled = false;
-      btn.innerText = 'Run GEO Audit';
+  if (btn) btn.disabled = true;
+  if (loading) loading.style.display = 'block';
+
+  try {
+    const res = await fetch('/api/aeo-geo-audit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Audit failed');
+
+    if (report) report.style.display = 'block';
+
+    // 1. Overall Radial Score & Hero Card
+    const scoreNum = document.getElementById('repScoreNum');
+    const scoreStatus = document.getElementById('repScoreStatus');
+    const circleScore = document.getElementById('repCircleScore');
+    const scoreText = document.getElementById('repScoreText');
+
+    if (scoreNum) scoreNum.innerText = data.overallScore;
+    if (scoreStatus) scoreStatus.innerText = data.ratingText;
+
+    const heroColor = data.overallScore >= 75 ? '#4ade80' : (data.overallScore >= 45 ? '#f59e0b' : '#ef4444');
+    if (circleScore) circleScore.style.borderColor = heroColor;
+    if (scoreStatus) scoreStatus.style.color = heroColor;
+    if (scoreText) {
+      scoreText.innerText = `This page scored ${data.overallScore}/100 for AI readiness — rated ${data.ratingText}. ${data.quickStats?.schemas || 0} types of structured data implemented. Most AI crawlers can access your content.`;
     }
+
+    // 2. Metric Tiles
+    if (data.categories) {
+      const tileAeo = document.getElementById('tileAeo');
+      const tileGeo = document.getElementById('tileGeo');
+      const tileCrawlers = document.getElementById('tileCrawlers');
+      const tileTech = document.getElementById('tileTech');
+      const tileContent = document.getElementById('tileContent');
+      const tileSpeed = document.getElementById('tileSpeed');
+
+      if (tileAeo) tileAeo.innerText = data.categories.aeo;
+      if (tileGeo) tileGeo.innerText = data.categories.geo;
+      if (tileCrawlers) tileCrawlers.innerText = data.categories.crawlers;
+      if (tileTech) tileTech.innerText = data.categories.technical;
+      if (tileContent) tileContent.innerText = data.categories.contentQuality;
+      if (tileSpeed) tileSpeed.innerText = data.categories.speed;
+    }
+
+    // 3. Quick Signals Bar
+    const qs = data.quickStats || {};
+    const qsBar = document.getElementById('quickSignalsBar');
+    if (qsBar) {
+      qsBar.innerHTML = `
+        <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.schemas || 0} Schemas</span>
+        <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.questionHeadings || 0} Question Headings</span>
+        <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.wordCount || 0} Words</span>
+        <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">HTTPS: <b style="color:#4ade80;">${qs.https || 'Yes'}</b></span>
+        <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">Intent: ${escapeHtml(qs.intent || 'Informational')}</span>
+      `;
+    }
+
+    // 4. Action Plan / Roadmap Items
+    const planBox = document.getElementById('actionPlanContainer');
+    if (planBox) {
+      let actionHtml = '';
+      (data.actionPlan || []).forEach((item, idx) => {
+        const badgeColor = item.severity === 'Critical' ? '#ef4444' : '#f59e0b';
+        actionHtml += `
+          <div style="background:#131c31; border:1px solid #1e293b; border-left:4px solid ${badgeColor}; border-radius:12px; padding:1.25rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <span style="background:#0b1120; border:1px solid #334155; color:#94a3b8; font-size:0.7rem; font-weight:800; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center;">${idx + 1}</span>
+                <span style="background:#1e293b; color:#cbd5e1; font-size:0.68rem; font-weight:800; padding:2px 8px; border-radius:4px;">${escapeHtml(item.cat)}</span>
+                <span style="color:${badgeColor}; font-size:0.75rem; font-weight:700;">● ${escapeHtml(item.severity)}</span>
+              </div>
+              <span style="color:#4ade80; font-size:0.8rem; font-weight:800; background:rgba(74,222,128,0.1); padding:2px 8px; border-radius:4px;">${escapeHtml(item.points)}</span>
+            </div>
+            <div style="font-weight:700; color:#fff; font-size:1rem; margin-bottom:0.3rem;">${escapeHtml(item.title)}</div>
+            <div style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.75rem;">${escapeHtml(item.detail)}</div>
+            <div style="background:#0b1120; border:1px solid #1e293b; border-radius:8px; padding:0.75rem; font-size:0.8rem; color:#cbd5e1; line-height:1.5;">
+              <span style="color:#a855f7; font-weight:700;">✦ Why AI search engines care:</span> ${escapeHtml(item.why)}
+            </div>
+          </div>
+        `;
+      });
+      planBox.innerHTML = actionHtml || '<div style="color:#4ade80; padding:1rem;">All major AI visibility checks passed!</div>';
+    }
+
+    // 5. Detailed Breakdown Checklists
+    const sectionsBox = document.getElementById('detailedCheckSections');
+    if (sectionsBox && data.breakdown) {
+      const renderTableSection = (title, items) => {
+        let rows = (items || []).map(c => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem 1.25rem; border-bottom:1px solid #1e293b;">
+            <div>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span style="color:${c.passed ? '#4ade80' : '#ef4444'}; font-weight:900;">${c.passed ? '✓' : '✗'}</span>
+                <span style="font-weight:700; color:#fff; font-size:0.9rem;">${escapeHtml(c.name)}</span>
+              </div>
+              <div style="font-size:0.8rem; color:#94a3b8; margin-top:0.25rem; margin-left:1.3rem;">${escapeHtml(c.desc)}</div>
+            </div>
+            <div style="font-weight:700; font-size:0.85rem; color:${c.pts > 0 ? '#4ade80' : '#ef4444'}; white-space:nowrap;">
+              ${c.pts} / ${c.max} pts
+            </div>
+          </div>
+        `).join('');
+
+        return `
+          <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; margin-bottom:1.5rem; overflow:hidden;">
+            <div style="background:#0b1120; padding:0.85rem 1.25rem; font-weight:800; font-size:0.95rem; color:#fff; border-bottom:1px solid #1e293b;">
+              ${title}
+            </div>
+            ${rows}
+          </div>
+        `;
+      };
+
+      sectionsBox.innerHTML = 
+        renderTableSection('Website AEO Checker', data.breakdown.aeo) +
+        renderTableSection('Website GEO Checker', data.breakdown.geo) +
+        renderTableSection('Website AI Crawler Checker (robots.txt)', data.breakdown.crawlers);
+    }
+
+    // 6. Keyword Density Rows
+    const kdRows = document.getElementById('kwDensityRows');
+    if (kdRows) {
+      let kdHtml = '';
+      (data.topKeywords || []).forEach(k => {
+        kdHtml += `<tr><td style="font-weight:700; color:#fff;">${escapeHtml(k.keyword)}</td><td style="color:#38bdf8; font-weight:700;">${k.count}</td></tr>`;
+      });
+      kdRows.innerHTML = kdHtml;
+    }
+
+  } catch (err) {
+    alert('Analysis Error: ' + err.message);
+  } finally {
+    if (btn) btn.disabled = false;
+    if (loading) loading.style.display = 'none';
   }
+};
 
   function renderOutrunDrawer(singleModule, targetContainer) {
     var isPass = singleModule.badge === 'PASS';

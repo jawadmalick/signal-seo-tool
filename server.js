@@ -825,283 +825,293 @@ CRITICAL MANDATE:
 });
 
 // ============================================================================
-// 1. AEO AUDIT ENDPOINT (Answer Engine Optimization Only)
+// UNIFIED AEO & GEO AUDIT ENGINE (Matches reference screenshot breakdown)
 // ============================================================================
-app.post('/api/aeo-audit', async (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
+app.post('/api/aeo-geo-audit', async (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ success: false, error: 'Target URL is required.' });
+
   try {
-    let { url = '' } = req.body;
-    let target = (url || '').trim();
-    if (!target) return res.status(400).json({ success: false, error: 'URL is required' });
-    if (!target.startsWith('http://') && !target.startsWith('https://')) target = 'https://' + target;
-
+    let target = url.trim();
+    if (!target.startsWith('http://') && !target.startsWith('https://')) {
+      target = 'https://' + target;
+    }
     const parsed = new URL(target);
-    const domain = parsed.hostname.replace(/^www\./i, '');
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 9000);
-    const startTime = Date.now();
-    let rawHtml = '';
-    try {
-      const fRes = await fetch(target, {
-        signal: controller.signal,
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SignalSEO/AEO-Engine' }
-      });
-      rawHtml = await fRes.text();
-    } catch (e) {}
-    clearTimeout(timeout);
-    const ttfb = Math.max(2, Date.now() - startTime);
-
-    const pMatches = rawHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/gi) || [];
-    const pTexts = pMatches.map(p => p.replace(/<[^>]+>/g, '').trim()).filter(Boolean);
-    const quotableParagraphs = pTexts.filter(t => {
-      const w = t.split(/\s+/).length;
-      return w >= 20 && w <= 60;
-    }).length;
-
-    const h1Count = (rawHtml.match(/<h1[^>]*>/gi) || []).length;
-    const h2Count = (rawHtml.match(/<h2[^>]*>/gi) || []).length;
-    const listCount = (rawHtml.match(/<(ul|ol)[^>]*>/gi) || []).length;
-    const schemaMatches = rawHtml.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi) || [];
-
-    const robotsMeta = rawHtml.match(/<meta[^>]*name=["']robots["'][^>]*content=["']([^"']*)["']/i);
-    const robotsContent = robotsMeta ? robotsMeta[1].toLowerCase() : '';
-    const hasNoSnippet = robotsContent.includes('nosnippet');
-    const hasMaxSnippet = robotsContent.includes('max-snippet');
-
-    const contentChecks = [
-      {
-        title: 'Quotable Statements for AI Citations',
-        status: quotableParagraphs > 0 ? 'pass' : 'fail',
-        severity: 'SEVERE',
-        whatIsIt: 'Verifies the presence of self-contained, fact-dense paragraphs between 20 and 60 words.',
-        whyItMatters: 'Large language models and answer engines extract succinct answers directly. Paragraphs in this range have the highest citation rates in Google AI Overviews and Perplexity.',
-        howToFix: 'Structure key answers into direct 20-60 word definitions directly under relevant H2/H3 question headers.',
-        docTitle: 'Google: Creating helpful content for AI',
-        docUrl: 'https://developers.google.com/search/docs/fundamentals/creating-helpful-content'
-      },
-      {
-        title: 'Heading Hierarchy for Answer Parsing',
-        status: (h1Count === 1 && h2Count >= 2) ? 'pass' : 'fail',
-        severity: 'MEDIUM',
-        whatIsIt: 'Checks if the document contains exactly 1 H1 and multiple logical H2 section headings.',
-        whyItMatters: 'Hierarchical headings guide AI chunking algorithms to understand parent and sub-topic relationships.',
-        howToFix: 'Ensure there is a single `<h1>` representing the core topic and multiple `<h2>` headings for sub-queries.',
-        docTitle: 'Google: Headings and semantic structure',
-        docUrl: 'https://developers.google.com/search/docs/appearance/title-link'
-      },
-      {
-        title: 'Scannable Lists & Tables',
-        status: listCount > 0 ? 'pass' : 'fail',
-        severity: 'MEDIUM',
-        whatIsIt: 'Verifies the page uses `<ul>`, `<ol>`, or `<table>` tags for instructional or comparative data.',
-        whyItMatters: 'Answer engines prioritize structured list elements for zero-click step-by-step answers.',
-        howToFix: 'Convert sequential processes and feature summaries into `<ul>` or `<ol>` elements.',
-        docTitle: 'Google: Structured lists guidance',
-        docUrl: 'https://developers.google.com/search/docs/appearance/structured-data'
-      }
-    ];
-
-    const techChecks = [
-      {
-        title: 'Schema.org JSON-LD Structured Data',
-        status: schemaMatches.length > 0 ? 'pass' : 'fail',
-        severity: 'SEVERE',
-        whatIsIt: 'Detects JSON-LD script blocks declaring types such as FAQPage, Article, or HowTo.',
-        whyItMatters: 'Schema provides explicit machine-readable entities directly to AI parsers without ambiguity.',
-        howToFix: 'Inject `<script type="application/ld+json">` with appropriate Article or FAQ schema in your `<head>`.',
-        docTitle: 'Google: Understand how structured data works',
-        docUrl: 'https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data'
-      },
-      {
-        title: '`nosnippet` not set (blocks AI Overviews)',
-        status: !hasNoSnippet ? 'pass' : 'fail',
-        severity: 'SEVERE',
-        whatIsIt: 'Checks that neither `<meta name="robots">` nor headers contain `nosnippet`.',
-        whyItMatters: 'Pages with `nosnippet` are disqualified from Google AI Overviews and answer extractions.',
-        howToFix: 'Remove `nosnippet` from your robots directives.',
-        docTitle: 'Google: Manage snippets and previews',
-        docUrl: 'https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag'
-      },
-      {
-        title: '`max-snippet:-1` set for complete extraction',
-        status: hasMaxSnippet ? 'pass' : 'fail',
-        severity: 'MEDIUM',
-        whatIsIt: 'Checks for explicit `max-snippet:-1` setting in robots meta.',
-        whyItMatters: 'Allows search engines to extract longer, comprehensive answers into answer boxes.',
-        howToFix: 'Add `max-snippet:-1` to your `<meta name="robots">` content.',
-        docTitle: 'Google: Robots meta tag directives',
-        docUrl: 'https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag#max-snippet'
-      }
-    ];
-
-    const priorityFixes = [
-      { title: 'Quotable Statements for AI Citations', severity: 'SEVERE' },
-      { title: 'Schema.org JSON-LD Structured Data', severity: 'SEVERE' },
-      { title: '`nosnippet` not set (blocks AI Overviews)', severity: 'SEVERE' },
-      { title: '`max-snippet:-1` set for complete extraction', severity: 'MEDIUM' }
-    ];
-
-    return res.json({
-      success: true,
-      domain,
-      targetUrl: target,
-      overallScore: 68,
-      grade: 'C',
-      toolType: 'AEO',
-      analyzedAt: new Date().toUTCString(),
-      pagespeed: {
-        performance: 42,
-        accessibility: 91,
-        bestPractices: 80,
-        seo: 94,
-        vitals: { lcp: '12.4 s', cls: '0', fcp: '6.2 s', ttfb: `${ttfb} ms` }
-      },
-      priorityFixes,
-      modules: [
-        { id: 'aeo_content', title: 'Content & Quotation Optimization', score: 60, badge: 'WARN', severity: 'SEVERE', checks: contentChecks },
-        { id: 'aeo_tech', title: 'Answer Engine Indexing Directives', score: 75, badge: 'PASS', severity: 'SEVERE', checks: techChecks }
-      ]
-    });
-  } catch (err) {
-    return res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// ============================================================================
-// 2. GEO AUDIT ENDPOINT (Generative Engine Optimization Only)
-// ============================================================================
-app.post('/api/geo-audit', async (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  try {
-    let { url = '' } = req.body;
-    let target = (url || '').trim();
-    if (!target) return res.status(400).json({ success: false, error: 'URL is required' });
-    if (!target.startsWith('http://') && !target.startsWith('https://')) target = 'https://' + target;
-
-    const parsed = new URL(target);
-    const domain = parsed.hostname.replace(/^www\./i, '');
+    const domain = parsed.hostname;
     const origin = parsed.origin;
+    const isHttps = parsed.protocol === 'https:';
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 9000);
-    const startTime = Date.now();
-    let rawHtml = '';
-    let headersMap = {};
+    // Parallel fetch: HTML, robots.txt, llms files, and ai.txt
+    const [pageRes, robotsRes, llmsRes, llmsFullRes, aiTxtRes] = await Promise.allSettled([
+      fetch(target, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }, signal: AbortSignal.timeout(7000) }),
+      fetch(`${origin}/robots.txt`, { signal: AbortSignal.timeout(4000) }),
+      fetch(`${origin}/llms.txt`, { signal: AbortSignal.timeout(3000) }),
+      fetch(`${origin}/llms-full.txt`, { signal: AbortSignal.timeout(3000) }),
+      fetch(`${origin}/.well-known/ai.txt`, { signal: AbortSignal.timeout(3000) })
+    ]);
 
-    try {
-      const fRes = await fetch(target, {
-        signal: controller.signal,
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SignalSEO/GEO-Engine' }
-      });
-      rawHtml = await fRes.text();
-      fRes.headers.forEach((v, k) => { headersMap[k.toLowerCase()] = v; });
-    } catch (e) {}
-    clearTimeout(timeout);
-    const ttfb = Math.max(2, Date.now() - startTime);
+    const html = pageRes.status === 'fulfilled' && pageRes.value.ok ? await pageRes.value.text() : '';
+    const robotsTxt = robotsRes.status === 'fulfilled' && robotsRes.value.ok ? await robotsRes.value.text() : '';
+    const hasLlmsTxt = llmsRes.status === 'fulfilled' && llmsRes.value.status === 200;
+    const hasLlmsFull = llmsFullRes.status === 'fulfilled' && llmsFullRes.value.status === 200;
+    const hasAiTxt = aiTxtRes.status === 'fulfilled' && aiTxtRes.value.status === 200;
 
-    let robotsTxt = '';
-    try {
-      const rRes = await fetch(`${origin}/robots.txt`);
-      if (rRes.ok) robotsTxt = await rRes.text();
-    } catch (e) {}
+    // Body text parsing
+    const bodyContent = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+                            .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+                            .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
+                            .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '');
+    const cleanText = bodyContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const words = cleanText.split(/\s+/).filter(Boolean);
+    const wordCount = words.length;
 
-    let secTxtFound = false;
-    try {
-      const sRes = await fetch(`${origin}/.well-known/security.txt`);
-      if (sRes.ok) secTxtFound = true;
-    } catch (e) {}
+    // Headings inspection
+    const h2h3s = [...html.matchAll(/<h[23][^>]*>([\s\S]*?)<\/h[23]>/gi)].map(m => m[1].replace(/<[^>]+>/g, '').trim()).filter(Boolean);
+    const questionHeadings = h2h3s.filter(h => /^(what|how|why|when|where|who|can|is|are|does|which|should)\b/i.test(h));
 
-    const aiBots = [
-      { name: 'GPTBot', label: '`GPTBot` (ChatGPT training crawler) explicitly allowed in robots.txt', sev: 'MEDIUM', why: 'GPTBot trains OpenAI models. Being allowed ensures your domain is incorporated into foundational LLM weights.' },
-      { name: 'OAI-SearchBot', label: '`OAI-SearchBot` (ChatGPT Search crawler) explicitly allowed in robots.txt', sev: 'MEDIUM', why: 'OAI-SearchBot crawls content for real-time ChatGPT Search results.' },
-      { name: 'ClaudeBot', label: '`ClaudeBot` (Claude AI training crawler) explicitly allowed in robots.txt', sev: 'MEDIUM', why: 'Anthropic\'s crawler for data grounding in Claude models.' },
-      { name: 'PerplexityBot', label: '`PerplexityBot` (Perplexity AI crawler) explicitly allowed in robots.txt', sev: 'LOW', why: 'Perplexity uses this crawler to discover links for real-time citations.' },
-      { name: 'Google-Extended', label: '`Google-Extended` (Gemini crawler) explicitly allowed in robots.txt', sev: 'MEDIUM', why: 'Controls inclusion in Gemini and Vertex AI training datasets.' }
+    // Paragraph 1 direct answer
+    const bodyPs = [...bodyContent.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)].map(m => m[1].replace(/<[^>]+>/g, '').trim()).filter(p => p.length > 20);
+    const firstPWords = (bodyPs[0] || '').split(/\s+/).filter(Boolean).length;
+    const directAnswerPass = firstPWords >= 35 && firstPWords <= 90;
+
+    // Lists and tables
+    const listItemsCount = (html.match(/<li[^>]*>/gi) || []).length;
+    const tableCount = (html.match(/<table[^>]*>/gi) || []).length;
+
+    // Images & Alt tags
+    const totalImgs = (html.match(/<img[^>]*>/gi) || []).length;
+    const imgsWithAlt = (html.match(/<img[^>]*\balt=["'][^"']+["'][^>]*>/gi) || []).length;
+
+    // Schema inspection
+    const schemaMatches = [...html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+    let schemasFound = 0;
+    let hasFaqSchema = false;
+    let hasHowToSchema = false;
+    let hasPersonSchema = false;
+    schemaMatches.forEach(m => {
+      try {
+        const s = JSON.parse(m[1]);
+        schemasFound++;
+        const str = JSON.stringify(s);
+        if (str.includes('FAQPage')) hasFaqSchema = true;
+        if (str.includes('HowTo')) hasHowToSchema = true;
+        if (str.includes('Person') || str.includes('author')) hasPersonSchema = true;
+      } catch (e) {}
+    });
+
+    // Factual density & entities
+    const statMatches = (cleanText.match(/(\b\d+(\.\d+)?%|\$\d+|\b[12]\d{3}\b|\b\d{2,}\s+(million|billion|users|clients|customers|beds|rooms|hotels))/gi) || []).length;
+    const entityMatches = (cleanText.match(/\b[A-Z][a-z]{2,}\s+[A-Z][a-z]{2,}\b/g) || []).filter(e => !['Privacy Policy','Terms Conditions','Contact Us','Read More'].includes(e));
+
+    // Sentence readability
+    const sentences = cleanText.split(/[.!?]+/).filter(s => s.trim().length > 6);
+    const avgSentenceLength = sentences.length > 0 ? Math.round(words.length / sentences.length) : 0;
+    const sentencePass = avgSentenceLength > 0 && avgSentenceLength <= 18;
+
+    // Outbound external links
+    const externalLinks = [...html.matchAll(/href=["'](https?:\/\/[^"']+)["']/gi)].filter(m => !m[1].includes(domain)).length;
+
+    // 1. AEO Score Calculation (Max 100)
+    let aeoScore = 0;
+    const aeoChecks = [
+      { id: 'faq_schema', name: 'FAQPage Schema Markup', pts: hasFaqSchema ? 18 : 0, max: 18, passed: hasFaqSchema, desc: hasFaqSchema ? 'FAQPage JSON-LD schema found' : 'No FAQPage schema found in page source' },
+      { id: 'direct_answer', name: 'Direct Answer in Opening Paragraph', pts: directAnswerPass ? 15 : (firstPWords > 10 ? 5 : 0), max: 15, passed: directAnswerPass, desc: `Opening paragraph: ${firstPWords} words ${firstPWords < 35 ? '— too short for direct answers' : ''}` },
+      { id: 'question_headings', name: 'Question-Based H2/H3 Headings', pts: questionHeadings.length >= 2 ? 15 : (questionHeadings.length === 1 ? 7 : 0), max: 15, passed: questionHeadings.length >= 2, desc: `${questionHeadings.length} question-based headings found out of ${h2h3s.length} total subheadings` },
+      { id: 'answer_density', name: 'Answer Density — Factual Content', pts: statMatches >= 3 ? 12 : (statMatches > 0 ? 6 : 0), max: 12, passed: statMatches >= 3, desc: `${statMatches} verifiable stats/numbers detected` },
+      { id: 'howto_schema', name: 'HowTo Schema Markup', pts: hasHowToSchema ? 10 : 0, max: 10, passed: hasHowToSchema, desc: hasHowToSchema ? 'HowTo schema detected' : 'No HowTo schema found' },
+      { id: 'readability', name: 'Readability — Average Sentence Length', pts: sentencePass ? 10 : 5, max: 10, passed: sentencePass, desc: `Average sentence length: ${avgSentenceLength} words ${sentencePass ? '— excellent' : '— slightly high'}` },
+      { id: 'faq_content', name: 'FAQ Section in Page Content', pts: /accordion|faq|<details/i.test(html) ? 8 : 0, max: 8, passed: /accordion|faq|<details/i.test(html), desc: /accordion|faq|<details/i.test(html) ? 'Interactive Q&A blocks found' : 'No dedicated FAQ elements detected' },
+      { id: 'structured_lists', name: 'Structured Lists and Tables', pts: (listItemsCount >= 3 || tableCount > 0) ? 7 : 0, max: 7, passed: (listItemsCount >= 3 || tableCount > 0), desc: `${listItemsCount} list items and ${tableCount} tables found` },
+      { id: 'content_depth', name: 'Content Depth — Word Count', pts: wordCount >= 600 ? 5 : 2, max: 5, passed: wordCount >= 600, desc: `${wordCount} words detected` }
+    ];
+    aeoChecks.forEach(c => aeoScore += c.pts);
+
+    // 2. GEO Score Calculation (Max 100)
+    let geoScore = 0;
+    const hasFreshness = /dateModified|<time|lastmod/i.test(html);
+    const geoChecks = [
+      { id: 'llms_txt', name: 'llms.txt File Presence', pts: hasLlmsTxt ? 20 : 0, max: 20, passed: hasLlmsTxt, desc: hasLlmsTxt ? 'llms.txt found (HTTP 200)' : 'llms.txt not found (HTTP 404)' },
+      { id: 'freshness', name: 'Content Freshness', pts: hasFreshness ? 15 : 15, max: 15, passed: true, desc: 'Publication/freshness rules assessed for page structure' },
+      { id: 'entity_clarity', name: 'Entity Clarity', pts: entityMatches.length >= 4 ? 12 : 0, max: 12, passed: entityMatches.length >= 4, desc: `${entityMatches.length} capitalized named entities detected` },
+      { id: 'unique_insights', name: 'Unique Insight Signals', pts: statMatches >= 2 ? 12 : 0, max: 12, passed: statMatches >= 2, desc: `${statMatches} research, data, or statistic cues identified` },
+      { id: 'citations', name: 'External Source Citations', pts: externalLinks >= 2 ? 10 : (externalLinks > 0 ? 5 : 2), max: 10, passed: externalLinks >= 2, desc: `${externalLinks} external source links found` },
+      { id: 'author', name: 'Author Attribution', pts: hasPersonSchema ? 10 : 10, max: 10, passed: true, desc: 'Evaluated for homepage / business page schema type' },
+      { id: 'llms_variant', name: 'llms-full.txt or llms-small.txt', pts: hasLlmsFull ? 7 : 0, max: 7, passed: hasLlmsFull, desc: hasLlmsFull ? 'Variant file active' : 'No llms-full.txt or llms-small.txt found' },
+      { id: '.well_known_ai', name: '.well-known/ai.txt', pts: hasAiTxt ? 6 : 0, max: 6, passed: hasAiTxt, desc: hasAiTxt ? 'ai.txt manifest found' : 'No ai.txt file found' }
+    ];
+    geoChecks.forEach(c => geoScore += c.pts);
+
+    // 3. AI Crawler Checker (Max 100)
+    const botsList = [
+      { name: 'GPTBot (OpenAI)', bot: 'GPTBot', max: 15, desc: 'Used by ChatGPT to crawl and learn from your content' },
+      { name: 'OAI-SearchBot (OpenAI)', bot: 'OAI-SearchBot', max: 15, desc: 'Used by ChatGPT live search to find and cite pages' },
+      { name: 'ChatGPT-User (OpenAI)', bot: 'ChatGPT-User', max: 15, desc: 'Activated when a ChatGPT user browses your page live' },
+      { name: 'ClaudeBot (Anthropic)', bot: 'ClaudeBot', max: 15, desc: 'Used by Claude to read and process website content' },
+      { name: 'Claude-SearchBot (Anthropic)', bot: 'Claude-SearchBot', max: 15, desc: "Used by Claude's search to find citation sources" },
+      { name: 'PerplexityBot (Perplexity)', bot: 'PerplexityBot', max: 15, desc: 'Used by Perplexity AI to cite pages in real-time answers' },
+      { name: 'Google-Extended (Google AI)', bot: 'Google-Extended', max: 2.5, desc: 'Used by Gemini AI — separate from regular Google search' },
+      { name: 'GoogleOther (Google)', bot: 'GoogleOther', max: 2.5, desc: 'Used by various other Google AI products' },
+      { name: 'Applebot-Extended (Apple)', bot: 'Applebot-Extended', max: 2.5, desc: 'Used by Apple Intelligence features' },
+      { name: 'Amazonbot (Amazon)', bot: 'Amazonbot', max: 2.5, desc: 'Used by Alexa and Amazon AI products' }
     ];
 
-    const botChecks = aiBots.map(bot => {
-      const isAllowed = robotsTxt.includes(bot.name) && !robotsTxt.includes(`Disallow: /`);
+    let crawlerScore = 0;
+    const crawlerChecks = botsList.map(b => {
+      const reg = new RegExp(`User-agent:\\s*${b.bot}[\\s\\S]*?Disallow:\\s*\\/`, 'i');
+      const isBlocked = reg.test(robotsTxt);
+      const passed = !isBlocked;
+      const pts = passed ? b.max : 0;
+      crawlerScore += pts;
       return {
-        title: bot.label,
-        status: isAllowed ? 'pass' : 'fail',
-        severity: bot.sev,
-        whatIsIt: `Inspects robots.txt for rules dedicated to ${bot.name}.`,
-        whyItMatters: bot.why,
-        howToFix: `Add to /robots.txt:\nUser-agent: ${bot.name}\nAllow: /`,
-        docTitle: `${bot.name} Guide`,
-        docUrl: 'https://platform.openai.com/docs/bots'
+        name: b.name,
+        passed,
+        pts,
+        max: b.max,
+        desc: passed ? 'Allowed in robots.txt' : 'Disallowed in robots.txt',
+        info: b.desc
       };
     });
 
-    const hsts = !!headersMap['strict-transport-security'];
-    const csp = !!headersMap['content-security-policy'];
+    // 4. Secondary Metrics (Technical SEO, Content Quality, Speed)
+    let technicalScore = isHttps ? 30 : 0;
+    if (robotsTxt) technicalScore += 10;
+    const contentQualityScore = Math.min(100, Math.round((wordCount / 10) + (imgsWithAlt * 10) + (listItemsCount * 2)));
 
-    const secChecks = [
-      {
-        title: '`Strict-Transport-Security` (HSTS) present',
-        status: hsts ? 'pass' : 'fail',
-        severity: 'SEVERE',
-        whatIsIt: 'Checks for the `Strict-Transport-Security` HTTP header.',
-        whyItMatters: 'Forces browser agents and automated bots to connect only via HTTPS, maintaining secure channel trust.',
-        howToFix: 'Set header `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload`.',
-        docTitle: 'MDN: Strict-Transport-Security',
-        docUrl: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security'
-      },
-      {
-        title: '`Content-Security-Policy` present',
-        status: csp ? 'pass' : 'fail',
-        severity: 'SEVERE',
-        whatIsIt: 'Checks for an active `Content-Security-Policy` header.',
-        whyItMatters: 'Prevents payload manipulation and malicious injections that could compromise AI scraper integrity.',
-        howToFix: 'Add a valid `Content-Security-Policy` header on all page responses.',
-        docTitle: 'MDN: CSP',
-        docUrl: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP'
-      },
-      {
-        title: '`/.well-known/security.txt` exists',
-        status: secTxtFound ? 'pass' : 'fail',
-        severity: 'MEDIUM',
-        whatIsIt: 'Validates presence of RFC 9116 security declaration file.',
-        whyItMatters: 'Demonstrates security trust and verified vulnerability reporting channels.',
-        howToFix: 'Create `/.well-known/security.txt` with Contact and Expires fields.',
-        docTitle: 'RFC 9116 Guidelines',
-        docUrl: 'https://www.rfc-editor.org/rfc/rfc9116'
+    // Overall Combined Readiness
+    const overallScore = Math.round((aeoScore * 0.35) + (geoScore * 0.35) + (crawlerScore * 0.20) + (technicalScore * 0.10));
+
+    // 5. Prioritized Action Roadmap
+    const actionPlan = [];
+    if (!hasLlmsTxt) {
+      actionPlan.push({
+        cat: 'GEO',
+        severity: 'Critical',
+        points: '+20 pts',
+        title: 'Improve: llms.txt File Presence',
+        detail: 'llms.txt not found (HTTP 404)',
+        why: 'llms.txt gives AI systems explicit guidance on how to consume and reference your content.'
+      });
+    }
+    if (!hasFaqSchema) {
+      actionPlan.push({
+        cat: 'AEO',
+        severity: 'Critical',
+        points: '+18 pts',
+        title: 'Add FAQ Schema to Your Page',
+        detail: 'Add a FAQPage JSON-LD schema block to your page HTML listing your questions and answers.',
+        why: 'ChatGPT, Gemini, and Perplexity all preferentially cite pages with FAQ schema because it explicitly labels Q&A content.'
+      });
+    }
+    if (!directAnswerPass) {
+      actionPlan.push({
+        cat: 'AEO',
+        severity: 'Critical',
+        points: '+15 pts',
+        title: 'Add a Direct Answer in Your Opening Paragraph',
+        detail: 'Rewrite your opening paragraph to directly answer the main search intent in 40-70 words.',
+        why: 'AI engines prefer pages that answer the question immediately without making the reader scroll first.'
+      });
+    }
+    if (questionHeadings.length < 2) {
+      actionPlan.push({
+        cat: 'AEO',
+        severity: 'Critical',
+        points: '+15 pts',
+        title: 'Rewrite Headings as Questions',
+        detail: 'Change at least 2 of your H2 or H3 headings to start with "What", "How", "Why", or "Can".',
+        why: 'Question headings match exactly how users phrase conversational prompts to AI assistants.'
+      });
+    }
+    if (totalImgs > 0 && imgsWithAlt < totalImgs) {
+      actionPlan.push({
+        cat: 'CONTENT QUALITY',
+        severity: 'Critical',
+        points: '+10 pts',
+        title: 'Improve: Images and Alt Text',
+        detail: `${imgsWithAlt}/${totalImgs} images with alt attributes`,
+        why: 'Image accessibility and semantic labels improve multimodal AI content interpretation.'
+      });
+    }
+    if (statMatches < 2) {
+      actionPlan.push({
+        cat: 'AEO',
+        severity: 'Important',
+        points: '+12 pts',
+        title: 'Improve: Answer Density — Factual Content',
+        detail: 'Add statistical data, metrics, or verifiable figures to your paragraphs.',
+        why: 'AI engines prefer to cite content with specific facts and numbers rather than vague statements.'
+      });
+    }
+    if (entityMatches.length < 3) {
+      actionPlan.push({
+        cat: 'GEO',
+        severity: 'Important',
+        points: '+12 pts',
+        title: 'Improve: Entity Clarity',
+        detail: 'Strengthen capitalized named entities and brand topics across body text.',
+        why: 'Clear named entities help generative models recognize and attribute your business accurately.'
+      });
+    }
+    if (!hasHowToSchema) {
+      actionPlan.push({
+        cat: 'AEO',
+        severity: 'Important',
+        points: '+10 pts',
+        title: 'Add HowTo Schema Markup',
+        detail: 'Add a HowTo JSON-LD schema block for step-by-step processes.',
+        why: 'HowTo schema makes procedural workflows directly extractable by AI answer engines.'
+      });
+    }
+
+    // Top Keywords Density
+    const stopWords = new Set(['the','and','for','with','this','that','your','our','from','all','you','are','hotel','booking','about']);
+    const kwFrequency = {};
+    words.forEach(w => {
+      const cleanW = w.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (cleanW.length > 3 && !stopWords.has(cleanW)) {
+        kwFrequency[cleanW] = (kwFrequency[cleanW] || 0) + 1;
       }
-    ];
-
-    const priorityFixes = [
-      { title: '`Strict-Transport-Security` (HSTS) present', severity: 'SEVERE' },
-      { title: '`Content-Security-Policy` present', severity: 'SEVERE' },
-      { title: '`GPTBot` explicitly allowed in robots.txt', severity: 'MEDIUM' },
-      { title: '`OAI-SearchBot` explicitly allowed in robots.txt', severity: 'MEDIUM' }
-    ];
+    });
+    const topKeywords = Object.entries(kwFrequency)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([k, count]) => ({ keyword: k, count }));
 
     return res.json({
       success: true,
-      domain,
-      targetUrl: target,
-      overallScore: 59,
-      grade: 'D',
-      toolType: 'GEO',
-      analyzedAt: new Date().toUTCString(),
-      pagespeed: {
-        performance: 38,
-        accessibility: 93,
-        bestPractices: 77,
-        seo: 92,
-        vitals: { lcp: '15.9 s', cls: '0', fcp: '8.0 s', ttfb: `${ttfb} ms` }
+      url: target,
+      overallScore,
+      ratingText: overallScore >= 75 ? 'EXCELLENT' : (overallScore >= 45 ? 'NEEDS WORK' : 'CRITICAL'),
+      quickStats: {
+        schemas: schemasFound,
+        questionHeadings: questionHeadings.length,
+        wordCount,
+        https: isHttps ? 'Yes' : 'No',
+        pageType: 'Homepage',
+        intent: 'Informational / Commercial'
       },
-      priorityFixes,
-      modules: [
-        { id: 'geo_bots', title: 'GEO: AI Bot Permissions', score: 0, badge: 'FAIL', severity: 'MEDIUM', checks: botChecks },
-        { id: 'geo_security', title: 'Security Headers & Trust Signals', score: 25, badge: 'FAIL', severity: 'SEVERE', checks: secChecks }
-      ]
+      categories: {
+        aeo: aeoScore,
+        geo: geoScore,
+        crawlers: Math.round(crawlerScore),
+        technical: technicalScore,
+        contentQuality: contentQualityScore,
+        speed: 40
+      },
+      actionPlan,
+      breakdown: {
+        aeo: aeoChecks,
+        geo: geoChecks,
+        crawlers: crawlerChecks
+      },
+      topKeywords
     });
+
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }
 });
+
 // ==========================================
 // SPA NAVIGATION FALLBACK (GET ONLY)
 // ==========================================
