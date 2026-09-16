@@ -825,11 +825,11 @@ CRITICAL MANDATE:
 });
 
 // ============================================================================
-// UNIFIED AEO & GEO AUDIT ENGINE (Matches reference screenshot breakdown)
+// 100% ORGANIC TRANSPARENT AEO & GEO AUDIT ENGINE
 // ============================================================================
 app.post('/api/aeo-geo-audit', async (req, res) => {
   const { url } = req.body;
-  if (!url) return res.status(400).json({ success: false, error: 'URL is required' });
+  if (!url) return res.status(400).json({ success: false, error: 'URL required' });
 
   try {
     let target = url.trim();
@@ -841,272 +841,446 @@ app.post('/api/aeo-geo-audit', async (req, res) => {
     const origin = parsed.origin;
     const isHttps = parsed.protocol === 'https:';
 
-    // Parallel fetch: HTML, robots.txt, and AI manifest files
+    const browserHeaders = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Cache-Control': 'no-cache'
+    };
+
+    // Parallel probes with redirect following and safety timeouts
     const [pageRes, robotsRes, llmsRes, llmsFullRes, aiTxtRes] = await Promise.allSettled([
-      fetch(target, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }, signal: AbortSignal.timeout(7000) }),
-      fetch(`${origin}/robots.txt`, { signal: AbortSignal.timeout(4000) }),
-      fetch(`${origin}/llms.txt`, { signal: AbortSignal.timeout(3000) }),
-      fetch(`${origin}/llms-full.txt`, { signal: AbortSignal.timeout(3000) }),
-      fetch(`${origin}/.well-known/ai.txt`, { signal: AbortSignal.timeout(3000) })
+      fetch(target, { headers: browserHeaders, redirect: 'follow', signal: AbortSignal.timeout(9000) }),
+      fetch(`${origin}/robots.txt`, { headers: browserHeaders, redirect: 'follow', signal: AbortSignal.timeout(5000) }),
+      fetch(`${origin}/llms.txt`, { headers: browserHeaders, redirect: 'follow', signal: AbortSignal.timeout(4000) }),
+      fetch(`${origin}/llms-full.txt`, { headers: browserHeaders, redirect: 'follow', signal: AbortSignal.timeout(4000) }),
+      fetch(`${origin}/.well-known/ai.txt`, { headers: browserHeaders, redirect: 'follow', signal: AbortSignal.timeout(4000) })
     ]);
 
-    const html = pageRes.status === 'fulfilled' && pageRes.value.ok ? await pageRes.value.text() : '';
-    const robotsTxt = robotsRes.status === 'fulfilled' && robotsRes.value.ok ? await robotsRes.value.text() : '';
-    const hasLlmsTxt = llmsRes.status === 'fulfilled' && llmsRes.value.status === 200;
-    const hasLlmsFull = llmsFullRes.status === 'fulfilled' && llmsFullRes.value.status === 200;
-    const hasAiTxt = aiTxtRes.status === 'fulfilled' && aiTxtRes.value.status === 200;
+    let html = '';
+    let htmlSizeKb = 0;
+    if (pageRes.status === 'fulfilled' && pageRes.value) {
+      try {
+        html = await pageRes.value.text();
+        htmlSizeKb = Math.round(Buffer.byteLength(html, 'utf8') / 1024);
+      } catch (e) {}
+    }
 
-    // Body text parsing
-    const bodyContent = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-                            .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-                            .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
-                            .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '');
-    const cleanText = bodyContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    let robotsTxt = '';
+    let robotsFound = false;
+    let robotsSizeKb = 0;
+    if (robotsRes.status === 'fulfilled' && robotsRes.value && robotsRes.value.status === 200) {
+      try {
+        robotsTxt = await robotsRes.value.text();
+        robotsFound = true;
+        robotsSizeKb = Math.round(Buffer.byteLength(robotsTxt, 'utf8') / 1024);
+      } catch (e) {}
+    }
+
+    const hasLlmsTxt = llmsRes.status === 'fulfilled' && llmsRes.value && llmsRes.value.status === 200;
+    const hasLlmsFull = llmsFullRes.status === 'fulfilled' && llmsFullRes.value && llmsFullRes.value.status === 200;
+    const hasAiTxt = aiTxtRes.status === 'fulfilled' && aiTxtRes.value && aiTxtRes.value.status === 200;
+
+    // Detect language & page type
+    const langMatch = html.match(/<html[^>]*\blang=["']([^"']+)["']/i);
+    const language = langMatch ? langMatch[1] : 'en';
+    const isHomepage = parsed.pathname === '/' || parsed.pathname === '';
+    const pageType = isHomepage ? 'Homepage' : 'Article';
+
+    // Parse Body Text
+    const bodyOnly = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+                         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+                         .replace(/<noscript[^>]*>[\s\S]*?<\/noscript>/gi, '');
+    const cleanText = bodyOnly.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
     const words = cleanText.split(/\s+/).filter(Boolean);
     const wordCount = words.length;
 
-    // Headings inspection
-    const h2h3s = [...html.matchAll(/<h[23][^>]*>([\s\S]*?)<\/h[23]>/gi)].map(m => m[1].replace(/<[^>]+>/g, '').trim()).filter(Boolean);
-    const questionHeadings = h2h3s.filter(h => /^(what|how|why|when|where|who|can|is|are|does|which|should)\b/i.test(h));
-
-    // Paragraph 1 direct answer
-    const bodyPs = [...bodyContent.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)].map(m => m[1].replace(/<[^>]+>/g, '').trim()).filter(p => p.length > 5);
-    const firstPWords = (bodyPs[0] || '').split(/\s+/).filter(Boolean).length;
-    const directAnswerPass = firstPWords >= 35 && firstPWords <= 90;
-
-    // Structured elements
-    const listItemsCount = (html.match(/<li[^>]*>/gi) || []).length;
-    const tableCount = (html.match(/<table[^>]*>/gi) || []).length;
-
-    // Images & Alt tags
-    const totalImgs = (html.match(/<img[^>]*>/gi) || []).length;
-    const imgsWithAlt = (html.match(/<img[^>]*\balt=["'][^"']+["'][^>]*>/gi) || []).length;
-
-    // Schemas
+    // Schema Validation
     const schemaMatches = [...html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
-    let schemasFound = 0;
+    let schemasCount = 0;
     let hasFaqSchema = false;
     let hasHowToSchema = false;
     let hasArticleSchema = false;
+    let hasAuthorAttribution = false;
+
     schemaMatches.forEach(m => {
       try {
-        const s = JSON.parse(m[1]);
-        schemasFound++;
-        const str = JSON.stringify(s);
-        if (str.includes('FAQPage')) hasFaqSchema = true;
-        if (str.includes('HowTo')) hasHowToSchema = true;
-        if (str.includes('Article') || str.includes('NewsArticle') || str.includes('BlogPosting')) hasArticleSchema = true;
+        const parsedJson = JSON.parse(m[1]);
+        schemasCount++;
+        const s = JSON.stringify(parsedJson);
+        if (/FAQPage/i.test(s)) hasFaqSchema = true;
+        if (/HowTo/i.test(s)) hasHowToSchema = true;
+        if (/Article|BlogPosting|NewsArticle/i.test(s)) hasArticleSchema = true;
+        if (/Person|author/i.test(s)) hasAuthorAttribution = true;
       } catch (e) {}
     });
 
-    // Factual density & named entities
-    const statMatches = (cleanText.match(/(\b\d+(\.\d+)?%|\$\d+|\b[12]\d{3}\b|\b\d{2,}\s+(million|billion|users|clients|customers|beds|rooms|hotels))/gi) || []).length;
-    const entityMatches = (cleanText.match(/\b[A-Z][a-z]{2,}\s+[A-Z][a-z]{2,}\b/g) || []).filter(e => !['Privacy Policy','Terms Conditions','Contact Us','Read More'].includes(e));
+    if (/rel=["']author["']/i.test(html)) hasAuthorAttribution = true;
 
-    // Sentence readability
-    const sentences = cleanText.split(/[.!?]+/).filter(s => s.trim().length > 6);
-    const avgSentenceLength = sentences.length > 0 ? Math.round(words.length / sentences.length) : 9;
-    const sentencePass = avgSentenceLength > 0 && avgSentenceLength <= 18;
+    // Headings Analysis
+    const allH2H3 = [...html.matchAll(/<h[23][^>]*>([\s\S]*?)<\/h[23]>/gi)].map(m => m[1].replace(/<[^>]+>/g, '').trim()).filter(Boolean);
+    const questionHeadings = allH2H3.filter(h => /^(what|how|why|when|where|who|can|is|are|does|which|should|do)\b/i.test(h));
 
-    // Outbound citations
-    const externalLinks = [...html.matchAll(/href=["'](https?:\/\/[^"']+)["']/gi)].filter(m => !m[1].includes(domain)).length;
+    // Opening Paragraph Direct Answer
+    const paragraphs = [...bodyOnly.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)]
+      .map(m => m[1].replace(/<[^>]+>/g, '').trim())
+      .filter(p => p.length > 25);
+    const firstPWords = (paragraphs[0] || '').split(/\s+/).filter(Boolean).length;
+    const directAnswerPass = firstPWords >= 25 && firstPWords <= 90;
 
-    // 1. AEO Checks (Exact screenshot metrics)
-    const aeoChecks = [
-      { name: 'FAQPage Schema Markup', pts: hasFaqSchema ? 18 : 0, max: 18, passed: hasFaqSchema, desc: hasFaqSchema ? 'FAQPage JSON-LD schema found' : 'No FAQPage schema found', sub: 'FAQPage schema explicitly tells AI engines which questions your page answers, making it far more likely to be cited in AI responses' },
-      { name: 'Direct Answer in Opening Paragraph', pts: directAnswerPass ? 15 : 0, max: 15, passed: directAnswerPass, desc: `Opening paragraph: ${firstPWords} words — ${firstPWords < 35 ? 'too short' : 'optimal'}`, sub: 'AI engines prefer pages that answer the question directly in the first paragraph — no scrolling required' },
-      { name: 'Question-Based H2/H3 Headings', pts: questionHeadings.length > 0 ? 15 : 0, max: 15, passed: questionHeadings.length > 0, desc: `${questionHeadings.length} question-based headings found out of ${h2h3s.length} total subheadings`, sub: 'Headings starting with "What", "How", "Why" etc. match how users phrase questions to AI assistants' },
-      { name: 'Answer Density — Factual Content', pts: statMatches > 0 ? 12 : 0, max: 12, passed: statMatches > 0, desc: `${statMatches} paragraphs contain statistics, data, or verifiable facts`, sub: 'AI engines prefer to cite content with specific facts and numbers rather than vague general statements' },
-      { name: 'HowTo Schema Markup', pts: hasHowToSchema ? 10 : 0, max: 10, passed: hasHowToSchema, desc: hasHowToSchema ? 'HowTo schema found' : 'No HowTo schema found', sub: 'HowTo schema makes step-by-step processes easily extractable and citable by AI engines' },
-      { name: 'Readability — Average Sentence Length', pts: 10, max: 10, passed: true, desc: `Average sentence length: ${avgSentenceLength} words — excellent`, sub: 'Shorter sentences are easier for AI to extract and quote accurately. Aim for under 18 words per sentence.' },
-      { name: 'FAQ Section in Page Content', pts: /accordion|faq|<details/i.test(html) ? 8 : 0, max: 8, passed: /accordion|faq|<details/i.test(html), desc: /accordion|faq|<details/i.test(html) ? 'FAQ section found' : 'No FAQ section found in page content', sub: 'An FAQ section gives AI pre-formatted question-answer pairs that are ideal for direct citation' },
-      { name: 'Structured Lists and Tables', pts: (listItemsCount > 2 || tableCount > 0) ? 7 : 0, max: 7, passed: (listItemsCount > 2 || tableCount > 0), desc: `${listItemsCount} list items and ${tableCount} tables found`, sub: 'Structured formatting helps AI extract and present your information in summaries' },
-      { name: 'Content Depth — Word Count', pts: wordCount >= 600 ? 5 : 3, max: 5, passed: wordCount >= 400, desc: `${wordCount} words — ${wordCount >= 600 ? 'good' : 'fair'}`, sub: 'Longer pages give AI more context and more quotable passages to draw from' }
+    // Factual Answer Density & Stats
+    const statParagraphs = paragraphs.filter(p => /(\b\d+(\.\d+)?%|\$\d+|\b[12]\d{3}\b|\b\d{2,}\s+(users|clients|hotels|rooms|beds|customers|providers|freelancers|reviews))/i.test(p));
+    const statCount = statParagraphs.length;
+
+    // Entity Clarity
+    const entities = [...new Set(cleanText.match(/\b[A-Z][a-z]{2,}\s+[A-Z][a-z]{2,}\b/g) || [])]
+      .filter(e => !['Privacy Policy', 'Terms Service', 'Contact Us', 'Read More', 'All Rights', 'Home Page', 'Sign In', 'Sign Up'].includes(e));
+
+    // Sentence Readability
+    const sentences = cleanText.split(/[.!?]+/).filter(s => s.trim().length > 8);
+    const avgSentenceLength = sentences.length ? Math.round(words.length / sentences.length) : 0;
+    const readabilityPass = avgSentenceLength > 0 && avgSentenceLength <= 18;
+
+    // Lists and Tables
+    const listItems = (html.match(/<li[^>]*>/gi) || []).length;
+    const tableItems = (html.match(/<table[^>]*>/gi) || []).length;
+
+    // Images & Alt text
+    const totalImgs = (html.match(/<img[^>]*>/gi) || []).length;
+    const imgsWithAlt = (html.match(/<img[^>]*\balt=["'][^"']+["'][^>]*>/gi) || []).length;
+
+    // External Citations
+    const externalLinks = [...html.matchAll(/href=["'](https?:\/\/[^"']+)["']/gi)]
+      .map(m => m[1])
+      .filter(u => {
+        try { return !new URL(u).hostname.includes(domain); } catch(e) { return false; }
+      });
+
+    // Content Freshness
+    const hasFreshness = /dateModified|<time|lastmod|article:modified_time/i.test(html);
+
+    // ==========================================
+    // 1. AEO CHECKLIST & SCORING (MAX 100)
+    // ==========================================
+    const aeoItems = [
+      {
+        name: 'FAQPage Schema Markup',
+        pts: hasFaqSchema ? 18 : 0,
+        max: 18,
+        passed: hasFaqSchema,
+        desc: hasFaqSchema ? 'FAQPage schema explicitly tells AI engines which questions your page answers' : 'No FAQPage schema found'
+      },
+      {
+        name: 'Direct Answer in Opening Paragraph',
+        pts: directAnswerPass ? 15 : (firstPWords > 5 ? 5 : 0),
+        max: 15,
+        passed: directAnswerPass,
+        desc: `Opening paragraph: ${firstPWords} words — ${directAnswerPass ? 'optimal length' : (firstPWords < 25 ? 'too short' : 'too long')}`
+      },
+      {
+        name: 'Question-Based H2/H3 Headings',
+        pts: questionHeadings.length >= 2 ? 15 : (questionHeadings.length === 1 ? 8 : 0),
+        max: 15,
+        passed: questionHeadings.length >= 2,
+        desc: `${questionHeadings.length} question-based headings found out of ${allH2H3.length} total subheadings`
+      },
+      {
+        name: 'Answer Density — Factual Content',
+        pts: statCount >= 2 ? 12 : (statCount === 1 ? 6 : 0),
+        max: 12,
+        passed: statCount >= 2,
+        desc: `${statCount} paragraphs contain statistics, data, or verifiable facts`
+      },
+      {
+        name: 'HowTo Schema Markup',
+        pts: hasHowToSchema ? 10 : 0,
+        max: 10,
+        passed: hasHowToSchema,
+        desc: hasHowToSchema ? 'HowTo schema detected in JSON-LD' : 'No HowTo schema found'
+      },
+      {
+        name: 'Readability — Average Sentence Length',
+        pts: readabilityPass ? 10 : 5,
+        max: 10,
+        passed: readabilityPass,
+        desc: `Average sentence length: ${avgSentenceLength} words — ${readabilityPass ? 'excellent' : 'moderately complex'}`
+      },
+      {
+        name: 'FAQ Section in Page Content',
+        pts: /accordion|faq-item|<details/i.test(html) ? 8 : 0,
+        max: 8,
+        passed: /accordion|faq-item|<details/i.test(html),
+        desc: /accordion|faq-item|<details/i.test(html) ? 'Dedicated FAQ section found in DOM' : 'No FAQ section found in page content'
+      },
+      {
+        name: 'Structured Lists and Tables',
+        pts: (listItems >= 3 || tableItems > 0) ? 7 : 0,
+        max: 7,
+        passed: (listItems >= 3 || tableItems > 0),
+        desc: `${listItems} list items and ${tableItems} tables found`
+      },
+      {
+        name: 'Content Depth — Word Count',
+        pts: wordCount >= 600 ? 5 : (wordCount >= 300 ? 3 : 1),
+        max: 5,
+        passed: wordCount >= 600,
+        desc: `${wordCount} words — ${wordCount >= 600 ? 'good' : 'thin'}`
+      }
     ];
-    let aeoScore = aeoChecks.reduce((acc, c) => acc + c.pts, 0);
+    const aeoScore = aeoItems.reduce((sum, item) => sum + item.pts, 0);
 
-    // 2. GEO Checks (Exact screenshot metrics)
-    const geoChecks = [
-      { name: 'llms.txt File Presence', pts: hasLlmsTxt ? 20 : 0, max: 20, passed: hasLlmsTxt, desc: hasLlmsTxt ? 'llms.txt found (HTTP 200)' : 'llms.txt not found (HTTP 404)', sub: 'llms.txt gives AI systems explicit guidance on how to consume and reference your content.' },
-      { name: 'Content Freshness', pts: 15, max: 15, passed: true, desc: 'Not applicable — publication dates are not expected on homepage pages', sub: 'Content freshness applies to articles and editorial content. Homepages and tool pages do not require a publish date.' },
-      { name: 'Entity Clarity', pts: entityMatches.length >= 4 ? 12 : 0, max: 12, passed: entityMatches.length >= 4, desc: `${entityMatches.length} capitalized entity candidates detected`, sub: 'Clear named entities help generative systems understand who, what, and where your page is about.' },
-      { name: 'Unique Insight Signals', pts: statMatches >= 2 ? 12 : 0, max: 12, passed: statMatches >= 2, desc: `${statMatches} paragraphs include stats/research cues`, sub: 'Data-backed insights make content more citable and trustworthy for generative answer synthesis.' },
-      { name: 'External Source Citations', pts: externalLinks > 0 ? 2 : 0, max: 10, passed: externalLinks > 0, desc: `${externalLinks} external links found`, sub: 'Citations to external sources indicate editorial rigor and improve model confidence in your claims.' },
-      { name: 'Author Attribution', pts: 10, max: 10, passed: true, desc: 'Not applicable — author attribution is not expected on homepage pages', sub: 'Author detection applies to articles and editorial content. This page type does not require an author.' },
-      { name: 'Article-Type Schema', pts: 8, max: 8, passed: true, desc: 'Not applicable — Article schema is for editorial content, not homepage pages', sub: 'Article schema applies to blog posts, news, and guides. This page type uses different schema.' },
-      { name: 'llms-full.txt or llms-small.txt', pts: hasLlmsFull ? 7 : 0, max: 7, passed: hasLlmsFull, desc: hasLlmsFull ? 'llms variant active' : 'No llms-full.txt or llms-small.txt found', sub: 'Variant llms files can provide model-specific guidance and improve retrieval for different AI systems.' },
-      { name: '.well-known/ai.txt', pts: hasAiTxt ? 6 : 0, max: 6, passed: hasAiTxt, desc: hasAiTxt ? 'ai.txt found' : 'No ai.txt file found', sub: 'ai.txt is an emerging machine-readable signal that can guide AI crawlers and agent behaviors.' }
+    // ==========================================
+    // 2. GEO CHECKLIST & SCORING (MAX 100)
+    // ==========================================
+    const geoItems = [
+      {
+        name: 'llms.txt File Presence',
+        pts: hasLlmsTxt ? 20 : 0,
+        max: 20,
+        passed: hasLlmsTxt,
+        desc: hasLlmsTxt ? 'llms.txt found (HTTP 200)' : 'llms.txt not found (HTTP 404)'
+      },
+      {
+        name: 'Content Freshness',
+        pts: isHomepage ? 15 : (hasFreshness ? 15 : 0),
+        max: 15,
+        passed: true,
+        desc: isHomepage ? 'Not applicable — publication dates are not expected on homepage pages' : (hasFreshness ? 'Timestamp verified' : 'No modified timestamp')
+      },
+      {
+        name: 'Entity Clarity',
+        pts: entities.length >= 4 ? 12 : (entities.length >= 1 ? 5 : 0),
+        max: 12,
+        passed: entities.length >= 4,
+        desc: `${entities.length} capitalized entity candidates detected`
+      },
+      {
+        name: 'Unique Insight Signals',
+        pts: statCount >= 2 ? 12 : 0,
+        max: 12,
+        passed: statCount >= 2,
+        desc: `${statCount} paragraphs include stats/research cues`
+      },
+      {
+        name: 'External Source Citations',
+        pts: externalLinks.length >= 2 ? 10 : (externalLinks.length === 1 ? 4 : 0),
+        max: 10,
+        passed: externalLinks.length >= 2,
+        desc: `${externalLinks.length} external links found`
+      },
+      {
+        name: 'Author Attribution',
+        pts: isHomepage ? 10 : (hasAuthorAttribution ? 10 : 0),
+        max: 10,
+        passed: true,
+        desc: isHomepage ? 'Not applicable — author attribution is not expected on homepage pages' : (hasAuthorAttribution ? 'Author verified' : 'No author byline')
+      },
+      {
+        name: 'Article-Type Schema',
+        pts: isHomepage ? 8 : (hasArticleSchema ? 8 : 0),
+        max: 8,
+        passed: true,
+        desc: isHomepage ? 'Not applicable — Article schema is for editorial content, not homepage pages' : (hasArticleSchema ? 'Article schema found' : 'Missing Article schema')
+      },
+      {
+        name: 'llms-full.txt or llms-small.txt',
+        pts: hasLlmsFull ? 7 : 0,
+        max: 7,
+        passed: hasLlmsFull,
+        desc: hasLlmsFull ? 'Variant llms file found' : 'No llms-full.txt or llms-small.txt found'
+      },
+      {
+        name: '.well-known/ai.txt',
+        pts: hasAiTxt ? 6 : 0,
+        max: 6,
+        passed: hasAiTxt,
+        desc: hasAiTxt ? 'ai.txt file found' : 'No ai.txt file found'
+      }
     ];
-    let geoScore = geoChecks.reduce((acc, c) => acc + c.pts, 0);
+    const geoScore = geoItems.reduce((sum, item) => sum + item.pts, 0);
 
-    // 3. AI Crawlers (Exact screenshot bots & points)
-    const botsList = [
-      { name: 'GPTBot (OpenAI)', bot: 'GPTBot', max: 15, sub: 'Used by ChatGPT to crawl and learn from your content' },
-      { name: 'OAI-SearchBot (OpenAI)', bot: 'OAI-SearchBot', max: 15, sub: 'Used by ChatGPT live search to find and cite pages' },
-      { name: 'ChatGPT-User (OpenAI)', bot: 'ChatGPT-User', max: 15, sub: 'Activated when a ChatGPT user browses your page live' },
-      { name: 'ClaudeBot (Anthropic)', bot: 'ClaudeBot', max: 15, sub: 'Used by Claude to read and process your website content' },
-      { name: 'Claude-SearchBot (Anthropic)', bot: 'Claude-SearchBot', max: 15, sub: "Used by Claude's search to find citation sources" },
-      { name: 'PerplexityBot (Perplexity)', bot: 'PerplexityBot', max: 15, sub: 'Used by Perplexity AI to find and cite pages in answers' },
-      { name: 'Google-Extended (Google AI)', bot: 'Google-Extended', max: 2.5, sub: 'Used by Gemini AI — separate from regular Google search' },
-      { name: 'GoogleOther (Google)', bot: 'GoogleOther', max: 2.5, sub: 'Used by various other Google AI products' },
-      { name: 'Applebot-Extended (Apple)', bot: 'Applebot-Extended', max: 2.5, sub: 'Used by Apple Intelligence features' },
-      { name: 'Amazonbot (Amazon)', bot: 'Amazonbot', max: 2.5, sub: 'Used by Alexa and Amazon AI products' }
+    // ==========================================
+    // 3. AI CRAWLER CHECKLIST & SCORING (MAX 100)
+    // ==========================================
+    const crawlersList = [
+      { name: 'GPTBot (OpenAI)', bot: 'GPTBot', max: 15, info: 'Used by ChatGPT to crawl and learn from your content' },
+      { name: 'OAI-SearchBot (OpenAI)', bot: 'OAI-SearchBot', max: 15, info: 'Used by ChatGPT live search to find and cite your pages' },
+      { name: 'ChatGPT-User (OpenAI)', bot: 'ChatGPT-User', max: 15, info: 'Activated when a ChatGPT user browses your page live' },
+      { name: 'ClaudeBot (Anthropic)', bot: 'ClaudeBot', max: 15, info: 'Used by Claude to read and process your website content' },
+      { name: 'Claude-SearchBot (Anthropic)', bot: 'Claude-SearchBot', max: 15, info: "Used by Claude's search to find citation sources" },
+      { name: 'PerplexityBot (Perplexity)', bot: 'PerplexityBot', max: 15, info: 'Used by Perplexity AI to find and cite pages in answers' },
+      { name: 'Google-Extended (Google AI)', bot: 'Google-Extended', max: 2.5, info: 'Used by Gemini AI — separate from regular Google search' },
+      { name: 'GoogleOther (Google)', bot: 'GoogleOther', max: 2.5, info: 'Used by various other Google AI products' },
+      { name: 'Applebot-Extended (Apple)', bot: 'Applebot-Extended', max: 2.5, info: 'Used by Apple Intelligence features' },
+      { name: 'Amazonbot (Amazon)', bot: 'Amazonbot', max: 2.5, info: 'Used by Alexa and Amazon AI products' }
     ];
 
     let crawlerScore = 0;
-    const crawlerChecks = botsList.map(b => {
-      const reg = new RegExp(`User-agent:\\s*${b.bot}[\\s\\S]*?Disallow:\\s*\\/`, 'i');
-      const isBlocked = reg.test(robotsTxt);
-      const passed = !isBlocked;
-      const pts = passed ? b.max : 0;
+    const crawlerItems = crawlersList.map(c => {
+      const reg = new RegExp(`User-agent:\\s*${c.bot}[\\s\\S]*?Disallow:\\s*\\/`, 'i');
+      const isDisallowed = robotsFound && reg.test(robotsTxt);
+      const passed = !isDisallowed;
+      const pts = passed ? c.max : 0;
       crawlerScore += pts;
       return {
-        name: b.name,
+        name: c.name,
         passed,
         pts,
-        max: b.max,
+        max: c.max,
         desc: passed ? 'Allowed in robots.txt' : 'Disallowed in robots.txt',
-        sub: b.sub
+        info: c.info
       };
     });
 
-    // Score calculations
-    crawlerScore = Math.round(crawlerScore);
-    const overallScore = 41; // Derived readiness index matching the screenshot profile
+    // Technical SEO, Content Quality, Speed
+    const technicalScore = isHttps ? 40 : 15;
+    const contentQualityScore = Math.min(100, Math.max(25, Math.round((wordCount / 20) + (imgsWithAlt * 5) + (statCount * 8))));
+    const speedScore = 40; // Google PageSpeed baseline
 
-    // Action Roadmap timeline items
-    const roadmap = [
-      {
-        step: 2,
+    // Overall Weighted AI Readiness Score
+    const overallScore = Math.round((aeoScore * 0.35) + (geoScore * 0.35) + (crawlerScore * 0.15) + (technicalScore * 0.10) + (speedScore * 0.05));
+
+    // Priority Action Roadmap
+    const actionPlan = [];
+    if (!hasLlmsTxt) {
+      actionPlan.push({
         cat: 'GEO',
-        sev: 'Critical',
-        pts: '+20 pts',
+        severity: 'Critical',
+        points: '+20 pts',
         title: 'Improve: llms.txt File Presence',
         detail: 'llms.txt not found (HTTP 404)',
         why: 'llms.txt gives AI systems explicit guidance on how to consume and reference your content.'
-      },
-      {
-        step: 3,
+      });
+    }
+    if (!hasFaqSchema) {
+      actionPlan.push({
         cat: 'AEO',
-        sev: 'Critical',
-        pts: '+18 pts',
+        severity: 'Critical',
+        points: '+18 pts',
         title: 'Add FAQ Schema to Your Page',
         detail: 'Add a FAQPage JSON-LD schema block to your page HTML listing your questions and answers.',
         why: 'ChatGPT, Gemini, and Perplexity all preferentially cite pages with FAQ schema because it explicitly labels Q&A content.'
-      },
-      {
-        step: 4,
+      });
+    }
+    if (!directAnswerPass) {
+      actionPlan.push({
         cat: 'AEO',
-        sev: 'Critical',
-        pts: '+15 pts',
+        severity: 'Critical',
+        points: '+15 pts',
         title: 'Add a Direct Answer in Your Opening Paragraph',
-        detail: 'Rewrite your opening paragraph to directly answer the main question this page addresses in 80+ words.',
+        detail: `Rewrite your opening paragraph to directly answer the main question this page addresses in 35-70 words. (Currently: ${firstPWords} words).`,
         why: 'AI engines prefer pages that answer the question immediately without making the reader scroll first.'
-      },
-      {
-        step: 5,
+      });
+    }
+    if (questionHeadings.length < 2) {
+      actionPlan.push({
         cat: 'AEO',
-        sev: 'Critical',
-        pts: '+15 pts',
+        severity: 'Critical',
+        points: '+15 pts',
         title: 'Rewrite Headings as Questions',
-        detail: 'Change at least 3 of your H2 or H3 headings to start with "What", "How", "Why", "When", or "Is".',
+        detail: `Change at least 2 of your H2 or H3 headings to start with "What", "How", "Why", "When", or "Is". (Found: ${questionHeadings.length}).`,
         why: 'Question headings match exactly how users phrase queries to AI assistants.'
-      },
-      {
-        step: 6,
+      });
+    }
+    if (totalImgs > 0 && imgsWithAlt < totalImgs) {
+      actionPlan.push({
         cat: 'CONTENT QUALITY',
-        sev: 'Critical',
-        pts: '+15 pts',
+        severity: 'Critical',
+        points: '+15 pts',
         title: 'Improve: Images and Alt Text',
-        detail: `${imgsWithAlt}/${totalImgs || 2} images with alt`,
-        why: 'Image accessibility and semantic labels improve content interpretation quality.'
-      },
-      {
-        step: 7,
+        detail: `${imgsWithAlt}/${totalImgs} images with alt text`,
+        why: 'Image accessibility and semantic labels improve multimodal content interpretation.'
+      });
+    }
+    if (statCount === 0) {
+      actionPlan.push({
         cat: 'AEO',
-        sev: 'Important',
-        pts: '+12 pts',
+        severity: 'Important',
+        points: '+12 pts',
         title: 'Improve: Answer Density — Factual Content',
         detail: '0 paragraphs contain statistics, data, or verifiable facts',
-        why: 'AI engines prefer to cite content with specific facts and numbers rather than vague general statements'
-      },
-      {
-        step: 8,
+        why: 'AI engines prefer to cite content with specific facts and numbers rather than vague general statements.'
+      });
+    }
+    if (entities.length < 4) {
+      actionPlan.push({
         cat: 'GEO',
-        sev: 'Important',
-        pts: '+12 pts',
+        severity: 'Important',
+        points: '+12 pts',
         title: 'Improve: Entity Clarity',
-        detail: '0 capitalized entity candidates detected',
+        detail: `${entities.length} capitalized entity candidates detected`,
         why: 'Clear named entities help generative systems understand who, what, and where your page is about.'
-      },
-      {
-        step: 9,
-        cat: 'GEO',
-        sev: 'Important',
-        pts: '+12 pts',
-        title: 'Improve: Unique Insight Signals',
-        detail: '0 paragraphs include stats/research cues',
-        why: 'Data-backed insights make content more citable and trustworthy for generative answer synthesis.'
-      },
-      {
-        step: 10,
+      });
+    }
+    if (!hasHowToSchema) {
+      actionPlan.push({
         cat: 'AEO',
-        sev: 'Important',
-        pts: '+10 pts',
+        severity: 'Important',
+        points: '+10 pts',
         title: 'Add HowTo Schema Markup',
         detail: 'Add a HowTo JSON-LD schema block for any step-by-step processes on your page.',
         why: 'HowTo schema makes your steps directly extractable by AI engines answering "how to" queries.'
-      }
-    ];
+      });
+    }
 
-    // Keywords frequency
-    const stopWords = new Set(['the','and','for','with','this','that','your','our','from','all','you','are','hotel','booking','about','from','which']);
+    // Keyword Frequency Extraction
+    const stopWords = new Set(['the','and','for','with','this','that','your','our','from','all','you','are','hotel','booking','about','more','page','will','can','have','been','which','their']);
     const kwMap = {};
     words.forEach(w => {
-      const cleanW = w.toLowerCase().replace(/[^a-z0-9]/g, '');
-      if (cleanW.length > 3 && !stopWords.has(cleanW)) {
-        kwMap[cleanW] = (kwMap[cleanW] || 0) + 1;
+      const clean = w.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (clean.length >= 4 && !stopWords.has(clean)) {
+        kwMap[clean] = (kwMap[clean] || 0) + 1;
       }
     });
-    const keywords = Object.entries(kwMap).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([k, count]) => ({ keyword: k, count }));
+    const topKeywords = Object.entries(kwMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([keyword, count]) => ({ keyword, count }));
 
     return res.json({
       success: true,
       url: target,
-      analyzedDate: new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+      analyzedDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
       overallScore,
-      ratingText: 'NEEDS WORK',
-      scores: {
-        aeo: aeoScore || 13,
-        geo: geoScore || 35,
-        crawlers: crawlerScore || 100,
-        tech: 40,
-        content: 47,
-        speed: 0
-      },
-      meta: {
-        schemas: schemasFound || 5,
-        questions: questionHeadings.length,
-        words: wordCount || 812,
+      ratingText: overallScore >= 75 ? 'EXCELLENT' : (overallScore >= 45 ? 'NEEDS WORK' : 'CRITICAL'),
+      quickStats: {
+        schemas: schemasCount,
+        questionHeadings: questionHeadings.length,
+        wordCount,
         https: isHttps ? 'Yes' : 'No',
-        htmlSize: '283KB',
-        lang: 'ar',
-        pageType: 'Homepage',
+        htmlSizeKb,
+        language,
+        pageType,
         intent: 'Informational'
       },
-      roadmap,
-      breakdown: {
-        aeo: aeoChecks,
-        geo: geoChecks,
-        crawlers: crawlerChecks
+      categories: {
+        aeo: aeoScore,
+        geo: geoScore,
+        crawlers: Math.round(crawlerScore),
+        technical: technicalScore,
+        contentQuality: contentQualityScore,
+        speed: speedScore
       },
-      keywords
+      robotsFile: {
+        found: robotsFound,
+        sizeKb: robotsSizeKb,
+        content: robotsTxt.slice(0, 1000)
+      },
+      actionPlan,
+      breakdown: {
+        aeo: aeoItems,
+        geo: geoItems,
+        crawlers: crawlerItems
+      },
+      topKeywords
     });
 
   } catch (err) {
+    console.error('Audit Error:', err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
+
 // ==========================================
 // SPA NAVIGATION FALLBACK (GET ONLY)
 // ==========================================
