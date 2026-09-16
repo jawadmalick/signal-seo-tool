@@ -359,99 +359,208 @@
       </div>
 
      <!-- 03. UNIFIED AEO & GEO ANALYZER -->
-    <div class="panel" id="panel-aeo">
-      <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2rem; margin-bottom:1.5rem;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
-          <h2 style="margin:0; font-size:1.3rem; color:#f8fafc; font-weight:700;">AEO & GEO Analyzer</h2>
-          <span style="background:#0284c7; color:#fff; font-size:0.75rem; font-weight:800; padding:4px 12px; border-radius:99px;">AI SEARCH READINESS</span>
-        </div>
-        <p style="margin:0 0 1.5rem 0; font-size:0.88rem; color:#94a3b8;">
-          Full diagnostic for generative engine visibility: Direct-answer extraction, Schema markup, llms.txt validation, and AI crawler permissions.
-        </p>
+<div class="panel active" id="panel-aeo">
+  <!-- Input Hero Card -->
+  <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2rem; margin-bottom:1.5rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+      <h2 style="margin:0; font-size:1.3rem; color:#f8fafc; font-weight:700;">Website AEO GEO Checker</h2>
+      <span style="background:#0284c7; color:#fff; font-size:0.75rem; font-weight:800; padding:4px 12px; border-radius:99px;">AI SEARCH READINESS</span>
+    </div>
+    <p style="margin:0 0 1.5rem 0; font-size:0.88rem; color:#94a3b8;">
+      Full diagnostic for generative engine visibility: Direct-answer extraction, Schema markup, llms.txt validation, and AI crawler permissions.
+    </p>
 
-        <div style="display:flex; gap:0.75rem;">
-          <input type="text" id="unifiedAiUrl" placeholder="https://yourwebsite.com" style="flex:1; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:0.85rem 1.1rem; color:#fff; font-size:0.95rem; outline:none;" />
-          <button id="btnRunUnifiedAudit" onclick="runUnifiedAeoGeoAudit()" style="background:#10b981; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">
-            Run Full AI Audit
-          </button>
-        </div>
-        <div id="unifiedAiLoading" style="display:none; color:#38bdf8; font-size:0.88rem; margin-top:1rem; font-weight:600;">
-          Auditing page HTML, robots.txt, and AI manifest files...
-        </div>
+    <div style="display:flex; gap:0.75rem;">
+      <input type="text" id="unifiedAiUrl" placeholder="https://yourwebsite.com" style="flex:1; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:0.85rem 1.1rem; color:#fff; font-size:0.95rem; outline:none;" />
+      <button id="btnRunUnifiedAudit" onclick="executeFullAiAudit()" style="background:#10b981; color:#fff; border:none; border-radius:8px; padding:0.85rem 1.75rem; font-weight:700; cursor:pointer; font-size:0.95rem; white-space:nowrap;">
+        Run Full AI Audit
+      </button>
+    </div>
+    <div id="unifiedAiLoading" style="display:none; color:#38bdf8; font-size:0.88rem; margin-top:1rem; font-weight:600;">
+      ✦ Fetching live DOM, validating robots.txt, checking /llms.txt, and calculating AI visibility...
+    </div>
+  </div>
+
+  <!-- Complete Report Result Container -->
+  <div id="unifiedAiReport" style="display:none;">
+
+    <!-- Top Action Bar -->
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem; background:#0e1626; border:1px solid #1e293b; padding:1.2rem 1.5rem; border-radius:14px;">
+      <div>
+        <div style="color:#94a3b8; font-size:0.8rem; margin-bottom:0.25rem;">Analyzing:</div>
+        <div id="repTargetUrl" style="color:#fff; font-weight:800; font-size:1.1rem; word-break:break-all;"></div>
       </div>
-
-      <!-- Unified Output Report -->
-      <div id="unifiedAiReport" style="display:none;">
-
-        <!-- 1. Hero Readiness Score -->
-        <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2.5rem 2rem; text-align:center; margin-bottom:1.5rem;">
-          <div style="font-size:0.85rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:1px;">Overall AI Readiness Score</div>
-          <div id="repCircleScore" style="margin:1.5rem auto; width:120px; height:120px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; border:8px solid #f59e0b; font-size:2.2rem; font-weight:800; color:#fff;">
-            <span id="repScoreNum">0</span>
-            <span style="font-size:0.7rem; color:#94a3b8; font-weight:600; margin-top:-4px;">/ 100</span>
-          </div>
-          <div id="repScoreStatus" style="font-size:1.15rem; font-weight:800; color:#f59e0b; margin-bottom:0.6rem; letter-spacing:0.5px;">NEEDS WORK</div>
-          <p id="repScoreText" style="color:#94a3b8; font-size:0.9rem; max-width:640px; margin:0 auto; line-height:1.6;"></p>
+      <div style="text-align:right;">
+        <div style="color:#94a3b8; font-size:0.78rem; margin-bottom:0.4rem;">Analyzed on <span id="repAnalyzedDate"></span></div>
+        <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
+          <span style="background:#064e3b; color:#6ee7b7; border:1px solid #047857; font-size:0.75rem; font-weight:700; padding:4px 10px; border-radius:6px; display:inline-flex; align-items:center;">Fresh analysis</span>
+          <button onclick="executeFullAiAudit()" style="background:#1e293b; color:#cbd5e1; border:1px solid #334155; padding:5px 12px; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer;">Re-analyze</button>
         </div>
-
-        <!-- 2. Metric Tiles Grid (6 Tiles) -->
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
-          <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
-            <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">AEO</div>
-            <div id="tileAeo" style="font-size:2rem; font-weight:800; color:#fff; margin:0.4rem 0;">0</div>
-            <div id="tileAeoStatus" style="font-size:0.75rem; font-weight:700; color:#ef4444;">Critical</div>
-          </div>
-          <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
-            <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">GEO</div>
-            <div id="tileGeo" style="font-size:2rem; font-weight:800; color:#fff; margin:0.4rem 0;">0</div>
-            <div id="tileGeoStatus" style="font-size:0.75rem; font-weight:700; color:#ef4444;">Critical</div>
-          </div>
-          <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
-            <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">AI CRAWLERS</div>
-            <div id="tileCrawlers" style="font-size:2rem; font-weight:800; color:#fff; margin:0.4rem 0;">0</div>
-            <div id="tileCrawlersStatus" style="font-size:0.75rem; font-weight:700; color:#4ade80;">Excellent</div>
-          </div>
-          <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
-            <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">TECHNICAL SEO</div>
-            <div id="tileTech" style="font-size:2rem; font-weight:800; color:#fff; margin:0.4rem 0;">0</div>
-            <div id="tileTechStatus" style="font-size:0.75rem; font-weight:700; color:#f59e0b;">Needs Work</div>
-          </div>
-          <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
-            <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">CONTENT QUALITY</div>
-            <div id="tileContent" style="font-size:2rem; font-weight:800; color:#fff; margin:0.4rem 0;">0</div>
-            <div id="tileContentStatus" style="font-size:0.75rem; font-weight:700; color:#f59e0b;">Needs Work</div>
-          </div>
-          <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
-            <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">PAGE SPEED</div>
-            <div id="tileSpeed" style="font-size:2rem; font-weight:800; color:#fff; margin:0.4rem 0;">40</div>
-            <div id="tileSpeedStatus" style="font-size:0.75rem; font-weight:700; color:#f59e0b;">Good</div>
-          </div>
-        </div>
-
-        <!-- 3. Quick Meta Badges -->
-        <div id="quickSignalsBar" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:2rem; justify-content:center;"></div>
-
-        <!-- 4. Top Recommended Fixes (Roadmap Timeline) -->
-        <h3 style="color:#fff; font-size:1.15rem; font-weight:800; margin-bottom:1rem;">Priority Fixes for AI Visibility</h3>
-        <div id="actionPlanContainer" style="display:flex; flex-direction:column; gap:1rem; margin-bottom:2.5rem;"></div>
-
-        <!-- 5. Detailed Inspection Checklists -->
-        <div id="detailedCheckSections"></div>
-
-        <!-- 6. Keyword Density Module -->
-        <div style="background:#131c31; border:1px solid #1e293b; border-radius:16px; padding:1.75rem; margin-top:2rem;">
-          <h3 style="color:#fff; font-size:1.05rem; font-weight:800; margin:0 0 0.25rem 0;">Keyword Density Analysis</h3>
-          <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:1rem;">Most frequent terms extracted by AI search bots:</div>
-          <div class="table-wrap">
-            <table class="checks-table">
-              <thead><tr><th>Keyword Term</th><th>Occurrences in Page Content</th></tr></thead>
-              <tbody id="kwDensityRows"></tbody>
-            </table>
-          </div>
-        </div>
-
       </div>
     </div>
+
+    <!-- Cached Notice Card -->
+    <div style="background:#131c31; border:1px solid #1e293b; border-radius:12px; padding:1rem 1.25rem; margin-bottom:1.5rem;">
+      <div style="color:#94a3b8; font-size:0.82rem; margin-bottom:0.75rem;">
+        Recently checked URLs may show cached results for up to 24 hours. Click Re-analyze for a fresh check. This report link stays active for 7 days.
+      </div>
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <button onclick="navigator.clipboard.writeText(window.location.href); alert('Report link copied!');" style="background:#1e293b; color:#fff; border:1px solid #334155; padding:6px 14px; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">🔗 Share Report</button>
+        <button onclick="window.print()" style="background:#1e293b; color:#fff; border:1px solid #334155; padding:6px 14px; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">📥 Download PDF</button>
+      </div>
+    </div>
+
+    <!-- Category Jump Pills Bar -->
+    <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem;">
+      <span style="background:#312e81; color:#c7d2fe; font-size:0.8rem; font-weight:800; padding:6px 14px; border-radius:99px;">AEO <span id="pillScoreAeo" style="background:#4338ca; padding:2px 8px; border-radius:99px; margin-left:4px;">0</span></span>
+      <span style="background:#064e3b; color:#a7f3d0; font-size:0.8rem; font-weight:800; padding:6px 14px; border-radius:99px;">GEO <span id="pillScoreGeo" style="background:#047857; padding:2px 8px; border-radius:99px; margin-left:4px;">0</span></span>
+      <span style="background:#065f46; color:#6ee7b7; font-size:0.8rem; font-weight:800; padding:6px 14px; border-radius:99px;">AI Crawlers <span id="pillScoreCrawlers" style="background:#047857; padding:2px 8px; border-radius:99px; margin-left:4px;">100</span></span>
+      <span style="background:#78350f; color:#fde68a; font-size:0.8rem; font-weight:800; padding:6px 14px; border-radius:99px;">Technical SEO <span id="pillScoreTech" style="background:#b45309; padding:2px 8px; border-radius:99px; margin-left:4px;">40</span></span>
+      <span style="background:#374151; color:#e5e7eb; font-size:0.8rem; font-weight:800; padding:6px 14px; border-radius:99px;">Content Quality <span id="pillScoreContent" style="background:#4b5563; padding:2px 8px; border-radius:99px; margin-left:4px;">47</span></span>
+    </div>
+
+    <!-- 1. Hero Score Dial Card -->
+    <div style="background:#131c31; border:1px solid #1e293b; border-radius:18px; padding:2.5rem 2rem; text-align:center; margin-bottom:1.5rem;">
+      <div style="font-size:0.9rem; font-weight:800; color:#cbd5e1; letter-spacing:0.5px; margin-bottom:1.5rem;">Overall AI Readiness Score</div>
+      <div id="repCircleScore" style="width:130px; height:130px; border-radius:50%; border:9px solid #ef4444; margin:0 auto 1.5rem auto; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <span id="repScoreNum" style="font-size:2.5rem; font-weight:900; color:#fff; line-height:1;">0</span>
+        <span style="font-size:0.75rem; color:#94a3b8; font-weight:700; margin-top:4px;">/ 100</span>
+      </div>
+      <div id="repScoreStatus" style="font-size:1.2rem; font-weight:900; color:#ef4444; letter-spacing:1px; margin-bottom:0.75rem;">NEEDS WORK</div>
+      <p id="repScoreText" style="color:#94a3b8; font-size:0.9rem; max-width:640px; margin:0 auto; line-height:1.6;"></p>
+    </div>
+
+    <!-- 2. Six Metric Tiles Grid -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+      <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
+        <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">AEO</div>
+        <div id="tileAeo" style="font-size:2rem; font-weight:900; color:#fff; margin:0.4rem 0;">0</div>
+        <div style="height:4px; background:#1e293b; border-radius:2px; overflow:hidden; margin-bottom:0.5rem;"><div id="tileBarAeo" style="height:100%; width:0%; background:#ef4444;"></div></div>
+        <div id="tileAeoStatus" style="font-size:0.75rem; font-weight:800; color:#ef4444;">Critical →</div>
+      </div>
+      <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
+        <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">GEO</div>
+        <div id="tileGeo" style="font-size:2rem; font-weight:900; color:#fff; margin:0.4rem 0;">0</div>
+        <div style="height:4px; background:#1e293b; border-radius:2px; overflow:hidden; margin-bottom:0.5rem;"><div id="tileBarGeo" style="height:100%; width:0%; background:#ef4444;"></div></div>
+        <div id="tileGeoStatus" style="font-size:0.75rem; font-weight:800; color:#ef4444;">Critical →</div>
+      </div>
+      <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
+        <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">AI CRAWLERS</div>
+        <div id="tileCrawlers" style="font-size:2rem; font-weight:900; color:#fff; margin:0.4rem 0;">100</div>
+        <div style="height:4px; background:#1e293b; border-radius:2px; overflow:hidden; margin-bottom:0.5rem;"><div id="tileBarCrawlers" style="height:100%; width:100%; background:#4ade80;"></div></div>
+        <div id="tileCrawlersStatus" style="font-size:0.75rem; font-weight:800; color:#4ade80;">Excellent →</div>
+      </div>
+      <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
+        <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">TECHNICAL SEO</div>
+        <div id="tileTech" style="font-size:2rem; font-weight:900; color:#fff; margin:0.4rem 0;">40</div>
+        <div style="height:4px; background:#1e293b; border-radius:2px; overflow:hidden; margin-bottom:0.5rem;"><div id="tileBarTech" style="height:100%; width:40%; background:#f59e0b;"></div></div>
+        <div id="tileTechStatus" style="font-size:0.75rem; font-weight:800; color:#f59e0b;">Needs Work →</div>
+      </div>
+      <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
+        <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">CONTENT QUALITY</div>
+        <div id="tileContent" style="font-size:2rem; font-weight:900; color:#fff; margin:0.4rem 0;">47</div>
+        <div style="height:4px; background:#1e293b; border-radius:2px; overflow:hidden; margin-bottom:0.5rem;"><div id="tileBarContent" style="height:100%; width:47%; background:#f59e0b;"></div></div>
+        <div id="tileContentStatus" style="font-size:0.75rem; font-weight:800; color:#f59e0b;">Needs Work →</div>
+      </div>
+      <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; padding:1.25rem 1rem;">
+        <div style="font-size:0.75rem; font-weight:800; color:#94a3b8;">PAGE SPEED</div>
+        <div id="tileSpeed" style="font-size:2rem; font-weight:900; color:#fff; margin:0.4rem 0;">0</div>
+        <div style="height:4px; background:#1e293b; border-radius:2px; overflow:hidden; margin-bottom:0.5rem;"><div id="tileBarSpeed" style="height:100%; width:0%; background:#ef4444;"></div></div>
+        <div id="tileSpeedStatus" style="font-size:0.75rem; font-weight:800; color:#ef4444;">Critical →</div>
+      </div>
+    </div>
+
+    <!-- Quick Signals Bar -->
+    <div id="quickSignalsBar" style="display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin-bottom:1rem;"></div>
+    <div id="metaDetailsBar" style="text-align:center; font-size:0.75rem; color:#64748b; margin-bottom:1.5rem;"></div>
+
+    <!-- Page Type Notice Box -->
+    <div style="background:#1a102e; border:1px solid #3b1d6e; border-radius:12px; padding:1rem 1.25rem; margin-bottom:2rem; display:flex; gap:0.75rem; align-items:flex-start;">
+      <div style="font-size:1.2rem; line-height:1;">📄</div>
+      <div>
+        <div id="repPageTypeTitle" style="color:#d8b4fe; font-weight:700; font-size:0.88rem; margin-bottom:0.25rem;">Page type detected: Homepage</div>
+        <div style="color:#a855f7; font-size:0.8rem; line-height:1.5;">
+          Checks for author name, publish date, and article schema are marked as <b>Not applicable</b> for this page type and do not reduce your score.
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Prioritized Fixes Roadmap ("Your Top Fixes") -->
+    <h3 style="color:#fff; font-size:1.25rem; font-weight:800; margin:0 0 0.5rem 0;">Your Top Fixes</h3>
+    <div style="font-size:0.82rem; color:#94a3b8; margin-bottom:1rem;">Sorted by impact — fix these first</div>
+    <div id="actionPlanContainer" style="display:flex; flex-direction:column; gap:1rem; margin-bottom:2.5rem;"></div>
+
+    <!-- 4. Detailed Inspection Checklists -->
+    <div id="detailedCheckSections"></div>
+
+    <!-- 5. AI Crawler Checker (Summary Dial & Bot Tiers) -->
+    <div style="background:#131c31; border:1px solid #1e293b; border-radius:16px; padding:2rem; margin-bottom:2rem;">
+      <h3 style="color:#fff; font-size:1.2rem; font-weight:800; margin:0 0 1.5rem 0;">AI Crawler Access Summary</h3>
+      <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:2rem;">
+        <div id="crawlerAccessDial" style="width:120px; height:120px; border-radius:50%; border:8px solid #10b981; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+          <span id="crawlerAllowedNum" style="font-size:2.2rem; font-weight:900; color:#fff; line-height:1;">14</span>
+          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700; margin-top:4px;">/ 14 Allowed</span>
+        </div>
+      </div>
+      <div id="crawlerTierSections"></div>
+    </div>
+
+    <!-- 6. AI Configuration Files Drawer -->
+    <div style="background:#131c31; border:1px solid #1e293b; border-radius:16px; padding:1.75rem; margin-bottom:2rem;">
+      <h3 style="color:#fff; font-size:1rem; font-weight:800; margin:0 0 1rem 0; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8;">AI Configuration Files</h3>
+      <div id="aiConfigFilesList"></div>
+    </div>
+
+    <!-- 7. Page Speed Checker Card -->
+    <div style="background:#131c31; border:1px solid #1e293b; border-radius:16px; padding:2rem; margin-bottom:2rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <h3 style="color:#fff; font-size:1.2rem; font-weight:800; margin:0;">Website Page Speed Checker</h3>
+        <span style="background:#7f1d1d; color:#fca5a5; font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:99px;">0/100: Critical</span>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:1rem; margin-bottom:1.25rem;">
+        <div style="background:#0b1120; border:1px solid #1e293b; border-radius:10px; padding:1rem; text-align:center;">
+          <div style="font-size:0.7rem; color:#94a3b8; font-weight:700;">PERFORMANCE SCORE</div>
+          <div style="font-size:1.8rem; font-weight:900; color:#ef4444; margin:0.25rem 0;">46/100</div>
+          <div style="font-size:0.7rem; color:#94a3b8;">Good: 90 or above (mobile)</div>
+        </div>
+        <div style="background:#0b1120; border:1px solid #1e293b; border-radius:10px; padding:1rem; text-align:center;">
+          <div style="font-size:0.7rem; color:#94a3b8; font-weight:700;">LCP</div>
+          <div style="font-size:1.8rem; font-weight:900; color:#ef4444; margin:0.25rem 0;">36.1 s</div>
+          <div style="font-size:0.7rem; color:#94a3b8;">Good: under 2.5 seconds</div>
+        </div>
+        <div style="background:#0b1120; border:1px solid #1e293b; border-radius:10px; padding:1rem; text-align:center;">
+          <div style="font-size:0.7rem; color:#94a3b8; font-weight:700;">CLS</div>
+          <div style="font-size:1.8rem; font-weight:900; color:#4ade80; margin:0.25rem 0;">0</div>
+          <div style="font-size:0.7rem; color:#94a3b8;">Good: under 0.1</div>
+        </div>
+        <div style="background:#0b1120; border:1px solid #1e293b; border-radius:10px; padding:1rem; text-align:center;">
+          <div style="font-size:0.7rem; color:#94a3b8; font-weight:700;">INP</div>
+          <div style="font-size:1.8rem; font-weight:900; color:#ef4444; margin:0.25rem 0;">680 ms</div>
+          <div style="font-size:0.7rem; color:#94a3b8;">Good: under 200ms</div>
+        </div>
+      </div>
+      <div style="font-size:0.8rem; color:#94a3b8;">
+        Real data from Google PageSpeed Insights, mobile performance. Speed data is fetched and cached for 48 hours.
+      </div>
+    </div>
+
+    <!-- 8. Keyword Density & Heading Map -->
+    <div style="background:#131c31; border:1px solid #1e293b; border-radius:16px; padding:1.75rem; margin-bottom:2rem;">
+      <h3 style="color:#fff; font-size:1.1rem; font-weight:800; margin:0 0 0.25rem 0;">Heading Map — All Headings Found on This Page</h3>
+      <div id="headingMapList" style="display:flex; flex-direction:column; gap:0.4rem; margin:1rem 0 2rem 0;"></div>
+
+      <h3 style="color:#fff; font-size:1.1rem; font-weight:800; margin:0 0 0.25rem 0;">Keyword Density Analysis</h3>
+      <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:1rem;">Most frequent terms found in your content:</div>
+      <div class="table-wrap">
+        <table class="checks-table">
+          <thead><tr><th>KEYWORD</th><th>OCCURRENCES</th></tr></thead>
+          <tbody id="kwDensityRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
 
       <!-- 05. COMPETITORS -->
       <div class="panel" id="panel-competitors">
@@ -2011,13 +2120,10 @@ renderStats();
     `;
   targetContainer.innerHTML = html;
 }
-window.runUnifiedAeoGeoAudit = async function() {
+window.executeFullAiAudit = async function() {
   const urlInput = document.getElementById('unifiedAiUrl');
   const url = urlInput ? urlInput.value.trim() : '';
-  if (!url) {
-    alert('Please enter your website URL.');
-    return;
-  }
+  if (!url) return alert('Please enter a website URL.');
 
   const btn = document.getElementById('btnRunUnifiedAudit');
   const loading = document.getElementById('unifiedAiLoading');
@@ -2035,132 +2141,180 @@ window.runUnifiedAeoGeoAudit = async function() {
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'Audit failed');
 
-    if (report) report.style.display = 'block';
+    report.style.display = 'block';
+    document.getElementById('repTargetUrl').innerText = data.url;
+    document.getElementById('repAnalyzedDate').innerText = data.analyzedDate;
 
-    // 1. Overall Score Hero
-    const scoreVal = data.overallScore || 0;
-    const scoreEl = document.getElementById('repScoreNum');
-    const statusEl = document.getElementById('repScoreStatus');
-    const circleEl = document.getElementById('repCircleScore');
-    const textEl = document.getElementById('repScoreText');
+    // 1. Overall Score
+    const overall = data.overallScore || 0;
+    document.getElementById('repScoreNum').innerText = overall;
+    document.getElementById('repScoreStatus').innerText = data.ratingText;
+    const heroColor = overall >= 75 ? '#4ade80' : (overall >= 45 ? '#f59e0b' : '#ef4444');
+    document.getElementById('repCircleScore').style.borderColor = heroColor;
+    document.getElementById('repScoreStatus').style.color = heroColor;
+    document.getElementById('repScoreText').innerText = 
+      `This page scored ${overall}/100 for AI readiness — rated ${data.ratingText}. ${data.quickStats?.schemas || 0} types of structured data implemented. Most key AI crawlers can access your content.`;
 
-    if (scoreEl) scoreEl.innerText = scoreVal;
-    if (statusEl) statusEl.innerText = data.ratingText || 'NEEDS WORK';
+    // Filter pills
+    document.getElementById('pillScoreAeo').innerText = data.categories.aeo;
+    document.getElementById('pillScoreGeo').innerText = data.categories.geo;
+    document.getElementById('pillScoreCrawlers').innerText = data.categories.crawlers;
+    document.getElementById('pillScoreTech').innerText = data.categories.technical;
+    document.getElementById('pillScoreContent').innerText = data.categories.contentQuality;
 
-    const heroColor = scoreVal >= 75 ? '#4ade80' : (scoreVal >= 45 ? '#f59e0b' : '#ef4444');
-    if (circleEl) circleEl.style.borderColor = heroColor;
-    if (statusEl) statusEl.style.color = heroColor;
-    if (textEl) {
-      textEl.innerText = `This page scored ${scoreVal}/100 for AI readiness — rated ${data.ratingText || 'NEEDS WORK'}. ${data.quickStats?.schemas || 0} types of structured data implemented. Most key AI crawlers can access your content.`;
-    }
+    // 2. Metric Tiles
+    const setTile = (idVal, idBar, idStatus, val) => {
+      const v = Math.round(val || 0);
+      document.getElementById(idVal).innerText = v;
+      document.getElementById(idBar).style.width = v + '%';
+      const col = v >= 75 ? '#4ade80' : (v >= 40 ? '#f59e0b' : '#ef4444');
+      document.getElementById(idBar).style.background = col;
+      const st = document.getElementById(idStatus);
+      st.innerText = (v >= 75 ? 'Excellent' : (v >= 40 ? 'Needs Work' : 'Critical')) + ' →';
+      st.style.color = col;
+    };
+    setTile('tileAeo', 'tileBarAeo', 'tileAeoStatus', data.categories.aeo);
+    setTile('tileGeo', 'tileBarGeo', 'tileGeoStatus', data.categories.geo);
+    setTile('tileCrawlers', 'tileBarCrawlers', 'tileCrawlersStatus', data.categories.crawlers);
+    setTile('tileTech', 'tileBarTech', 'tileTechStatus', data.categories.technical);
+    setTile('tileContent', 'tileBarContent', 'tileContentStatus', data.categories.contentQuality);
+    setTile('tileSpeed', 'tileBarSpeed', 'tileSpeedStatus', data.categories.speed);
 
-    // 2. Metric Tiles Grid
-    if (data.categories) {
-      const setMetric = (idVal, idStatus, val) => {
-        const v = Math.round(val || 0);
-        const el = document.getElementById(idVal);
-        const st = document.getElementById(idStatus);
-        if (el) el.innerText = v;
-        const col = v >= 75 ? '#4ade80' : (v >= 40 ? '#f59e0b' : '#ef4444');
-        const txt = v >= 75 ? 'Excellent' : (v >= 40 ? 'Needs Work' : 'Critical');
-        if (st) {
-          st.innerText = txt;
-          st.style.color = col;
-        }
-      };
-
-      setMetric('tileAeo', 'tileAeoStatus', data.categories.aeo);
-      setMetric('tileGeo', 'tileGeoStatus', data.categories.geo);
-      setMetric('tileCrawlers', 'tileCrawlersStatus', data.categories.crawlers);
-      setMetric('tileTech', 'tileTechStatus', data.categories.technical);
-      setMetric('tileContent', 'tileContentStatus', data.categories.contentQuality);
-      setMetric('tileSpeed', 'tileSpeedStatus', data.categories.speed);
-    }
-
-    // 3. Quick Signals Bar
-    const qsBar = document.getElementById('quickSignalsBar');
-    if (qsBar) {
-      const qs = data.quickStats || {};
-      qsBar.innerHTML = `
-        <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.schemas || 0} Schemas</span>
-        <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.questionHeadings || 0} Question Headings</span>
-        <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.wordCount || 0} Words</span>
-        <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">HTTPS: <b style="color:#4ade80;">${qs.https || 'Yes'}</b></span>
-        <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">Intent: ${escapeHtml(qs.intent || 'Informational')}</span>
-      `;
-    }
+    // 3. Quick Signals
+    const qs = data.quickStats || {};
+    document.getElementById('quickSignalsBar').innerHTML = `
+      <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.schemas} Schemas</span>
+      <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.questionHeadings} Question Headings</span>
+      <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.wordCount} Words</span>
+      <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">HTTPS: <b style="color:#4ade80;">${qs.https}</b></span>
+    `;
+    document.getElementById('metaDetailsBar').innerText = 
+      `HTML: ${qs.htmlSizeKb || 0}KB | Language: ${qs.language || 'en'} | Type: ${qs.pageType || 'Homepage'} | Intent: ${qs.intent || 'Informational'}`;
+    document.getElementById('repPageTypeTitle').innerText = `Page type detected: ${qs.pageType || 'Homepage'}`;
 
     // 4. Roadmap Items
-    const planBox = document.getElementById('actionPlanContainer');
-    if (planBox) {
-      let actionHtml = '';
-      (data.actionPlan || []).forEach((item, idx) => {
-        const sevColor = item.severity === 'Critical' ? '#ef4444' : '#f59e0b';
-        actionHtml += `
-          <div style="background:#131c31; border:1px solid #1e293b; border-left:4px solid ${sevColor}; border-radius:12px; padding:1.25rem;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-              <div style="display:flex; gap:0.5rem; align-items:center;">
-                <span style="background:#0b1120; border:1px solid #334155; color:#94a3b8; font-size:0.7rem; font-weight:800; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center;">${idx + 1}</span>
-                <span style="background:#1e293b; color:#cbd5e1; font-size:0.68rem; font-weight:800; padding:2px 8px; border-radius:4px;">${escapeHtml(item.cat)}</span>
-                <span style="color:${sevColor}; font-size:0.75rem; font-weight:700;">● ${escapeHtml(item.severity)}</span>
-              </div>
-              <span style="color:#4ade80; font-size:0.8rem; font-weight:800; background:rgba(74,222,128,0.1); padding:2px 8px; border-radius:4px;">${escapeHtml(item.points)}</span>
+    let roadmapHtml = '';
+    (data.actionPlan || []).forEach(item => {
+      const isCrit = item.severity === 'Critical';
+      const sevColor = isCrit ? '#ef4444' : '#f59e0b';
+      roadmapHtml += `
+        <div style="background:#131c31; border:1px solid #1e293b; border-left:4px solid ${sevColor}; border-radius:12px; padding:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="background:#0b1120; border:1px solid #334155; color:#94a3b8; font-size:0.75rem; font-weight:800; border-radius:50%; width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center;">${item.node}</span>
+              <span style="background:#1e293b; color:#cbd5e1; font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:4px;">${escapeHtml(item.cat)}</span>
+              <span style="color:${sevColor}; font-size:0.75rem; font-weight:700;">● ${escapeHtml(item.severity)}</span>
             </div>
-            <div style="font-weight:700; color:#fff; font-size:1rem; margin-bottom:0.3rem;">${escapeHtml(item.title)}</div>
-            <div style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.75rem;">${escapeHtml(item.detail)}</div>
-            <div style="background:#0b1120; border:1px solid #1e293b; border-radius:8px; padding:0.75rem; font-size:0.8rem; color:#cbd5e1; line-height:1.5;">
-              <span style="color:#a855f7; font-weight:700;">✦ Why AI search engines care:</span> ${escapeHtml(item.why)}
-            </div>
+            <span style="color:#4ade80; font-size:0.8rem; font-weight:800; background:rgba(74,222,128,0.1); padding:3px 8px; border-radius:4px;">${escapeHtml(item.points)}</span>
           </div>
-        `;
-      });
-      planBox.innerHTML = actionHtml || '<div style="color:#4ade80; padding:1rem;">All major AI visibility checks passed!</div>';
-    }
+          <div style="color:#fff; font-size:1.05rem; font-weight:800; margin-bottom:0.25rem;">${escapeHtml(item.title)}</div>
+          <div style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.75rem;">${escapeHtml(item.detail)}</div>
+          <div style="background:#0b1120; border:1px solid #1e293b; border-radius:8px; padding:0.75rem 1rem; font-size:0.8rem; color:#cbd5e1; line-height:1.5;">
+            <span style="color:#a855f7; font-weight:800;">✦ Why AI search engines care:</span> ${escapeHtml(item.why)}
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('actionPlanContainer').innerHTML = roadmapHtml;
 
     // 5. Checklist Sections
-    const checksBox = document.getElementById('detailedCheckSections');
-    if (checksBox && data.breakdown) {
-      const renderTable = (title, items) => {
-        let rows = (items || []).map(c => `
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem 1.25rem; border-bottom:1px solid #1e293b;">
-            <div>
-              <div style="display:flex; align-items:center; gap:0.5rem;">
-                <span style="color:${c.passed ? '#4ade80' : '#ef4444'}; font-weight:900;">${c.passed ? '✓' : '✗'}</span>
-                <span style="font-weight:700; color:#fff; font-size:0.9rem;">${escapeHtml(c.name)}</span>
+    const renderTable = (title, scoreText, items) => {
+      let rows = (items || []).map(c => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem 1.25rem; border-bottom:1px solid #1e293b;">
+          <div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="color:${c.passed ? '#4ade80' : '#ef4444'}; font-weight:900;">${c.passed ? '✓' : '✗'}</span>
+              <span style="color:#fff; font-size:0.9rem; font-weight:700;">${escapeHtml(c.name)}</span>
+            </div>
+            <div style="font-size:0.8rem; color:#94a3b8; margin-top:0.2rem; margin-left:1.3rem;">${escapeHtml(c.desc)}</div>
+          </div>
+          <div style="font-weight:700; font-size:0.85rem; color:${c.pts > 0 ? '#4ade80' : '#ef4444'}; white-space:nowrap;">
+            ${c.pts} / ${c.max} pts
+          </div>
+        </div>
+      `).join('');
+
+      return `
+        <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; margin-bottom:1.5rem; overflow:hidden;">
+          <div style="background:#0b1120; padding:0.85rem 1.25rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b;">
+            <span style="font-weight:800; font-size:0.95rem; color:#fff;">${title}</span>
+            <span style="font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:99px; background:#1e293b; color:#cbd5e1;">${scoreText}</span>
+          </div>
+          ${rows}
+        </div>
+      `;
+    };
+
+    document.getElementById('detailedCheckSections').innerHTML = 
+      renderTable('Website AEO Checker', `${data.categories.aeo}/100: Critical`, data.breakdown.aeo) +
+      renderTable('Website GEO Checker', `${data.categories.geo}/100: Critical`, data.breakdown.geo) +
+      renderTable('Website Technical SEO Checker', `${data.categories.technical}/100: Needs Work`, data.breakdown.technical) +
+      renderTable('Website Content Quality Checker', `${data.categories.contentQuality}/100: Needs Work`, data.breakdown.content);
+
+    // 6. AI Crawler Checker & Tiers
+    const ca = data.crawlerAudit;
+    document.getElementById('crawlerAllowedNum').innerText = ca.allowedCount;
+    const renderTier = (tierName, bots) => `
+      <div style="margin-bottom:1.5rem;">
+        <div style="font-size:0.75rem; font-weight:800; color:#a855f7; text-transform:uppercase; margin-bottom:0.75rem; background:#2e1065; display:inline-block; padding:3px 10px; border-radius:4px;">${tierName}</div>
+        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+          ${bots.map(b => `
+            <div style="background:#0b1120; border:1px solid #1e293b; border-radius:8px; padding:0.75rem 1rem; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                  <span style="color:${b.passed ? '#4ade80' : '#ef4444'};">●</span>
+                  <span style="font-weight:700; color:#fff; font-size:0.85rem;">${escapeHtml(b.name)}</span>
+                </div>
+                <div style="font-size:0.75rem; color:#94a3b8; margin-top:0.2rem; margin-left:1rem;">${escapeHtml(b.info)}</div>
               </div>
-              <div style="font-size:0.8rem; color:#94a3b8; margin-top:0.25rem; margin-left:1.3rem;">${escapeHtml(c.desc)}</div>
+              <span style="background:${b.passed ? 'rgba(74,222,128,0.1)' : 'rgba(239,68,68,0.1)'}; color:${b.passed ? '#4ade80' : '#ef4444'}; font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:4px;">
+                ${b.passed ? 'Allowed' : 'Blocked'}
+              </span>
             </div>
-            <div style="font-weight:700; font-size:0.85rem; color:${c.pts > 0 ? '#4ade80' : '#ef4444'}; white-space:nowrap;">
-              ${c.pts} / ${c.max} pts
+          `).join('')}
+        </div>
+      </div>
+    `;
+    document.getElementById('crawlerTierSections').innerHTML = 
+      renderTier('Tier 1 — Citation Bots (Most Important for AI Visibility)', ca.tier1) +
+      renderTier('Tier 2 — Secondary AI Bots', ca.tier2) +
+      renderTier('Tier 3 — Training Bots (Blocking These Is Often Acceptable)', ca.tier3);
+
+    // 7. AI Config Files Drawer
+    let cfgHtml = '';
+    (data.aiConfigFiles || []).forEach((f, idx) => {
+      cfgHtml += `
+        <div style="background:#0b1120; border:1px solid #1e293b; border-radius:8px; padding:0.75rem 1rem; margin-bottom:0.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="color:${f.found ? '#4ade80' : '#ef4444'}; font-weight:900;">${f.found ? '✓' : '✗'}</span>
+              <span style="font-weight:700; color:#fff; font-size:0.88rem;">${f.name}</span>
+              ${f.found ? `<span style="background:#1e293b; color:#94a3b8; font-size:0.72rem; padding:2px 6px; border-radius:4px;">${f.sizeKb} KB</span>` : ''}
+              <span style="background:${f.found ? '#065f46' : '#7f1d1d'}; color:${f.found ? '#a7f3d0' : '#fca5a5'}; font-size:0.72rem; padding:2px 6px; border-radius:4px; font-weight:700;">
+                ${f.found ? 'Found' : 'Not Found'}
+              </span>
             </div>
+            ${f.found && f.content ? `<button onclick="document.getElementById('cfgPre_${idx}').style.display = document.getElementById('cfgPre_${idx}').style.display === 'none' ? 'block' : 'none'" style="background:#1e293b; color:#cbd5e1; border:1px solid #334155; padding:3px 10px; border-radius:4px; font-size:0.72rem; cursor:pointer;">View Content ▼</button>` : ''}
           </div>
-        `).join('');
+          ${f.found && f.content ? `<pre id="cfgPre_${idx}" style="display:none; background:#070b14; border:1px solid #1e293b; border-radius:6px; padding:0.75rem; color:#94a3b8; font-size:0.72rem; margin-top:0.75rem; white-space:pre-wrap; max-height:180px; overflow-y:auto;">${escapeHtml(f.content.slice(0, 1000))}</pre>` : ''}
+        </div>
+      `;
+    });
+    document.getElementById('aiConfigFilesList').innerHTML = cfgHtml;
 
-        return `
-          <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; margin-bottom:1.5rem; overflow:hidden;">
-            <div style="background:#0b1120; padding:0.85rem 1.25rem; font-weight:800; font-size:0.95rem; color:#fff; border-bottom:1px solid #1e293b;">
-              ${title}
-            </div>
-            ${rows}
-          </div>
-        `;
-      };
+    // 8. Heading Map
+    let hmHtml = '';
+    (data.headingMap || []).forEach(h => {
+      hmHtml += `<div style="display:flex; gap:0.5rem; align-items:center; font-size:0.8rem;"><span style="background:#1e293b; color:#38bdf8; font-weight:800; font-size:0.7rem; padding:1px 6px; border-radius:4px;">${h.tag}</span> <span style="color:#cbd5e1;">${escapeHtml(h.text)}</span></div>`;
+    });
+    document.getElementById('headingMapList').innerHTML = hmHtml || '<div style="color:#64748b; font-size:0.8rem;">No headings detected</div>';
 
-      checksBox.innerHTML = 
-        renderTable('Website AEO Checker', data.breakdown.aeo) +
-        renderTable('Website GEO Checker', data.breakdown.geo) +
-        renderTable('Website AI Crawler Checker (robots.txt)', data.breakdown.crawlers);
-    }
-
-    // 6. Keyword Density Rows
-    const kdBody = document.getElementById('kwDensityRows');
-    if (kdBody) {
-      let kdHtml = '';
-      (data.topKeywords || []).forEach(k => {
-        kdHtml += `<tr><td style="font-weight:700; color:#fff;">${escapeHtml(k.keyword)}</td><td style="color:#38bdf8; font-weight:700;">${k.count}</td></tr>`;
-      });
-      kdBody.innerHTML = kdHtml;
-    }
+    // 9. Keyword Density
+    let kdHtml = '';
+    (data.topKeywords || []).forEach(k => {
+      kdHtml += `<tr><td style="font-weight:700; color:#fff;">${escapeHtml(k.keyword)}</td><td style="color:#38bdf8; font-weight:700;">${k.count}</td></tr>`;
+    });
+    document.getElementById('kwDensityRows').innerHTML = kdHtml;
 
   } catch (err) {
     alert('Analysis Error: ' + err.message);
@@ -2169,6 +2323,8 @@ window.runUnifiedAeoGeoAudit = async function() {
     if (loading) loading.style.display = 'none';
   }
 };
+
+window.runUnifiedAeoGeoAudit = window.executeFullAiAudit;
 </script>
 </body>
 </html>
