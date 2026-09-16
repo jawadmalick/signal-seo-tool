@@ -2013,6 +2013,164 @@ renderStats();
     `;
   targetContainer.innerHTML = html;
 }
+window.runUnifiedAeoGeoAudit = async function() {
+  const urlInput = document.getElementById('unifiedAiUrl');
+  const url = urlInput ? urlInput.value.trim() : '';
+  if (!url) {
+    alert('Please enter your website URL.');
+    return;
+  }
+
+  const btn = document.getElementById('btnRunUnifiedAudit');
+  const loading = document.getElementById('unifiedAiLoading');
+  const report = document.getElementById('unifiedAiReport');
+
+  if (btn) btn.disabled = true;
+  if (loading) loading.style.display = 'block';
+
+  try {
+    const res = await fetch('/api/aeo-geo-audit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Audit failed');
+
+    if (report) report.style.display = 'block';
+
+    // 1. Overall Score Hero
+    const scoreVal = data.overallScore || 0;
+    const scoreEl = document.getElementById('repScoreNum');
+    const statusEl = document.getElementById('repScoreStatus');
+    const circleEl = document.getElementById('repCircleScore');
+    const textEl = document.getElementById('repScoreText');
+
+    if (scoreEl) scoreEl.innerText = scoreVal;
+    if (statusEl) statusEl.innerText = data.ratingText || 'NEEDS WORK';
+
+    const heroColor = scoreVal >= 75 ? '#4ade80' : (scoreVal >= 45 ? '#f59e0b' : '#ef4444');
+    if (circleEl) circleEl.style.borderColor = heroColor;
+    if (statusEl) statusEl.style.color = heroColor;
+    if (textEl) {
+      textEl.innerText = `This page scored ${scoreVal}/100 for AI readiness — rated ${data.ratingText || 'NEEDS WORK'}. ${data.quickStats?.schemas || 0} types of structured data implemented. Most key AI crawlers can access your content.`;
+    }
+
+    // 2. Metric Tiles Grid
+    if (data.categories) {
+      const setMetric = (idVal, idStatus, val) => {
+        const v = Math.round(val || 0);
+        const el = document.getElementById(idVal);
+        const st = document.getElementById(idStatus);
+        if (el) el.innerText = v;
+        const col = v >= 75 ? '#4ade80' : (v >= 40 ? '#f59e0b' : '#ef4444');
+        const txt = v >= 75 ? 'Excellent' : (v >= 40 ? 'Needs Work' : 'Critical');
+        if (st) {
+          st.innerText = txt;
+          st.style.color = col;
+        }
+      };
+
+      setMetric('tileAeo', 'tileAeoStatus', data.categories.aeo);
+      setMetric('tileGeo', 'tileGeoStatus', data.categories.geo);
+      setMetric('tileCrawlers', 'tileCrawlersStatus', data.categories.crawlers);
+      setMetric('tileTech', 'tileTechStatus', data.categories.technical);
+      setMetric('tileContent', 'tileContentStatus', data.categories.contentQuality);
+      setMetric('tileSpeed', 'tileSpeedStatus', data.categories.speed);
+    }
+
+    // 3. Quick Signals Bar
+    const qsBar = document.getElementById('quickSignalsBar');
+    if (qsBar) {
+      const qs = data.quickStats || {};
+      qsBar.innerHTML = `
+        <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.schemas || 0} Schemas</span>
+        <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.questionHeadings || 0} Question Headings</span>
+        <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.wordCount || 0} Words</span>
+        <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">HTTPS: <b style="color:#4ade80;">${qs.https || 'Yes'}</b></span>
+        <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">Intent: ${escapeHtml(qs.intent || 'Informational')}</span>
+      `;
+    }
+
+    // 4. Roadmap Items
+    const planBox = document.getElementById('actionPlanContainer');
+    if (planBox) {
+      let actionHtml = '';
+      (data.actionPlan || []).forEach((item, idx) => {
+        const sevColor = item.severity === 'Critical' ? '#ef4444' : '#f59e0b';
+        actionHtml += `
+          <div style="background:#131c31; border:1px solid #1e293b; border-left:4px solid ${sevColor}; border-radius:12px; padding:1.25rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <span style="background:#0b1120; border:1px solid #334155; color:#94a3b8; font-size:0.7rem; font-weight:800; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center;">${idx + 1}</span>
+                <span style="background:#1e293b; color:#cbd5e1; font-size:0.68rem; font-weight:800; padding:2px 8px; border-radius:4px;">${escapeHtml(item.cat)}</span>
+                <span style="color:${sevColor}; font-size:0.75rem; font-weight:700;">● ${escapeHtml(item.severity)}</span>
+              </div>
+              <span style="color:#4ade80; font-size:0.8rem; font-weight:800; background:rgba(74,222,128,0.1); padding:2px 8px; border-radius:4px;">${escapeHtml(item.points)}</span>
+            </div>
+            <div style="font-weight:700; color:#fff; font-size:1rem; margin-bottom:0.3rem;">${escapeHtml(item.title)}</div>
+            <div style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.75rem;">${escapeHtml(item.detail)}</div>
+            <div style="background:#0b1120; border:1px solid #1e293b; border-radius:8px; padding:0.75rem; font-size:0.8rem; color:#cbd5e1; line-height:1.5;">
+              <span style="color:#a855f7; font-weight:700;">✦ Why AI search engines care:</span> ${escapeHtml(item.why)}
+            </div>
+          </div>
+        `;
+      });
+      planBox.innerHTML = actionHtml || '<div style="color:#4ade80; padding:1rem;">All major AI visibility checks passed!</div>';
+    }
+
+    // 5. Checklist Sections
+    const checksBox = document.getElementById('detailedCheckSections');
+    if (checksBox && data.breakdown) {
+      const renderTable = (title, items) => {
+        let rows = (items || []).map(c => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem 1.25rem; border-bottom:1px solid #1e293b;">
+            <div>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span style="color:${c.passed ? '#4ade80' : '#ef4444'}; font-weight:900;">${c.passed ? '✓' : '✗'}</span>
+                <span style="font-weight:700; color:#fff; font-size:0.9rem;">${escapeHtml(c.name)}</span>
+              </div>
+              <div style="font-size:0.8rem; color:#94a3b8; margin-top:0.25rem; margin-left:1.3rem;">${escapeHtml(c.desc)}</div>
+            </div>
+            <div style="font-weight:700; font-size:0.85rem; color:${c.pts > 0 ? '#4ade80' : '#ef4444'}; white-space:nowrap;">
+              ${c.pts} / ${c.max} pts
+            </div>
+          </div>
+        `).join('');
+
+        return `
+          <div style="background:#131c31; border:1px solid #1e293b; border-radius:14px; margin-bottom:1.5rem; overflow:hidden;">
+            <div style="background:#0b1120; padding:0.85rem 1.25rem; font-weight:800; font-size:0.95rem; color:#fff; border-bottom:1px solid #1e293b;">
+              ${title}
+            </div>
+            ${rows}
+          </div>
+        `;
+      };
+
+      checksBox.innerHTML = 
+        renderTable('Website AEO Checker', data.breakdown.aeo) +
+        renderTable('Website GEO Checker', data.breakdown.geo) +
+        renderTable('Website AI Crawler Checker (robots.txt)', data.breakdown.crawlers);
+    }
+
+    // 6. Keyword Density Rows
+    const kdBody = document.getElementById('kwDensityRows');
+    if (kdBody) {
+      let kdHtml = '';
+      (data.topKeywords || []).forEach(k => {
+        kdHtml += `<tr><td style="font-weight:700; color:#fff;">${escapeHtml(k.keyword)}</td><td style="color:#38bdf8; font-weight:700;">${k.count}</td></tr>`;
+      });
+      kdBody.innerHTML = kdHtml;
+    }
+
+  } catch (err) {
+    alert('Analysis Error: ' + err.message);
+  } finally {
+    if (btn) btn.disabled = false;
+    if (loading) loading.style.display = 'none';
+  }
+};
 </script>
 </body>
 </html>
