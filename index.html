@@ -1070,6 +1070,10 @@ window.checkPositions = async function(e){
     alert('Please enter your website URL.');
     return;
   }
+  if(!manualKw){
+    alert('Please enter 5 to 10 keywords (one per line or comma-separated).');
+    return;
+  }
 
   var btn = document.getElementById('runRankBtn');
   var loading = document.getElementById('rankLoading');
@@ -1088,25 +1092,27 @@ window.checkPositions = async function(e){
     var resultCard = document.getElementById('rankResultCard');
     if(resultCard) resultCard.style.display = 'block';
 
-    if(!data.rankings || data.rankings.length === 0){
-      document.getElementById('rankLogTable').innerHTML = 
-        '<div style="padding:24px;text-align:center;color:#94a3b8;">No rankings detected in Google\'s top 10 pages for this domain.</div>';
-      return;
-    }
-
     var html = '<div class="table-wrap"><table class="checks-table"><thead><tr>' +
       '<th>Keyword Query</th>' +
       '<th>Google Position</th>' +
-      '<th>Ranked URL / Landing Page</th>' +
+      '<th>Google Page</th>' +
+      '<th>Ranking URL Fetched by Google</th>' +
       '<th>Top Competitor (#1)</th>' +
       '</tr></thead><tbody>';
 
     data.rankings.forEach(function(row){
+      var posColor = row.ranked ? '#4ade80' : '#94a3b8';
+      var pageColor = row.ranked ? '#38bdf8' : '#64748b';
+      var pageCell = row.ranked
+        ? '<a href="' + escapeHtml(row.rankingPage) + '" target="_blank" style="color:var(--accent);text-decoration:underline;font-size:12px;">' + escapeHtml(row.rankingPage) + '</a>'
+        : '<span style="color:#64748b;font-size:12px;">' + escapeHtml(row.rankingPage) + '</span>';
+
       html += '<tr>' +
-        '<td style="font-weight:700;color:#fff;text-transform:capitalize;">' + escapeHtml(row.keyword) + '</td>' +
-        '<td style="color:#4ade80;font-weight:700;font-size:15px;">' + escapeHtml(row.position) + '</td>' +
-        '<td style="max-width:320px;word-break:break-all;"><a href="' + escapeHtml(row.rankingPage) + '" target="_blank" style="color:var(--accent);text-decoration:underline;font-size:12px;">' + escapeHtml(row.rankingPage) + '</a></td>' +
-        '<td style="color:#cbd5e1;font-size:13px;">' + escapeHtml(row.topCompetitor) + '</td>' +
+        '<td style="font-weight:700;color:#fff;">' + escapeHtml(row.keyword) + '</td>' +
+        '<td style="color:' + posColor + ';font-weight:700;font-size:15px;">' + escapeHtml(row.position) + '</td>' +
+        '<td style="color:' + pageColor + ';font-weight:600;font-size:12px;">' + escapeHtml(row.page) + '</td>' +
+        '<td style="max-width:320px;word-break:break-all;">' + pageCell + '</td>' +
+        '<td style="color:#cbd5e1;font-size:13px;font-weight:600;">' + escapeHtml(row.topCompetitor) + '</td>' +
         '</tr>';
     });
 
@@ -1119,7 +1125,6 @@ window.checkPositions = async function(e){
     if(loading) loading.style.display = 'none';
   }
 };
-
   window.generateBlog = async function(){
     var topic = document.getElementById('blogTopic').value.trim();
     var kws = document.getElementById('blogKeywords').value.trim();
