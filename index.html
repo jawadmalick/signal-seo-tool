@@ -2231,37 +2231,56 @@ window.executeFullAiAudit = async function() {
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'Audit failed');
 
-    report.style.display = 'block';
-    document.getElementById('repTargetUrl').innerText = data.url;
-    document.getElementById('repAnalyzedDate').innerText = data.analyzedDate;
+    if (report) report.style.display = 'block';
+
+    const safeSetText = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = val;
+    };
+    const safeSetHtml = (id, html) => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = html;
+    };
+
+    safeSetText('repTargetUrl', data.url);
+    safeSetText('repAnalyzedDate', data.analyzedDate);
 
     // 1. Overall Score
     const overall = data.overallScore || 0;
-    document.getElementById('repScoreNum').innerText = overall;
-    document.getElementById('repScoreStatus').innerText = data.ratingText;
-    const heroColor = overall >= 75 ? '#4ade80' : (overall >= 45 ? '#f59e0b' : '#ef4444');
-    document.getElementById('repCircleScore').style.borderColor = heroColor;
-    document.getElementById('repScoreStatus').style.color = heroColor;
-    document.getElementById('repScoreText').innerText = 
-      `This page scored ${overall}/100 for AI readiness — rated ${data.ratingText}. ${data.quickStats?.schemas || 0} types of structured data implemented. Most key AI crawlers can access your content.`;
+    safeSetText('repScoreNum', overall);
+    safeSetText('repScoreStatus', data.ratingText);
 
-    // Filter pills
-    document.getElementById('pillScoreAeo').innerText = data.categories.aeo;
-    document.getElementById('pillScoreGeo').innerText = data.categories.geo;
-    document.getElementById('pillScoreCrawlers').innerText = data.categories.crawlers;
-    document.getElementById('pillScoreTech').innerText = data.categories.technical;
-    document.getElementById('pillScoreContent').innerText = data.categories.contentQuality;
+    const heroColor = overall >= 75 ? '#4ade80' : (overall >= 45 ? '#f59e0b' : '#ef4444');
+    const circleScore = document.getElementById('repCircleScore');
+    const scoreStatus = document.getElementById('repScoreStatus');
+    if (circleScore) circleScore.style.borderColor = heroColor;
+    if (scoreStatus) scoreStatus.style.color = heroColor;
+
+    safeSetText('repScoreText', `This page scored ${overall}/100 for AI readiness — rated ${data.ratingText}. ${data.quickStats?.schemas || 0} types of structured data implemented. Most key AI crawlers can access your content.`);
+
+    // Category Jump Pills
+    safeSetText('pillScoreAeo', data.categories.aeo);
+    safeSetText('pillScoreGeo', data.categories.geo);
+    safeSetText('pillScoreCrawlers', data.categories.crawlers);
+    safeSetText('pillScoreTech', data.categories.technical);
+    safeSetText('pillScoreContent', data.categories.contentQuality);
+    safeSetText('pillScoreSpeed', data.categories.speed);
 
     // 2. Metric Tiles
     const setTile = (idVal, idBar, idStatus, val) => {
       const v = Math.round(val || 0);
-      document.getElementById(idVal).innerText = v;
-      document.getElementById(idBar).style.width = v + '%';
+      safeSetText(idVal, v);
+      const bar = document.getElementById(idBar);
       const col = v >= 75 ? '#4ade80' : (v >= 40 ? '#f59e0b' : '#ef4444');
-      document.getElementById(idBar).style.background = col;
+      if (bar) {
+        bar.style.width = v + '%';
+        bar.style.background = col;
+      }
       const st = document.getElementById(idStatus);
-      st.innerText = (v >= 75 ? 'Excellent' : (v >= 40 ? 'Needs Work' : 'Critical')) + ' →';
-      st.style.color = col;
+      if (st) {
+        st.innerText = (v >= 75 ? 'Excellent' : (v >= 40 ? 'Needs Work' : 'Critical')) + ' →';
+        st.style.color = col;
+      }
     };
     setTile('tileAeo', 'tileBarAeo', 'tileAeoStatus', data.categories.aeo);
     setTile('tileGeo', 'tileBarGeo', 'tileGeoStatus', data.categories.geo);
@@ -2270,17 +2289,21 @@ window.executeFullAiAudit = async function() {
     setTile('tileContent', 'tileBarContent', 'tileContentStatus', data.categories.contentQuality);
     setTile('tileSpeed', 'tileBarSpeed', 'tileSpeedStatus', data.categories.speed);
 
+    // Update Radar Chart & Mini Rings
+    if (typeof window.updateScoreBreakdownUI === 'function') {
+      window.updateScoreBreakdownUI(data.categories);
+    }
+
     // 3. Quick Signals
     const qs = data.quickStats || {};
-    document.getElementById('quickSignalsBar').innerHTML = `
-      <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.schemas} Schemas</span>
-      <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.questionHeadings} Question Headings</span>
-      <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.wordCount} Words</span>
-      <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">HTTPS: <b style="color:#4ade80;">${qs.https}</b></span>
-    `;
-    document.getElementById('metaDetailsBar').innerText = 
-      `HTML: ${qs.htmlSizeKb || 0}KB | Language: ${qs.language || 'en'} | Type: ${qs.pageType || 'Homepage'} | Intent: ${qs.intent || 'Informational'}`;
-    document.getElementById('repPageTypeTitle').innerText = `Page type detected: ${qs.pageType || 'Homepage'}`;
+    safeSetHtml('quickSignalsBar', `
+      <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.schemas || 0} Schemas</span>
+      <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.questionHeadings || 0} Question Headings</span>
+      <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">${qs.wordCount || 0} Words</span>
+      <span style="background:#0b1120; border:1px solid #1e293b; padding:5px 12px; border-radius:99px; font-size:0.75rem; color:#cbd5e1; font-weight:700;">HTTPS: <b style="color:#4ade80;">${qs.https || 'Yes'}</b></span>
+    `);
+    safeSetText('metaDetailsBar', `HTML: ${qs.htmlSizeKb || 0}KB | Language: ${qs.language || 'en'} | Type: ${qs.pageType || 'Homepage'} | Intent: ${qs.intent || 'Informational'}`);
+    safeSetText('repPageTypeTitle', `Page type detected: ${qs.pageType || 'Homepage'}`);
 
     // 4. Roadmap Items
     let roadmapHtml = '';
@@ -2305,7 +2328,7 @@ window.executeFullAiAudit = async function() {
         </div>
       `;
     });
-    document.getElementById('actionPlanContainer').innerHTML = roadmapHtml;
+    safeSetHtml('actionPlanContainer', roadmapHtml);
 
     // 5. Checklist Sections
     const renderTable = (title, scoreText, items) => {
@@ -2313,7 +2336,7 @@ window.executeFullAiAudit = async function() {
         <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem 1.25rem; border-bottom:1px solid #1e293b;">
           <div>
             <div style="display:flex; align-items:center; gap:0.5rem;">
-              <span style="color:${c.passed ? '#4ade80' : '#ef4444'}; font-weight:900;">${c.passed ? '✓' : '✗'}</span>
+              <span style="color:${c.pts > 0 ? '#4ade80' : '#ef4444'}; font-weight:900;">${c.pts > 0 ? '✓' : '✗'}</span>
               <span style="color:#fff; font-size:0.9rem; font-weight:700;">${escapeHtml(c.name)}</span>
             </div>
             <div style="font-size:0.8rem; color:#94a3b8; margin-top:0.2rem; margin-left:1.3rem;">${escapeHtml(c.desc)}</div>
@@ -2335,42 +2358,48 @@ window.executeFullAiAudit = async function() {
       `;
     };
 
-    document.getElementById('detailedCheckSections').innerHTML = 
-      renderTable('Website AEO Checker', `${data.categories.aeo}/100: Critical`, data.breakdown.aeo) +
-      renderTable('Website GEO Checker', `${data.categories.geo}/100: Critical`, data.breakdown.geo) +
-      renderTable('Website Technical SEO Checker', `${data.categories.technical}/100: Needs Work`, data.breakdown.technical) +
-      renderTable('Website Content Quality Checker', `${data.categories.contentQuality}/100: Needs Work`, data.breakdown.content);
+    if (data.breakdown) {
+      safeSetHtml('detailedCheckSections', 
+        `<div id="sec-aeo-checker">${renderTable('Website AEO Checker', `${data.categories.aeo}/100: Critical`, data.breakdown.aeo)}</div>` +
+        `<div id="sec-geo-checker">${renderTable('Website GEO Checker', `${data.categories.geo}/100: Critical`, data.breakdown.geo)}</div>` +
+        `<div id="sec-tech-checker">${renderTable('Website Technical SEO Checker', `${data.categories.technical}/100: Needs Work`, data.breakdown.technical)}</div>` +
+        `<div id="sec-content-checker">${renderTable('Website Content Quality Checker', `${data.categories.contentQuality}/100: Needs Work`, data.breakdown.content)}</div>`
+      );
+    }
 
     // 6. AI Crawler Checker & Tiers
     const ca = data.crawlerAudit;
-    document.getElementById('crawlerAllowedNum').innerText = ca.allowedCount;
-    const renderTier = (tierName, bots) => `
-      <div style="margin-bottom:1.5rem;">
-        <div style="font-size:0.75rem; font-weight:800; color:#a855f7; text-transform:uppercase; margin-bottom:0.75rem; background:#2e1065; display:inline-block; padding:3px 10px; border-radius:4px;">${tierName}</div>
-        <div style="display:flex; flex-direction:column; gap:0.5rem;">
-          ${bots.map(b => `
-            <div style="background:#0b1120; border:1px solid #1e293b; border-radius:8px; padding:0.75rem 1rem; display:flex; justify-content:space-between; align-items:center;">
-              <div>
-                <div style="display:flex; align-items:center; gap:0.4rem;">
-                  <span style="color:${b.passed ? '#4ade80' : '#ef4444'};">●</span>
-                  <span style="font-weight:700; color:#fff; font-size:0.85rem;">${escapeHtml(b.name)}</span>
+    if (ca) {
+      safeSetText('crawlerAllowedNum', ca.allowedCount);
+      const renderTier = (tierName, bots) => `
+        <div style="margin-bottom:1.5rem;">
+          <div style="font-size:0.75rem; font-weight:800; color:#a855f7; text-transform:uppercase; margin-bottom:0.75rem; background:#2e1065; display:inline-block; padding:3px 10px; border-radius:4px;">${tierName}</div>
+          <div style="display:flex; flex-direction:column; gap:0.5rem;">
+            ${(bots || []).map(b => `
+              <div style="background:#0b1120; border:1px solid #1e293b; border-radius:8px; padding:0.75rem 1rem; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="display:flex; align-items:center; gap:0.4rem;">
+                    <span style="color:${b.passed ? '#4ade80' : '#ef4444'};">●</span>
+                    <span style="font-weight:700; color:#fff; font-size:0.85rem;">${escapeHtml(b.name)}</span>
+                  </div>
+                  <div style="font-size:0.75rem; color:#94a3b8; margin-top:0.2rem; margin-left:1rem;">${escapeHtml(b.info)}</div>
                 </div>
-                <div style="font-size:0.75rem; color:#94a3b8; margin-top:0.2rem; margin-left:1rem;">${escapeHtml(b.info)}</div>
+                <span style="background:${b.passed ? 'rgba(74,222,128,0.1)' : 'rgba(239,68,68,0.1)'}; color:${b.passed ? '#4ade80' : '#ef4444'}; font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:4px;">
+                  ${b.passed ? 'Allowed' : 'Blocked'}
+                </span>
               </div>
-              <span style="background:${b.passed ? 'rgba(74,222,128,0.1)' : 'rgba(239,68,68,0.1)'}; color:${b.passed ? '#4ade80' : '#ef4444'}; font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:4px;">
-                ${b.passed ? 'Allowed' : 'Blocked'}
-              </span>
-            </div>
-          `).join('')}
+            `).join('')}
+          </div>
         </div>
-      </div>
-    `;
-    document.getElementById('crawlerTierSections').innerHTML = 
-      renderTier('Tier 1 — Citation Bots (Most Important for AI Visibility)', ca.tier1) +
-      renderTier('Tier 2 — Secondary AI Bots', ca.tier2) +
-      renderTier('Tier 3 — Training Bots (Blocking These Is Often Acceptable)', ca.tier3);
+      `;
+      safeSetHtml('crawlerTierSections', 
+        renderTier('Tier 1 — Citation Bots (Most Important for AI Visibility)', ca.tier1) +
+        renderTier('Tier 2 — Secondary AI Bots', ca.tier2) +
+        renderTier('Tier 3 — Training Bots (Blocking These Is Often Acceptable)', ca.tier3)
+      );
+    }
 
-    // 7. AI Config Files Drawer
+    // 7. AI Config Files
     let cfgHtml = '';
     (data.aiConfigFiles || []).forEach((f, idx) => {
       cfgHtml += `
@@ -2384,27 +2413,27 @@ window.executeFullAiAudit = async function() {
                 ${f.found ? 'Found' : 'Not Found'}
               </span>
             </div>
-            ${f.found && f.content ? `<button onclick="document.getElementById('cfgPre_${idx}').style.display = document.getElementById('cfgPre_${idx}').style.display === 'none' ? 'block' : 'none'" style="background:#1e293b; color:#cbd5e1; border:1px solid #334155; padding:3px 10px; border-radius:4px; font-size:0.72rem; cursor:pointer;">View Content ▼</button>` : ''}
+            ${f.found && f.content ? `<button type="button" onclick="const p = document.getElementById('cfgPre_${idx}'); if(p) p.style.display = p.style.display === 'none' ? 'block' : 'none';" style="background:#1e293b; color:#cbd5e1; border:1px solid #334155; padding:3px 10px; border-radius:4px; font-size:0.72rem; cursor:pointer;">View Content ▼</button>` : ''}
           </div>
           ${f.found && f.content ? `<pre id="cfgPre_${idx}" style="display:none; background:#070b14; border:1px solid #1e293b; border-radius:6px; padding:0.75rem; color:#94a3b8; font-size:0.72rem; margin-top:0.75rem; white-space:pre-wrap; max-height:180px; overflow-y:auto;">${escapeHtml(f.content.slice(0, 1000))}</pre>` : ''}
         </div>
       `;
     });
-    document.getElementById('aiConfigFilesList').innerHTML = cfgHtml;
+    safeSetHtml('aiConfigFilesList', cfgHtml);
 
     // 8. Heading Map
     let hmHtml = '';
     (data.headingMap || []).forEach(h => {
       hmHtml += `<div style="display:flex; gap:0.5rem; align-items:center; font-size:0.8rem;"><span style="background:#1e293b; color:#38bdf8; font-weight:800; font-size:0.7rem; padding:1px 6px; border-radius:4px;">${h.tag}</span> <span style="color:#cbd5e1;">${escapeHtml(h.text)}</span></div>`;
     });
-    document.getElementById('headingMapList').innerHTML = hmHtml || '<div style="color:#64748b; font-size:0.8rem;">No headings detected</div>';
+    safeSetHtml('headingMapList', hmHtml || '<div style="color:#64748b; font-size:0.8rem;">No headings detected</div>');
 
     // 9. Keyword Density
     let kdHtml = '';
     (data.topKeywords || []).forEach(k => {
       kdHtml += `<tr><td style="font-weight:700; color:#fff;">${escapeHtml(k.keyword)}</td><td style="color:#38bdf8; font-weight:700;">${k.count}</td></tr>`;
     });
-    document.getElementById('kwDensityRows').innerHTML = kdHtml;
+    safeSetHtml('kwDensityRows', kdHtml);
 
   } catch (err) {
     alert('Analysis Error: ' + err.message);
@@ -2413,7 +2442,6 @@ window.executeFullAiAudit = async function() {
     if (loading) loading.style.display = 'none';
   }
 };
-
 window.runUnifiedAeoGeoAudit = window.executeFullAiAudit;
 
 
