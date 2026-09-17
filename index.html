@@ -235,14 +235,122 @@
   .loading { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
   .empty { font-family: var(--font-mono); font-size: 12px; color: var(--muted); padding: 20px 0; text-align: center; }
 
-  @media(max-width: 900px) {
-    .deck-shell { flex-direction: column; }
-    .deck-rail { width: 100%; height: auto; position: relative; flex-direction: row; overflow-x: auto; padding: 10px; }
-    .rail-section-lbl, .rail-brand { display: none; }
-    .rail-nav { flex-direction: row; }
-    .deck-content { padding: 16px; }
-    .row { grid-template-columns: 1fr; }
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE DECK
+   ========================================================================== */
+
+.mobile-menu-btn {
+  display: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.rail-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 998;
+}
+
+.rail-backdrop.show {
+  display: block;
+}
+
+@media screen and (max-width: 900px) {
+  .deck-shell {
+    position: relative;
+    width: 100% !important;
+    overflow-x: hidden !important;
   }
+
+  .deck-rail {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: -280px !important;
+    width: 260px !important;
+    max-width: 80vw !important;
+    min-width: 260px !important;
+    height: 100vh !important;
+    flex-direction: column !important;
+    transition: left 0.25s ease-in-out !important;
+    z-index: 999 !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
+  }
+
+  .deck-rail.open {
+    left: 0 !important;
+  }
+
+  .rail-section-lbl, .rail-brand {
+    display: flex !important;
+  }
+
+  .rail-nav {
+    flex-direction: column !important;
+  }
+
+  .mobile-menu-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .deck-main {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .deck-topbar {
+    padding: 0 1rem !important;
+    gap: 0.5rem !important;
+  }
+
+  .deck-content {
+    padding: 1rem !important;
+  }
+
+  .dash-grid,
+  .stat-grid,
+  .row {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .card, 
+  .panel {
+    padding: 1rem !important;
+    overflow-x: auto;
+  }
+
+  div[style*="display:flex"],
+  div[style*="display: flex"] {
+    flex-wrap: wrap !important;
+  }
+
+  input[type="text"],
+  input[type="url"],
+  textarea,
+  select {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  button.btn,
+  button[id^="btn"] {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-top: 0.5rem;
+  }
+}
 </style>
 </head>
 <body>
@@ -279,10 +387,12 @@
     <button class="rail-btn" id="btn-utilities" onclick="switchTab('utilities')">Free SEO Tools <span class="idx">08</span></button>
     </nav>
   </aside>
-
+<div class="rail-backdrop" id="railBackdrop" onclick="toggleMobileNav()"></div>
   <!-- Workspace -->
-  <div class="deck-main">
+  
+<div class="deck-main">
     <div class="deck-topbar">
+      <button class="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Open Navigation">☰</button>
       <div class="tele-item">SYSTEM: <span class="tele-val">ONLINE</span></div>
       <div class="tele-item">MODEL: <span class="tele-val">openai/gpt-oss-20b</span></div>
     </div>
@@ -2604,9 +2714,26 @@ window.updateScoreBreakdownUI = function(cats) {
   setCircle('radarPtContent', pContent);
   setCircle('radarPtSpeed', pSpeed);
 };
-</script>
-</body>
-</html>
+
+/* Mobile Drawer Controller */
+function toggleMobileNav() {
+  const rail = document.querySelector('.deck-rail');
+  const backdrop = document.getElementById('railBackdrop');
+  if (rail) rail.classList.toggle('open');
+  if (backdrop) backdrop.classList.toggle('show');
+}
+
+const baseSwitchTab = window.switchTab;
+window.switchTab = function(tabId) {
+  if (typeof baseSwitchTab === 'function') {
+    baseSwitchTab(tabId);
+  }
+  const rail = document.querySelector('.deck-rail');
+  const backdrop = document.getElementById('railBackdrop');
+  if (rail) rail.classList.remove('open');
+  if (backdrop) backdrop.classList.remove('show');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 </script>
 </body>
 </html>
