@@ -824,6 +824,24 @@ CRITICAL MANDATE:
   }
 });
 
+// --- SEO & Crawler Discovery Routes ---
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain');
+  res.send("User-agent: *\nAllow: /\nSitemap: https://signal-seo-tool.up.railway.app/sitemap.xml");
+});
+
+app.get('/sitemap.xml', (req, res) => {
+  res.type('application/xml');
+  res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://signal-seo-tool.up.railway.app/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`);
+});
+
 // ============================================================================
 // 100% ORGANIC AEO, GEO & AI CRAWLER AUDIT ENGINE (EXACT BENCHMARK PARITY)
 // ============================================================================
