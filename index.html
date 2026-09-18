@@ -1,76 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL4VH2P3Q"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-XZL4VH2P3Q');
-</script>
+  <!-- 1. Charset and Viewport must always come first -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="msvalidate.01" content="89149913DB7361A305329F5795885F1F" />
-  
-  <!-- Primary Meta Tags -->
+
+  <!-- 2. Language Directive for Bing -->
+  <meta http-equiv="content-language" content="en">
+
+  <!-- 3. Primary Title and Description -->
   <title>SIGNAL // Free AEO, GEO & Generative AI SEO Analyzer</title>
-  <meta name="title" content="SIGNAL // Free AEO, GEO & Generative AI SEO Analyzer">
   <meta name="description" content="Audit your website for AI search engines. Test FAQ schema, llms.txt, citation readiness, and AI crawler permissions for ChatGPT, Claude, and Gemini.">
+
+  <!-- 4. Verification Meta Tags -->
+  <meta name="msvalidate.01" content="89149913DB7361A305329F5795885F1F" />
   <meta name="google-site-verification" content="cvPK6oCGdf1xN_QyXj73JP0T9dx5CPEIKaegQHuCXc" />
 
-  <!-- Open Graph / Social Sharing -->
+  <!-- 5. Favicon & Fonts -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23090d16'/%3E%3Crect x='1' y='1' width='62' height='62' rx='15' fill='none' stroke='%231e293b' stroke-width='2'/%3E%3Cpath d='M8 32h12l5-14 8 28 6-18 5 8h12' fill='none' stroke='%2338bdf8' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='39' cy='28' r='4' fill='%23a855f7'/%3E%3Ccircle cx='39' cy='28' r='8' stroke='rgba(168,85,247,0.35)' stroke-width='1.5' fill='none'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- 6. Third-party Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- 7. Analytics Scripts -->
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL4VH2P3Q"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XZL4VH2P3Q');
+  </script>
+
+  <!-- 8. Open Graph / Social Sharing -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://signal-seo-tool.up.railway.app/">
+  <meta property="og:url" content="https://signal-seo.signal-seo-tool.workers.dev/">
   <meta property="og:title" content="SIGNAL // Free AEO, GEO & Generative AI SEO Analyzer">
   <meta property="og:description" content="Audit your website for AI search engines. Test FAQ schema, llms.txt, citation readiness, and AI crawler permissions for ChatGPT, Claude, and Gemini.">
 
-  <!-- Twitter Cards -->
+  <!-- 9. Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="SIGNAL // Free AEO, GEO & Generative AI SEO Analyzer">
   <meta name="twitter:description" content="Audit your website for AI search engines. Test FAQ schema, llms.txt, citation readiness, and AI crawler permissions for ChatGPT, Claude, and Gemini.">
-<!-- Favicon: Oscilloscope AI Pulse -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23090d16'/%3E%3Crect x='1' y='1' width='62' height='62' rx='15' fill='none' stroke='%231e293b' stroke-width='2'/%3E%3Cpath d='M8 32h12l5-14 8 28 6-18 5 8h12' fill='none' stroke='%2338bdf8' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='39' cy='28' r='4' fill='%23a855f7'/%3E%3Ccircle cx='39' cy='28' r='8' stroke='rgba(168,85,247,0.35)' stroke-width='1.5' fill='none'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<style>
 
-/* Force panels to hide unless active */
-.panel {
-  display: none !important;
-}
-.panel.active {
-  display: block !important;
-}
-  :root {
-    --deck-rail: #080C16;
-    --deck-topbar: #0B101D;
-    --bg-deep: #0D1322;
-    --panel: #131B2E;
-    --panel-subtle: #19243C;
-    --panel-input: #0A0F1A;
-    --border: rgba(99, 140, 210, 0.16);
-    --border-hover: #1D63FF;
-    --primary: #1D63FF;
-    --primary-light: #60A5FA;
-    --accent: #00D4B2;
-    --paper: #F8FAFC;
-    --muted: #94A3B8;
-    --subtle: #475569;
-    --green: #10B981;
-    --green-bg: rgba(16, 185, 129, 0.12);
-    --green-border: rgba(16, 185, 129, 0.35);
-    --amber: #F59E0B;
-    --amber-bg: rgba(245, 158, 11, 0.12);
-    --amber-border: rgba(245, 158, 11, 0.35);
-    --coral: #EF4444;
-    --coral-bg: rgba(239, 68, 68, 0.12);
-    --coral-border: rgba(239, 68, 68, 0.35);
-    --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
-  }
+  <!-- 10. Stylesheets -->
+  <style>
+    /* Force panels to hide unless active */
+    .panel {
+      display: none !important;
+    }
+    .panel.active {
+      display: block !important;
+    }
+    :root {
+      --deck-rail: #080C16;
+      --deck-topbar: #0B101D;
+      --bg-deep: #0D1322;
+      --panel: #131B2E;
+      --panel-subtle: #19243C;
+      --panel-input: #0A0F1A;
+      --border: rgba(99, 140, 210, 0.16);
+      --border-hover: #1D63FF;
+      --primary: #1D63FF;
+      --primary-light: #60A5FA;
+      --accent: #00D4B2;
+      --paper: #F8FAFC;
+      --muted: #94A3B8;
+      --subtle: #475569;
+      --green: #10B981;
+      --green-bg: rgba(16, 185, 129, 0.12);
+      --green-border: rgba(16, 185, 129, 0.35);
+      --amber: #F59E0B;
+      --amber-bg: rgba(245, 158, 11, 0.12);
+      --amber-border: rgba(245, 158, 11, 0.35);
+      --coral: #EF4444;
+      --coral-bg: rgba(239, 68, 68, 0.12);
+      --coral-border: rgba(239, 68, 68, 0.35);
+      --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { min-height: 100vh; background-color: var(--bg-deep); color: var(--paper); font-family: var(--font-display); }
@@ -364,7 +374,7 @@
 </style>
 </head>
 <body>
-
+<h1 style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;">SIGNAL - AI SEO, AEO & Technical Optimization Platform</h1>
 <div class="deck-shell">
   <!-- Navigation Sidebar -->
   <aside class="deck-rail" style="overflow-x:hidden;">
