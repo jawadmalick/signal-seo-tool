@@ -842,6 +842,11 @@ app.get('/sitemap.xml', (req, res) => {
 </urlset>`);
 });
 
+app.get('/icon.svg', (req, res) => {
+  res.type('image/svg+xml');
+  res.sendFile(path.join(__dirname, 'icon.svg'));
+});
+
 // ============================================================================
 // 100% ORGANIC AEO, GEO & AI CRAWLER AUDIT ENGINE (EXACT BENCHMARK PARITY)
 // ============================================================================
