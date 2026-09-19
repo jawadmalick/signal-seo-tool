@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- 1. Charset and Viewport must always come first -->
+ <!-- 1. Charset and Viewport must always come first -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -17,7 +17,8 @@
   <meta name="google-site-verification" content="cvPK6oCGdf1xN_QyXj73JP0T9dx5CPEIKaegQHuCXc" />
 
   <!-- 5. Favicon & Fonts -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23090d16'/%3E%3Crect x='1' y='1' width='62' height='62' rx='15' fill='none' stroke='%231e293b' stroke-width='2'/%3E%3Cpath d='M8 32h12l5-14 8 28 6-18 5 8h12' fill='none' stroke='%2338bdf8' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='39' cy='28' r='4' fill='%23a855f7'/%3E%3Ccircle cx='39' cy='28' r='8' stroke='rgba(168,85,247,0.35)' stroke-width='1.5' fill='none'/%3E%3C/svg%3E">
+ <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+  <link rel="alternate icon" href="/icon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -33,6 +34,17 @@
     gtag('js', new Date());
     gtag('config', 'G-XZL4VH2P3Q');
   </script>
+
+<meta property="og:site_name" content="SIGNAL" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "SIGNAL",
+  "alternateName": ["Signal SEO", "Signal SEO Tool"],
+  "url": "https://signal-seo.signal-seo-tool.workers.dev/"
+}
+</script>
 
   <!-- 8. Open Graph / Social Sharing -->
   <meta property="og:type" content="website">
@@ -81,6 +93,7 @@
       --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
+
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { min-height: 100vh; background-color: var(--bg-deep); color: var(--paper); font-family: var(--font-display); }
