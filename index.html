@@ -1723,7 +1723,7 @@ window.generateRobots = function(){
 window.generateSchema = function(){
   var name = document.getElementById('schema_name').value;
   var url = document.getElementById('schema_url').value;
-  var obj = { "@context": "[https://schema.org](https://schema.org)", "@type": "WebPage", "name": name, "url": url };
+  var obj = { "@context": "https://schema.org", "@type": "WebPage", "name": name, "url": url };
   document.getElementById('schemaOutput').textContent = '<!-- Insert in <head> -->\n' + JSON.stringify(obj, null, 2);
 };
 
