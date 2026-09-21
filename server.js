@@ -838,7 +838,6 @@ app.post('/api/backlinks', async (req, res) => {
       .trim()
       .toLowerCase();
 
-    // Baseline calculation engine (serves real authority heuristics)
     const hostHash = cleanHost.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
     const domainRating = Math.min(85, Math.max(18, (hostHash % 65) + 15));
     const totalBacklinks = ((hostHash * 17) % 4500) + 120;
