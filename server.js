@@ -827,7 +827,7 @@ CRITICAL MANDATE:
 // --- SEO & Crawler Discovery Routes ---
 app.get('/robots.txt', (req, res) => {
   res.type('text/plain');
-  res.send("User-agent: *\nAllow: /\nSitemap: https://signal-seo-tool.up.railway.app/sitemap.xml");
+  res.send("User-agent: *\nAllow: /\nSitemap: https://signal-seo.signal-seo-tool.workers.dev/sitemap.xml");
 });
 
 app.get('/sitemap.xml', (req, res) => {
@@ -835,13 +835,12 @@ app.get('/sitemap.xml', (req, res) => {
   res.send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://signal-seo-tool.up.railway.app/</loc>
+    <loc>https://signal-seo.signal-seo-tool.workers.dev/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 </urlset>`);
 });
-
 app.get('/icon.svg', (req, res) => {
   res.type('image/svg+xml');
   res.sendFile(path.join(__dirname, 'icon.svg'));
