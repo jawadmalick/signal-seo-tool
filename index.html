@@ -546,15 +546,15 @@
           <div id="myKeywordList"><div class="empty">No saved terms yet.</div></div>
         </div>
       </div>
-<!-- 02B. COMPLETE BACKLINK & AUTHORITY EXPLORER -->
+<!-- 02B. ENTERPRISE BACKLINK & AUTHORITY EXPLORER -->
   <div class="panel" id="panel-backlinks">
     <div class="card">
       <div class="card-head">
         <div>
           <div class="card-title">Backlink & Referring Domain Explorer</div>
-          <div class="card-sub">Accurate organic authority crawl: backlink graph, anchor profile, and live indexed sources.</div>
+          <div class="card-sub">Complete Off-Page Diagnostic: DA/PA score, referring subnets, link equity, and anchor distributions.</div>
         </div>
-        <span class="badge badge-good">100% Organic Audit</span>
+        <span class="badge badge-good">Full Enterprise Audit</span>
       </div>
 
       <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
@@ -563,39 +563,48 @@
       </div>
 
       <div id="backlinkOutputBox" style="display: none; margin-top: 1.5rem;">
-        <!-- Metric Summary Tiles -->
-        <div class="stat-grid" id="backlinkStatsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;"></div>
+        <!-- Complete Authority & Backlink Metrics Grid -->
+        <div class="stat-grid" id="backlinkStatsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;"></div>
 
-        <!-- Anchor Profile Grid -->
-        <div class="card" style="background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem;">
-          <div style="font-weight: 700; margin-bottom: 0.75rem; color: #f8fafc;">Top Anchor Profile & Distribution</div>
-          <div id="anchorCloudBox" style="display: flex; flex-wrap: wrap; gap: 0.6rem;"></div>
+        <!-- TLD & Domain Health Bar -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="card" style="background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 1.2rem;">
+            <div style="font-weight: 700; color: #f8fafc; font-size: 0.9rem; margin-bottom: 0.6rem;">Referring TLD Breakdown</div>
+            <div id="tldDistributionBox" style="display: flex; gap: 0.75rem; flex-wrap: wrap;"></div>
+          </div>
+          <div class="card" style="background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 1.2rem;">
+            <div style="font-weight: 700; color: #f8fafc; font-size: 0.9rem; margin-bottom: 0.6rem;">Top Anchor Text Profile</div>
+            <div id="anchorCloudBox" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+          </div>
         </div>
 
-        <!-- Filter and Count -->
+        <!-- Filter bar for links table -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-          <div style="font-weight: 700; color: #f8fafc;">Inbound Backlink Matrix (<span id="backlinkCountBadge">0</span>)</div>
-          <input type="text" id="linkFilterInput" onkeyup="filterBacklinkTable()" placeholder="Filter by anchor or domain..." style="background: #0b1120; border: 1px solid #334155; border-radius: 6px; padding: 0.4rem 0.75rem; color: #fff; font-size: 0.85rem; width: 240px;" />
+          <div style="font-weight: 700; color: #f8fafc;">
+            Inbound Link Matrix (<span id="backlinkCountBadge">0</span>)
+          </div>
+          <input type="text" id="linkFilterInput" onkeyup="filterBacklinkTable()" placeholder="Search source or anchor..." style="background: #0b1120; border: 1px solid #334155; border-radius: 6px; padding: 0.4rem 0.75rem; color: #fff; font-size: 0.85rem; width: 230px;" />
         </div>
 
-        <!-- Table Container -->
-        <div style="overflow-x: auto; max-height: 520px; overflow-y: auto; border: 1px solid #1e293b; border-radius: 8px;">
+        <!-- Scrollable Max Backlink Table -->
+        <div style="overflow-x: auto; max-height: 540px; overflow-y: auto; border: 1px solid #1e293b; border-radius: 8px;">
           <table class="table" style="width: 100%; border-collapse: collapse;">
             <thead style="position: sticky; top: 0; background: #0f172a; z-index: 2;">
               <tr style="text-align: left; border-bottom: 1px solid #334155; color: #94a3b8; font-size: 0.82rem;">
-                <th style="padding: 0.75rem;">Referring Source URL</th>
+                <th style="padding: 0.75rem;">Referring Domain & Live Link</th>
                 <th style="padding: 0.75rem;">Anchor Text</th>
                 <th style="padding: 0.75rem;">Anchor Class</th>
                 <th style="padding: 0.75rem;">Type</th>
-                <th style="padding: 0.75rem;">Status</th>
-                <th style="padding: 0.75rem;">Source DR</th>
+                <th style="padding: 0.75rem;">Source DA</th>
+                <th style="padding: 0.75rem;">Source PA</th>
+                <th style="padding: 0.75rem;">First Seen</th>
               </tr>
             </thead>
             <tbody id="backlinkTableRows"></tbody>
           </table>
         </div>
 
-        <!-- Load More Button -->
+        <!-- Load More Pagination Button -->
         <div id="loadMoreBox" style="text-align: center; margin-top: 1.25rem;">
           <button id="btnLoadMoreBacklinks" onclick="loadMoreBacklinks()" style="background: #1e293b; border: 1px solid #334155; color: #38bdf8; font-weight: 700; padding: 0.65rem 1.8rem; border-radius: 8px; cursor: pointer;">
             Show More Backlinks &#8595;
@@ -603,7 +612,7 @@
         </div>
       </div>
     </div>
-  </div>    
+  </div>
 
  <!-- 03. UNIFIED AEO & GEO ANALYZER -->
 <div class="panel" id="panel-aeo">
@@ -2831,7 +2840,7 @@ window.switchTab = function(tabId) {
 };
 let currentBacklinksData = [];
 let backlinkOffset = 0;
-const backlinkLimit = 15;
+const backlinkLimit = 20;
 let currentTargetDomain = '';
 
 async function runBacklinkInspection(isNewSearch = true) {
@@ -2840,6 +2849,7 @@ async function runBacklinkInspection(isNewSearch = true) {
   const outBox = document.getElementById('backlinkOutputBox');
   const statsGrid = document.getElementById('backlinkStatsGrid');
   const anchorBox = document.getElementById('anchorCloudBox');
+  const tldBox = document.getElementById('tldDistributionBox');
   const countBadge = document.getElementById('backlinkCountBadge');
   const loadMoreBtn = document.getElementById('btnLoadMoreBacklinks');
 
@@ -2850,13 +2860,13 @@ async function runBacklinkInspection(isNewSearch = true) {
   }
 
   if (!currentTargetDomain) {
-    alert('Please enter a valid website domain.');
+    alert('Please enter a website domain.');
     input.focus();
     return;
   }
 
   btn.disabled = true;
-  btn.textContent = 'Auditing Organic Graph...';
+  btn.textContent = 'Running Full Audit...';
 
   try {
     const res = await fetch('/api/backlinks', {
@@ -2867,29 +2877,39 @@ async function runBacklinkInspection(isNewSearch = true) {
     const json = await res.json();
     if (!json.success) throw new Error(json.error || 'Failed to inspect domain');
 
-    // Append newly fetched links
     currentBacklinksData = currentBacklinksData.concat(json.backlinks);
     countBadge.textContent = currentBacklinksData.length;
 
-    // Populate Accurate Metric Counters (Fixed undefined bug)
+    // 1. Metric Counter Tiles
     statsGrid.innerHTML = `
-      <div class="card" style="padding: 1rem; text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: #38bdf8;">${json.stats.domainRating}</div><div style="font-size: 0.8rem; color: #94a3b8;">Authority Score</div></div>
-      <div class="card" style="padding: 1rem; text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">${json.stats.totalBacklinks}</div><div style="font-size: 0.8rem; color: #94a3b8;">Total Backlinks</div></div>
-      <div class="card" style="padding: 1rem; text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">${json.stats.referringDomains}</div><div style="font-size: 0.8rem; color: #94a3b8;">Referring Domains</div></div>
-      <div class="card" style="padding: 1rem; text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: #a855f7;">${json.stats.dofollowRatio}</div><div style="font-size: 0.8rem; color: #94a3b8;">DoFollow Ratio</div></div>
-      <div class="card" style="padding: 1rem; text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: ${json.stats.toxicRisk === 'Low' ? '#10b981' : '#f59e0b'};">${json.stats.toxicRisk}</div><div style="font-size: 0.8rem; color: #94a3b8;">Overall Toxicity</div></div>
+      <div class="card" style="padding: 1rem; text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: #38bdf8;">${json.stats.domainAuthority}</div><div style="font-size: 0.75rem; color: #94a3b8;">Domain Authority (DA)</div></div>
+      <div class="card" style="padding: 1rem; text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: #06b6d4;">${json.stats.pageAuthority}</div><div style="font-size: 0.75rem; color: #94a3b8;">Page Authority (PA)</div></div>
+      <div class="card" style="padding: 1rem; text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">${json.stats.totalBacklinks}</div><div style="font-size: 0.75rem; color: #94a3b8;">Total Backlinks</div></div>
+      <div class="card" style="padding: 1rem; text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">${json.stats.referringDomains}</div><div style="font-size: 0.75rem; color: #94a3b8;">Referring Domains</div></div>
+      <div class="card" style="padding: 1rem; text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: #8b5cf6;">${json.stats.referringIps}</div><div style="font-size: 0.75rem; color: #94a3b8;">Referring IPs</div></div>
+      <div class="card" style="padding: 1rem; text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: #a855f7;">${json.stats.dofollowRatio}</div><div style="font-size: 0.75rem; color: #94a3b8;">DoFollow Ratio</div></div>
+      <div class="card" style="padding: 1rem; text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: #ec4899;">${json.stats.spamScore}</div><div style="font-size: 0.75rem; color: #94a3b8;">Spam Score</div></div>
+      <div class="card" style="padding: 1rem; text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: ${json.stats.toxicRisk === 'Low' ? '#10b981' : '#f59e0b'};">${json.stats.toxicRisk}</div><div style="font-size: 0.75rem; color: #94a3b8;">Overall Toxicity</div></div>
     `;
 
-    // Render Anchors
+    // 2. TLD Distribution
+    tldBox.innerHTML = json.tldDistribution.map(t => `
+      <div style="background: #1e293b; border: 1px solid #334155; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem;">
+        <strong style="color: #38bdf8;">${escapeHtml(t.tld)}</strong> <span style="color: #94a3b8;">${t.pct}</span>
+      </div>
+    `).join('');
+
+    // 3. Anchor Distribution Cloud
     anchorBox.innerHTML = json.anchors.map(a => `
-      <span style="background: #1e293b; border: 1px solid #334155; padding: 4px 10px; border-radius: 6px; font-size: 0.82rem; color: #e2e8f0;">
-        <strong>${escapeHtml(a.text)}</strong> <span style="color: #38bdf8;">(${a.count})</span>
+      <span style="background: #1e293b; border: 1px solid #334155; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; color: #e2e8f0;">
+        <strong>${escapeHtml(a.text)}</strong> <span style="color: #10b981;">(${a.percent})</span>
       </span>
     `).join('');
 
+    // 4. Render Table
     renderBacklinksRows(currentBacklinksData);
 
-    // Show/Hide Load More Button
+    // Show/Hide Pagination Button
     loadMoreBtn.style.display = json.hasMore ? 'inline-block' : 'none';
 
     outBox.style.display = 'block';
@@ -2909,7 +2929,7 @@ function loadMoreBacklinks() {
 function renderBacklinksRows(links) {
   const tableRows = document.getElementById('backlinkTableRows');
   tableRows.innerHTML = links.map(l => `
-    <tr style="border-bottom: 1px solid #1e293b; font-size: 0.85rem;">
+    <tr style="border-bottom: 1px solid #1e293b; font-size: 0.84rem;">
       <td style="padding: 0.75rem;">
         <div style="font-weight: 600; color: #f8fafc;">${escapeHtml(l.sourceDomain)}</div>
         <a href="${escapeHtml(l.sourceUrl)}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; font-size: 0.78rem; text-decoration: underline; word-break: break-all;">
@@ -2919,8 +2939,9 @@ function renderBacklinksRows(links) {
       <td style="padding: 0.75rem;"><code style="background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #38bdf8;">${escapeHtml(l.anchorText)}</code></td>
       <td style="padding: 0.75rem;"><span style="color: #94a3b8; font-size: 0.8rem;">${escapeHtml(l.anchorType)}</span></td>
       <td style="padding: 0.75rem;"><span style="background: ${l.rel === 'dofollow' ? '#065f46' : '#7c2d12'}; color: #fff; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem;">${escapeHtml(l.rel)}</span></td>
-      <td style="padding: 0.75rem;"><span style="color: #10b981; font-size: 0.78rem;">&#10003; ${escapeHtml(l.verificationStatus)}</span></td>
-      <td style="padding: 0.75rem; font-weight: 700; color: #f8fafc;">${l.domainRating}</td>
+      <td style="padding: 0.75rem; font-weight: 700; color: #f8fafc;">${l.sourceDa}</td>
+      <td style="padding: 0.75rem; font-weight: 700; color: #06b6d4;">${l.sourcePa}</td>
+      <td style="padding: 0.75rem; color: #64748b; font-size: 0.78rem;">${escapeHtml(l.firstSeen)}</td>
     </tr>
   `).join('');
 }
@@ -2934,7 +2955,6 @@ function filterBacklinkTable() {
   );
   renderBacklinksRows(filtered);
 }
-
 </script>
 </body>
 </html>
