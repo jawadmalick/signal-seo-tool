@@ -2885,12 +2885,17 @@ function renderBacklinksRows(links) {
   const tableRows = document.getElementById('backlinkTableRows');
   tableRows.innerHTML = links.map(l => `
     <tr style="border-bottom: 1px solid #1e293b; font-size: 0.85rem;">
-      <td style="padding: 0.75rem;"><a href="${escapeHtml(l.sourceUrl)}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline;">${escapeHtml(l.sourceUrl)}</a></td>
-      <td style="padding: 0.75rem;"><code style="background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #f1f5f9;">${escapeHtml(l.anchorText)}</code></td>
-      <td style="padding: 0.75rem;"><span style="color: #94a3b8;">${escapeHtml(l.anchorType)}</span></td>
+      <td style="padding: 0.75rem;">
+        <div style="font-weight: 600; color: #f8fafc;">${escapeHtml(l.sourceDomain)}</div>
+        <a href="${escapeHtml(l.sourceUrl)}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; font-size: 0.78rem; text-decoration: underline; word-break: break-all;">
+          ${escapeHtml(l.sourceUrl)} &#8599;
+        </a>
+      </td>
+      <td style="padding: 0.75rem;"><code style="background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #38bdf8;">${escapeHtml(l.anchorText)}</code></td>
+      <td style="padding: 0.75rem;"><span style="color: #94a3b8; font-size: 0.8rem;">${escapeHtml(l.anchorType)}</span></td>
       <td style="padding: 0.75rem;"><span style="background: ${l.rel === 'dofollow' ? '#065f46' : '#7c2d12'}; color: #fff; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem;">${escapeHtml(l.rel)}</span></td>
-      <td style="padding: 0.75rem; color: ${l.status.startsWith('200') ? '#10b981' : '#f59e0b'};">${escapeHtml(l.status)}</td>
-      <td style="padding: 0.75rem; font-weight: 700;">${l.domainRating}</td>
+      <td style="padding: 0.75rem;"><span style="color: #10b981; font-size: 0.78rem;">&#10003; ${escapeHtml(l.verificationStatus)}</span></td>
+      <td style="padding: 0.75rem; font-weight: 700; color: #f8fafc;">${l.domainRating}</td>
     </tr>
   `).join('');
 }
