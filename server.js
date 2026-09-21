@@ -846,6 +846,30 @@ app.get('/icon.svg', (req, res) => {
   res.sendFile(path.join(__dirname, 'icon.svg'));
 });
 
+app.get('/llms.txt', (req, res) => {
+  res.type('text/plain; charset=utf-8');
+  res.send(`# SIGNAL // Generative AI SEO & Search Intelligence Platform
+
+> SIGNAL is an all-in-one SEO and Generative Engine Optimization (GEO) platform designed to audit, benchmark, and optimize web applications for traditional search engines and AI-driven search models like ChatGPT Search, Perplexity AI, Claude, and Google AI Overviews.
+
+## Core Capabilities
+- **Site Audit 360°**: Complete technical, on-page, and core accessibility diagnostic engine.
+- **AEO & GEO Optimization**: Evaluates FAQ schema, llms.txt accessibility, answer engine suitability, citation readiness, and entity density.
+- **AI Crawler Governance**: Benchmarks and audits robots.txt permission tiers for GPTBot, ClaudeBot, PerplexityBot, and Google-Extended.
+- **Keyword Explorer**: Intent clustering, KD metrics, organic competitor discovery, and semantic keyword enrichment.
+- **Rank Tracker**: SERP positioning estimator and historical ranking analytics.
+
+## Canonical Resources
+- [Home & Web App](https://signal-seo.signal-seo-tool.workers.dev/): Primary web application interface and interactive audit dashboard.
+- [Sitemap](https://signal-seo.signal-seo-tool.workers.dev/sitemap.xml): Complete XML index of production pages and endpoints.
+- [Brand Favicon & Vector](https://signal-seo.signal-seo-tool.workers.dev/icon.svg): Official platform iconography and vector asset.
+
+## Optional & Deep Dive
+- [Site Audit Direct](https://signal-seo.signal-seo-tool.workers.dev/#panel-audit): Direct tool for executing single-page crawl and DOM diagnostics.
+- [AEO / GEO Direct](https://signal-seo.signal-seo-tool.workers.dev/#panel-aeo): Unified Answer Engine and Generative Engine Optimization engine.
+- [Keyword Engine Direct](https://signal-seo.signal-seo-tool.workers.dev/#panel-keywords): Search term intent and volume cluster inspector.
+`);
+});
 // ============================================================================
 // 100% ORGANIC AEO, GEO & AI CRAWLER AUDIT ENGINE (EXACT BENCHMARK PARITY)
 // ============================================================================
