@@ -918,8 +918,10 @@ app.post('/api/authority-check', async (req, res) => {
 });
 
 // ============================================================================
-// 2. INBOUND BACKLINK DISCOVERY (HONEST INBOUND VS DOM DISCOVERY)
+// 100% REAL DATAFORSEO INBOUND BACKLINK ENGINE
 // ============================================================================
+const DFS_BASE64_TOKEN = 'bWFsaWNrMTEyMjM0MUBnbWFpbC5jb206ZDMwMDQxMDA2MmM0ODI2bA==';
+
 app.post('/api/backlinks', async (req, res) => {
   const { domain, limit = 20 } = req.body;
   if (!domain || domain.trim() === '' || domain.trim() === 'https://') {
@@ -929,63 +931,63 @@ app.post('/api/backlinks', async (req, res) => {
   const cleanHost = domain.replace(/^https?:\/\//i, '').replace(/\/.*$/, '').trim().toLowerCase();
 
   try {
-    const pageRes = await fetch(`https://${cleanHost}`, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SignalSEO/1.0' },
-      signal: AbortSignal.timeout(7000)
+    const dfsRes = await fetch('https://api.dataforseo.com/v3/backlinks/backlinks/live', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${DFS_BASE64_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify([{
+        target: cleanHost,
+        limit: Math.min(limit, 30),
+        mode: 'as_is'
+      }]),
+      signal: AbortSignal.timeout(14000)
     });
 
-    const html = await pageRes.text();
-    const linkRegex = /<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1[^>]*>(.*?)<\/a>/gi;
-    let match;
-    const linksList = [];
-    const seenHrefs = new Set();
-    let id = 1;
+    const dfsJson = await dfsRes.json();
+    const task = dfsJson.tasks?.[0];
 
-    while ((match = linkRegex.exec(html)) !== null && linksList.length < limit) {
-      const rawHref = match[2];
-      const anchor = match[3].replace(/<[^>]*>?/gm, '').trim();
-
-      if (rawHref.startsWith('http') && !seenHrefs.has(rawHref)) {
-        seenHrefs.add(rawHref);
-        let linkHost = '';
-        try { linkHost = new URL(rawHref).hostname.toLowerCase(); } catch (_) { continue; }
-
-        const isInternal = linkHost.endsWith(cleanHost);
-
-        linksList.push({
-          id: id++,
-          sourceDomain: cleanHost,
-          sourceUrl: `https://${cleanHost}/`,
-          targetDomain: linkHost,
-          targetUrl: rawHref,
-          anchorText: anchor || '(No Anchor Text)',
-          rel: rawHref.includes('nofollow') ? 'nofollow' : 'dofollow',
-          sourceDa: isInternal ? 'Internal Node' : 'Outbound Connection',
-          verificationStatus: isInternal ? 'Site Architecture' : 'External Referral'
-        });
-      }
+    if (dfsJson.status_code === 40104 || task?.status_code === 40104) {
+      return res.status(403).json({
+        success: false,
+        error: 'DataForSEO account verification required. Please complete profile verification at app.dataforseo.com.'
+      });
     }
+
+    if (!dfsRes.ok || !task || !task.result || !task.result[0]) {
+      throw new Error(task?.status_message || dfsJson.status_message || 'No live backlink records found.');
+    }
+
+    const resultData = task.result[0];
+    const rawItems = resultData.items || [];
+
+    const realBacklinks = rawItems.map((item, idx) => ({
+      id: idx + 1,
+      sourceDomain: item.domain_from || 'external-source',
+      sourceUrl: item.url_from || '',
+      targetUrl: item.url_to || `https://${cleanHost}/`,
+      anchorText: item.anchor || cleanHost,
+      rel: item.dofollow ? 'dofollow' : 'nofollow',
+      sourceDa: item.rank !== undefined ? item.rank : 50,
+      verificationStatus: 'Live Crawled Inbound'
+    }));
 
     return res.json({
       success: true,
       domain: cleanHost,
       stats: {
-        totalBacklinks: linksList.length.toString(),
-        referringDomains: new Set(linksList.map(l => l.targetDomain)).size.toString(),
+        totalBacklinks: (resultData.total_count || realBacklinks.length).toLocaleString(),
+        referringDomains: (resultData.items_count || realBacklinks.length).toLocaleString(),
         dofollowPct: '100%',
         toxicRisk: 'Verified Clean'
       },
-      backlinks: linksList,
+      backlinks: realBacklinks,
       hasMore: false
     });
   } catch (err) {
-    return res.json({
-      success: true,
-      domain: cleanHost,
-      stats: { totalBacklinks: '0', referringDomains: '0', dofollowPct: '0%', toxicRisk: 'None' },
-      backlinks: [],
-      hasMore: false
-    });
+    console.error('DataForSEO Error:', err.message);
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 
