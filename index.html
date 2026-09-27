@@ -610,10 +610,10 @@
     <div class="card" style="border-top: 3px solid #10b981;">
       <div class="card-head">
         <div>
-          <div class="card-title" style="font-size: 1.3rem;">Live Inbound Backlink Explorer</div>
-          <div class="card-sub">In-depth backlink audit: referring domains, link equity, and live indexed sources.</div>
-        </div>
-        <span class="badge badge-good">Backlink Audit</span>
+         <div class="card-title" style="font-size: 1.3rem;">Live Link & Architecture Audit</div>
+        <div class="card-sub">Real-time DOM link audit: internal pathways, outbound references, and anchor distribution.</div>
+      </div>
+      <span class="badge badge-good">Link Audit</span>
       </div>
 
       <!-- Completely Clear Search Bar -->
@@ -638,7 +638,7 @@
           </button>
         </div>
         <button class="btn btn-primary" id="btnBacklinkMatrix" onclick="executeBacklinkMatrix(true)" style="background: #10b981; color: #fff; border: none; border-radius: 10px; padding: 0.9rem 1.85rem; font-weight: 700; cursor: pointer;">
-          Audit Backlinks
+          Audit Links
         </button>
       </div>
 
@@ -658,10 +658,10 @@
           <table class="table" style="width: 100%; border-collapse: collapse;">
             <thead style="position: sticky; top: 0; background: #0f172a; z-index: 2;">
               <tr style="text-align: left; border-bottom: 1px solid #334155; color: #94a3b8; font-size: 0.82rem;">
-                <th style="padding: 0.75rem;">Referring Domain & Link</th>
+                <th style="padding: 0.75rem;">Target / Destination URL</th>             
                 <th style="padding: 0.75rem;">Anchor Text</th>
                 <th style="padding: 0.75rem;">Rel</th>
-                <th style="padding: 0.75rem;">Source DA</th>
+                <th style="padding: 0.75rem;">Link Type</th>
                 <th style="padding: 0.75rem;">Status</th>
               </tr>
             </thead>
@@ -3043,7 +3043,7 @@ const incoming = json.backlinks || json.links || [];
     alert('Backlink crawl failed: ' + err.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Audit Backlinks';
+   btn.textContent = 'Audit Links';
   }
 }
 
