@@ -840,7 +840,7 @@ app.post('/api/authority-check', async (req, res) => {
   const cleanHost = domain.replace(/^https?:\/\//i, '').replace(/\/.*$/, '').trim().toLowerCase();
 
   try {
-    const mozRes = await fetch(`https://${RAPIDAPI_HOST}/getDaPa`, {
+    const mozRes = await fetch(`https://${RAPIDAPI_HOST}/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
