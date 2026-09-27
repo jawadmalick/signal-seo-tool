@@ -826,39 +826,21 @@ CRITICAL MANDATE:
 });
 
 // ============================================================================
-// 1. 100% FREE AUTHENTIC AUTHORITY & PERFORMANCE ENGINE (OPR + GOOGLE + RDAP)
+// 1. AUTHENTIC AUTHORITY & PERFORMANCE ENGINE (OPR + GOOGLE LIGHTHOUSE)
 // ============================================================================
 const OPR_API_KEY = process.env.OPR_API_KEY || 'opr_live_f0fba1140dcaae0ff88f6f43fb8b1c0672f737f0';
 
 app.post('/api/authority-check', async (req, res) => {
   const { domain } = req.body;
   if (!domain || domain.trim() === '' || domain.trim() === 'https://') {
-    return res.status(400).json({ success: false, error: 'Target domain is required.' });
+    return res.status(400).json({ success: false, error: 'Target URL is required.' });
   }
 
   const cleanHost = domain.replace(/^https?:\/\//i, '').replace(/\/.*$/, '').trim().toLowerCase();
 
   try {
-    // 1. Fetch Real Domain Registration Age via Free ICANN RDAP
-    let domainAgeStr = 'Unknown';
-    try {
-      const rdapRes = await fetch(`https://rdap.org/domain/${cleanHost}`, { 
-        headers: { 'Accept': 'application/json' },
-        signal: AbortSignal.timeout(4000) 
-      });
-      if (rdapRes.ok) {
-        const rdap = await rdapRes.json();
-        const reg = (rdap.events || []).find(e => e.eventAction === 'registration');
-        if (reg && reg.eventDate) {
-          const regYear = new Date(reg.eventDate).getFullYear();
-          const age = new Date().getFullYear() - regYear;
-          domainAgeStr = `${Math.max(1, age)} Yrs`;
-        }
-      }
-    } catch (_) {}
-
-    // 2. Fetch Verified PageRank from OpenPageRank Index
-    let openPageRank = null;
+    // 1. Fetch Verified PageRank from OpenPageRank Index
+    let oprScore = null;
     let globalRank = null;
     let refDomains = 0;
     let isIndexed = false;
@@ -880,34 +862,43 @@ app.post('/api/authority-check', async (req, res) => {
         const item = list[0];
         if (item && item.found) {
           isIndexed = true;
-          openPageRank = item.open_page_rank !== undefined ? item.open_page_rank : 0;
+          oprScore = item.open_page_rank !== undefined ? item.open_page_rank : 0;
           globalRank = item.rank !== undefined ? item.rank : null;
           refDomains = item.referring_domains || 0;
         }
       }
-    } catch (err) {
-      console.error('OPR Query Error:', err.message);
-    }
+    } catch (_) {}
 
-    // 3. Direct Real-Time Inspection of Target Domain
-    const startTime = Date.now();
-    let httpStatus = 200;
-    let isHttps = true;
+    // 2. Fetch Live Domain Registration Age via ICANN RDAP
+    let domainAgeStr = 'Unknown';
     try {
-      const probeRes = await fetch(`https://${cleanHost}`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SignalSEO/1.0' },
-        signal: AbortSignal.timeout(5000)
+      const rdapRes = await fetch(`https://rdap.org/domain/${cleanHost}`, {
+        headers: { 'Accept': 'application/json' },
+        signal: AbortSignal.timeout(4000)
       });
-      httpStatus = probeRes.status;
-      isHttps = probeRes.url.startsWith('https://');
-    } catch (_) {
-      httpStatus = 0;
-    }
-    const latency = Date.now() - startTime;
+      if (rdapRes.ok) {
+        const rdap = await rdapRes.json();
+        const reg = (rdap.events || []).find(e => e.eventAction === 'registration');
+        if (reg && reg.eventDate) {
+          const regYear = new Date(reg.eventDate).getFullYear();
+          domainAgeStr = `${Math.max(1, new Date().getFullYear() - regYear)} Yrs`;
+        }
+      }
+    } catch (_) {}
 
-    // Derived scores mapped honestly from authentic PageRank
-    const daScore = openPageRank !== null ? Math.round(openPageRank * 10) : 'Unranked';
-    const paScore = openPageRank !== null ? Math.min(99, Math.round(openPageRank * 10) + 4) : 'Unranked';
+    // 3. Live Server Latency & SSL Verification
+    const startTime = Date.now();
+    let sslValid = 'TLS Encrypted';
+    try {
+      const probe = await fetch(`https://${cleanHost}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SignalSEO/1.0' },
+        signal: AbortSignal.timeout(6000)
+      });
+      if (!probe.url.startsWith('https://')) sslValid = 'Unencrypted';
+    } catch (_) {
+      sslValid = 'Unreachable';
+    }
+    const latency = `${Date.now() - startTime}ms`;
 
     return res.json({
       success: true,
@@ -915,22 +906,12 @@ app.post('/api/authority-check', async (req, res) => {
       fullUrl: `https://${cleanHost}/`,
       data: {
         isIndexed,
-        mozDa: daScore,
-        mozPa: paScore,
-        semrushAs: daScore !== 'Unranked' ? Math.round(daScore * 0.92) : 'Unranked',
-        bl: refDomains.toLocaleString(),
-        qualityBl: refDomains.toLocaleString(),
-        qualityPct: isIndexed ? 'Indexed' : 'Unindexed',
-        dofollow: isIndexed ? 'Active' : 'N/A',
-        nofollow: isIndexed ? 'Active' : 'N/A',
-        spamScore: '0%',
-        mozTrust: daScore !== 'Unranked' ? Math.max(1, Math.min(10, Math.round(daScore / 10))) : 0,
-        offPage: daScore !== 'Unranked' ? `${daScore}%` : '0%',
-        age: domainAgeStr,
-        openPageRank: openPageRank !== null ? openPageRank : '0.00',
+        openPageRank: oprScore !== null ? oprScore : '0.00',
         globalRank: globalRank ? `#${globalRank.toLocaleString()}` : 'Beyond Top 10M',
-        serverLatency: `${latency}ms`,
-        sslActive: isHttps ? 'TLS Encrypted' : 'Unsecured'
+        referringDomains: refDomains.toLocaleString(),
+        age: domainAgeStr,
+        serverLatency: latency,
+        sslActive: sslValid
       }
     });
   } catch (err) {
@@ -939,7 +920,7 @@ app.post('/api/authority-check', async (req, res) => {
 });
 
 // ============================================================================
-// 2. 100% FREE AUTHENTIC INBOUND INDEX ENGINE (COMMON CRAWL CDX)
+// 2. 100% REAL-TIME OUTBOUND LINK & DOM AUDITOR
 // ============================================================================
 app.post('/api/backlinks', async (req, res) => {
   const { domain, limit = 20 } = req.body;
@@ -951,39 +932,38 @@ app.post('/api/backlinks', async (req, res) => {
 
   try {
     const pageRes = await fetch(`https://${cleanHost}`, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SignalSEO/1.0' },
       signal: AbortSignal.timeout(7000)
     });
 
     const html = await pageRes.text();
     const linkRegex = /<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1[^>]*>(.*?)<\/a>/gi;
     let match;
-    const externalLinks = [];
-    const seenHosts = new Set();
+    const discoveredLinks = [];
+    const seenHrefs = new Set();
     let id = 1;
 
-    while ((match = linkRegex.exec(html)) !== null && externalLinks.length < limit) {
+    while ((match = linkRegex.exec(html)) !== null && discoveredLinks.length < limit) {
       const rawHref = match[2];
       const anchor = match[3].replace(/<[^>]*>?/gm, '').trim();
 
-      if (rawHref.startsWith('http')) {
+      if (rawHref.startsWith('http') && !seenHrefs.has(rawHref)) {
+        seenHrefs.add(rawHref);
         let linkHost = '';
         try { linkHost = new URL(rawHref).hostname.toLowerCase(); } catch (_) { continue; }
 
-        // Filter out internal subdomains and self-references
-        if (!linkHost.endsWith(cleanHost) && !seenHosts.has(rawHref)) {
-          seenHosts.add(rawHref);
-          externalLinks.push({
-            id: id++,
-            sourceDomain: linkHost,
-            sourceUrl: rawHref,
-            targetUrl: `https://${cleanHost}/`,
-            anchorText: anchor || 'External Reference',
-            rel: rawHref.includes('nofollow') ? 'nofollow' : 'dofollow',
-            sourceDa: 'External Live Node',
-            verificationStatus: 'Live Verified Link'
-          });
-        }
+        const isInternal = linkHost.endsWith(cleanHost);
+        discoveredLinks.push({
+          id: id++,
+          sourceDomain: cleanHost,
+          sourceUrl: `https://${cleanHost}/`,
+          targetDomain: linkHost,
+          targetUrl: rawHref,
+          anchorText: anchor || '(No Anchor Text)',
+          linkType: isInternal ? 'Internal Link' : 'External Outbound',
+          rel: rawHref.includes('nofollow') ? 'nofollow' : 'dofollow',
+          verificationStatus: 'Live DOM Inspected'
+        });
       }
     }
 
@@ -991,24 +971,25 @@ app.post('/api/backlinks', async (req, res) => {
       success: true,
       domain: cleanHost,
       stats: {
-        totalBacklinks: externalLinks.length.toString(),
-        referringDomains: new Set(externalLinks.map(l => l.sourceDomain)).size.toString(),
-        dofollowPct: externalLinks.length > 0 ? '100%' : '0%',
-        toxicRisk: 'None'
+        totalDiscovered: discoveredLinks.length.toString(),
+        externalLinks: discoveredLinks.filter(l => l.linkType === 'External Outbound').length.toString(),
+        internalLinks: discoveredLinks.filter(l => l.linkType === 'Internal Link').length.toString(),
+        sslStatus: 'Live Checked'
       },
-      backlinks: externalLinks,
+      links: discoveredLinks,
       hasMore: false
     });
   } catch (err) {
     return res.json({
       success: true,
       domain: cleanHost,
-      stats: { totalBacklinks: '0', referringDomains: '0', dofollowPct: '0%', toxicRisk: 'None' },
-      backlinks: [],
+      stats: { totalDiscovered: '0', externalLinks: '0', internalLinks: '0', sslStatus: 'Unreachable' },
+      links: [],
       hasMore: false
     });
   }
 });
+
 // ============================================================================
 // 100% ORGANIC AEO, GEO & AI CRAWLER AUDIT ENGINE (EXACT BENCHMARK PARITY)
 // ============================================================================
